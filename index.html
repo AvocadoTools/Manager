@@ -8,41 +8,26 @@
 
     <title>Remote Manager</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">     
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-
     <link href="img/avocado.ico" rel="icon">
-
-    <style>   
-      html {
-        height: 100%;
-      }    
-    
-      body {
-        display: flex;
-        flex-basis: 0;
-        flex-direction: column;
-        flex-grow: 1;
-        height: 100%;        
-        margin: 0;
-        padding: 0;
-      }
-    </style>
+    <link href="avocado.css" rel="stylesheet">
 
   </head>
   <body>
 
     <adc-header>
       <adc-toolbar>
-        <adc-label>Avocado</adc-label>
-        <adc-label>Remote Manager</adc-label>
-        <adc-icon-button kind="ghost" style="--icon-button-color: #ffffff;">file_upload</adc-icon-button>
+        <adc-label slot="prefix" text="Avocado"></adc-label>
+        <adc-label text="Remote Manager"></adc-label>
+        <adc-icon-button kind="ghost" name="file_upload"></adc-icon-button>
       </adc-toolbar>
     </adc-header>
     <arm-manager></arm-manager>
 
-    <script src="remote.js" type="module"></script>  
+    <script src="containers/header.js" type="module"></script>
+    <script src="containers/toolbar.js" type="module"></script>    
+    <script src="controls/icon-button.js" type="module"></script>    
+    <script src="controls/label.js" type="module"></script>
+    <script src="remote/manager.js" type="module"></script>  
 
     <script>
       /*
