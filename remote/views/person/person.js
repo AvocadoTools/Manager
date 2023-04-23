@@ -1,6 +1,8 @@
 import AvocadoHBox from "../../../containers/hbox.js";
 import AvocadoVBox from "../../../containers/vbox.js";
 
+import AvocadoActionBar from "../../../controls/action-bar.js";
+import AvocadoButton from "../../../controls/button.js";
 import AvocadoInput from "../../../controls/input.js";
 import AvocadoTable from "../../../controls/table.js";
 
@@ -63,7 +65,8 @@ export default class RemotePerson extends HTMLElement {
         <adc-hbox>
           <adc-input label="Job title" placeholder="Job title"></adc-input>      
           <adc-input label="Location" placeholder="Location"></adc-input>        
-        </adc-hbox>      
+        </adc-hbox>   
+        <adc-action-bar></adc-action-bar>
       </adc-vbox>
     `;
 
