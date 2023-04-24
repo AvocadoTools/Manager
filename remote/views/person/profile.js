@@ -1,6 +1,7 @@
 import AvocadoHBox from "../../../containers/hbox.js";
 
 import AvocadoInput from "../../../controls/input.js";
+import AvocadoTextarea from "../../../controls/textarea.js";
 
 export default class RemotePersonProfile extends HTMLElement {
   constructor() {
@@ -16,7 +17,7 @@ export default class RemotePersonProfile extends HTMLElement {
           flex-basis: 0;
           flex-direction: column;
           flex-grow: 1;
-          padding: 16px;
+          padding: 16px 16px 0 16px;
           position: relative;
         }
 
@@ -35,6 +36,15 @@ export default class RemotePersonProfile extends HTMLElement {
         adc-hbox > *  {
           flex-basis: 0;
           flex-grow: 1;
+        }
+
+        adc-textarea {
+          flex-basis: 0;
+          flex-grow: 1;
+        }
+
+        adc-textarea::part( input ) {
+          font-family: 'IBM Plex Mono';
         }
       </style>
       <adc-hbox>      
@@ -55,7 +65,7 @@ export default class RemotePersonProfile extends HTMLElement {
         </adc-input>        
         <adc-input id="family" label="Family" light placeholder="Family"></adc-input>
       </adc-hbox>      
-
+      <adc-textarea id="notes" label="Notes" light placeholder="Notes"></adc-textarea>
     `;
 
     // Private
@@ -72,6 +82,7 @@ export default class RemotePersonProfile extends HTMLElement {
     this.$partner = this.shadowRoot.querySelector( '#partner' );    
     this.$anniversary = this.shadowRoot.querySelector( '#anniversary' );
     this.$family = this.shadowRoot.querySelector( '#family' );    
+    this.$notes = this.shadowRoot.querySelector( '#notes' );        
   }
 
   // When attributes change
@@ -82,6 +93,7 @@ export default class RemotePersonProfile extends HTMLElement {
     this.$partner.readOnly = this.readOnly;
     this.$anniversary.readOnly = this.readOnly;
     this.$family.readOnly = this.readOnly;
+    this.$notes.readOnly = this.readOnly;
   }
 
   // Promote properties
