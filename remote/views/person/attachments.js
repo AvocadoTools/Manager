@@ -1,4 +1,6 @@
-export default class AvocadoVBox extends HTMLElement {
+import AvocadoInput from "../../../controls/input.js";
+
+export default class RemotePersonAttachments extends HTMLElement {
   constructor() {
     super();
 
@@ -6,9 +8,13 @@ export default class AvocadoVBox extends HTMLElement {
     template.innerHTML = /* template */ `
       <style>
         :host {
+          background-color: #f4f4f4;
           box-sizing: border-box;
           display: flex;
+          flex-basis: 0;
           flex-direction: column;
+          flex-grow: 1;
+          padding: 16px;
           position: relative;
         }
 
@@ -19,12 +25,8 @@ export default class AvocadoVBox extends HTMLElement {
         :host( [hidden] ) {
           display: none;
         }
-
-        :host( [reversed] ) {
-          flex-direction: column-reverse;
-        }
       </style>
-      <slot></slot>
+      <adc-input label="Attachments" light></adc-input>
     `;
 
     // Private
@@ -57,7 +59,6 @@ export default class AvocadoVBox extends HTMLElement {
     this._upgrade( 'hidden' );    
     this._upgrade( 'icon' );        
     this._upgrade( 'label' );        
-    this._upgrade( 'reversed' );            
     this._render();
   }
 
@@ -69,8 +70,7 @@ export default class AvocadoVBox extends HTMLElement {
       'helper',      
       'hidden',
       'icon',
-      'label',
-      'reversed'
+      'label'
     ];
   }
 
@@ -223,4 +223,4 @@ export default class AvocadoVBox extends HTMLElement {
   }  
 }
 
-window.customElements.define( 'adc-vbox', AvocadoVBox );
+window.customElements.define( 'arm-person-attachments', RemotePersonAttachments );

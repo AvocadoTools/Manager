@@ -29,7 +29,7 @@ export default class RemoteManager extends HTMLElement {
       </style>
       <adc-drawer></adc-drawer>
       <adc-stack>
-        <arm-person></arm-person>
+        <arm-person read-only></arm-person>
       </adc-stack>
     `;
 

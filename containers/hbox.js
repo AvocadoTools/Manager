@@ -52,9 +52,9 @@ export default class AvocadoHBox extends HTMLElement {
   connectedCallback() {
     this._upgrade( 'concealed' );        
     this._upgrade( 'data' );             
-    this._upgrade( 'disabled' );            
+    this._upgrade( 'disabled' );  
+    this._upgrade( 'helper' );                  
     this._upgrade( 'hidden' );    
-    this._upgrade( 'hint' );    
     this._upgrade( 'icon' );        
     this._upgrade( 'label' );        
     this._upgrade( 'reversed' );            
@@ -66,8 +66,8 @@ export default class AvocadoHBox extends HTMLElement {
     return [
       'concealed',
       'disabled',
+      'helper',      
       'hidden',
-      'hint',
       'icon',
       'label',
       'reversed'
@@ -134,6 +134,22 @@ export default class AvocadoHBox extends HTMLElement {
     }
   }  
 
+  get helper() {
+    if( this.hasAttribute( 'helper' ) ) {
+      return this.getAttribute( 'helper' );
+    }
+
+    return null;
+  }
+
+  set helper( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'helper', value );
+    } else {
+      this.removeAttribute( 'helper' );
+    }
+  }        
+
   get hidden() {
     return this.hasAttribute( 'hidden' );
   }
@@ -153,22 +169,6 @@ export default class AvocadoHBox extends HTMLElement {
       this.removeAttribute( 'hidden' );
     }
   }   
-
-  get hint() {
-    if( this.hasAttribute( 'hint' ) ) {
-      return this.getAttribute( 'hint' );
-    }
-
-    return null;
-  }
-
-  set hint( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'hint', value );
-    } else {
-      this.removeAttribute( 'hint' );
-    }
-  }      
 
   get icon() {
     if( this.hasAttribute( 'icon' ) ) {
