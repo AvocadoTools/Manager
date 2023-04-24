@@ -18,14 +18,12 @@
       <adc-toolbar>
         <adc-label slot="prefix" text="Avocado"></adc-label>
         <adc-label text="Remote Manager"></adc-label>
-        <adc-icon-button kind="ghost" name="file_upload"></adc-icon-button>
       </adc-toolbar>
     </adc-header>
     <arm-manager></arm-manager>
 
     <script src="containers/header.js" type="module"></script>
     <script src="containers/toolbar.js" type="module"></script>    
-    <script src="controls/icon-button.js" type="module"></script>    
     <script src="controls/label.js" type="module"></script>
     <script src="remote/manager.js" type="module"></script>  
 
@@ -36,12 +34,15 @@
         console.log( 'MESSAGE FROM WORKER' );
       } );      
       */
+    
+      /*
       const button = document.querySelector( 'adc-icon-button' );
       button.addEventListener( 'click', () => {
         // backup.postMessage( {type: 'RUN'} );
         const manager = document.querySelector( 'arm-manager' );
         manager.backup();
       } );
+      */
     </script>
 
   </body>

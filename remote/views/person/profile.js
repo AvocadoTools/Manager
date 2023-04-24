@@ -48,13 +48,13 @@ export default class RemotePersonProfile extends HTMLElement {
         }
       </style>
       <adc-hbox>      
-        <adc-input id="hire" label="Hire date" light placeholder="Hire date">
+        <adc-input id="start" label="Hire date" light placeholder="Hire date">
           <adc-label text="7 months"></adc-label>
         </adc-input>
-        <adc-input id="last" label="Last time off" light placeholder="Last time off">
+        <adc-input id="pto" label="Last time off" light placeholder="Last time off">
           <adc-label text="7 months"></adc-label>
         </adc-input>        
-        <adc-input id="birth" label="Birth date" light placeholder="Birth date">
+        <adc-input id="born" label="Birth date" light placeholder="Birth date">
           <adc-label text="7 months"></adc-label>
         </adc-input>
       </adc-hbox>
@@ -76,9 +76,9 @@ export default class RemotePersonProfile extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$hire = this.shadowRoot.querySelector( '#hire' );
-    this.$last = this.shadowRoot.querySelector( '#last' );    
-    this.$birth = this.shadowRoot.querySelector( '#birth' );    
+    this.$start = this.shadowRoot.querySelector( '#start' );
+    this.$pto = this.shadowRoot.querySelector( '#pto' );    
+    this.$born = this.shadowRoot.querySelector( '#born' );    
     this.$partner = this.shadowRoot.querySelector( '#partner' );    
     this.$anniversary = this.shadowRoot.querySelector( '#anniversary' );
     this.$family = this.shadowRoot.querySelector( '#family' );    
@@ -87,9 +87,9 @@ export default class RemotePersonProfile extends HTMLElement {
 
   // When attributes change
   _render() {
-    this.$hire.readOnly = this.readOnly;
-    this.$last.readOnly = this.readOnly;
-    this.$birth.readOnly = this.readOnly;
+    this.$start.readOnly = this.readOnly;
+    this.$pto.readOnly = this.readOnly;
+    this.$born.readOnly = this.readOnly;
     this.$partner.readOnly = this.readOnly;
     this.$anniversary.readOnly = this.readOnly;
     this.$family.readOnly = this.readOnly;
@@ -112,6 +112,7 @@ export default class RemotePersonProfile extends HTMLElement {
     this._upgrade( 'data' );             
     this._upgrade( 'hidden' );    
     this._upgrade( 'readOnly' );            
+    this._upgrade( 'value' );                
     this._render();
   }
 
@@ -140,6 +141,24 @@ export default class RemotePersonProfile extends HTMLElement {
   set data( value ) {
     this._data = value;
   }  
+
+  get value() {
+    return {
+      startAt: null,
+      ptoAt: null,
+      bornAt: null,
+      partner: this.$partner.value,
+      anniversaryAt: null,
+      family: this.$family.value,
+      notes: this.$notes.value
+    };
+  }
+
+  set value( data ) {
+    this.$partner.value = data.partner;
+    this.$family.value = data.family;
+    this.$notes.value = data.notes;
+  }
 
   // Attributes
   // Reflected

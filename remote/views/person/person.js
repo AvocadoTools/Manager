@@ -3,6 +3,7 @@ import AvocadoTabGroup from "../../../containers/tab-group.js";
 import AvocadoVBox from "../../../containers/vbox.js";
 
 import AvocadoActionBar from "../../../controls/action-bar.js";
+import AvocadoAvatar from "../../../controls/avatar.js";
 import AvocadoButton from "../../../controls/button.js";
 import AvocadoInput from "../../../controls/input.js";
 import AvocadoTable from "../../../controls/table.js";
@@ -44,6 +45,11 @@ export default class RemotePerson extends HTMLElement {
           flex-grow: 1;
         }
 
+        adc-spacer {
+          flex-grow: 0;
+          min-width: 61px;
+        }
+
         adc-table {
           background-color: #f4f4f4;
           min-width: 300px;
@@ -66,12 +72,16 @@ export default class RemotePerson extends HTMLElement {
       </adc-table>
       <adc-vbox>
         <adc-hbox>
+          <adc-avatar id="avatar">
+            <adc-icon filled name="person" slot="icon"></adc-icon>          
+          </adc-avatar>
           <adc-input id="name" label="Full name" placeholder="Full name"></adc-input>      
           <adc-input id="email" label="Email" placeholder="Email">
             <adc-label text="Send email"></adc-label>
           </adc-input>        
         </adc-hbox>
         <adc-hbox>
+          <adc-spacer></adc-spacer>
           <adc-input id="title" label="Job title" placeholder="Job title"></adc-input>      
           <adc-input id="location" label="Location" placeholder="Location"></adc-input>        
         </adc-hbox>   
@@ -100,6 +110,7 @@ export default class RemotePerson extends HTMLElement {
       this.readOnly = true;
       this.$actions.mode = AvocadoActionBar.ADD_ONLY;
     } );
+    this.$avatar = this.shadowRoot.querySelector( '#avatar' );
     this.$email = this.shadowRoot.querySelector( '#email' );
     this.$location = this.shadowRoot.querySelector( '#location' );
     this.$name = this.shadowRoot.querySelector( '#name' );
@@ -109,6 +120,7 @@ export default class RemotePerson extends HTMLElement {
 
   // When attributes change
   _render() {
+    this.$avatar.readOnly = this.readOnly;    
     this.$name.readOnly = this.readOnly;
     this.$email.readOnly = this.readOnly;
     this.$title.readOnly = this.readOnly;
