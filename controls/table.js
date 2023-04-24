@@ -24,8 +24,11 @@ export default class AvocadoTable extends HTMLElement {
         }
 
         div[part=empty] {
+          align-items: center;
+          display: flex;
           flex-basis: 0;
           flex-grow: 1;
+          justify-content: center;  
         }
 
         div[part=list] {

@@ -62,13 +62,14 @@ export default class RemotePerson extends HTMLElement {
       </style>
       <adc-table>
         <adc-column header-text="People (0)" sortable></adc-column>
+        <adc-label slot="empty" text="No people added yet."></adc-label>
       </adc-table>
       <adc-vbox>
         <adc-hbox>
-          <adc-input id="name" label="Full name" placeholder="Full name">
+          <adc-input id="name" label="Full name" placeholder="Full name"></adc-input>      
+          <adc-input id="email" label="Email" placeholder="Email">
             <adc-label text="Send email"></adc-label>
-          </adc-input>      
-          <adc-input id="email" label="Email" placeholder="Email"></adc-input>        
+          </adc-input>        
         </adc-hbox>
         <adc-hbox>
           <adc-input id="title" label="Job title" placeholder="Job title"></adc-input>      
@@ -76,7 +77,7 @@ export default class RemotePerson extends HTMLElement {
         </adc-hbox>   
         <adc-tab-group>
           <arm-person-profile label="Profile"></arm-person-profile>
-          <arm-person-attachments label="Attachments"></arm-person-attachments>
+          <arm-person-attachments label="Attachments (0)"></arm-person-attachments>
         </adc-tab-group>
         <adc-action-bar></adc-action-bar>
       </adc-vbox>
@@ -102,6 +103,7 @@ export default class RemotePerson extends HTMLElement {
     this.$email = this.shadowRoot.querySelector( '#email' );
     this.$location = this.shadowRoot.querySelector( '#location' );
     this.$name = this.shadowRoot.querySelector( '#name' );
+    this.$profile = this.shadowRoot.querySelector( 'arm-person-profile' );
     this.$title = this.shadowRoot.querySelector( '#title' );
   }
 
@@ -111,6 +113,7 @@ export default class RemotePerson extends HTMLElement {
     this.$email.readOnly = this.readOnly;
     this.$title.readOnly = this.readOnly;
     this.$location.readOnly = this.readOnly;
+    this.$profile.readOnly = this.readOnly;
   }
 
   // Promote properties

@@ -1,3 +1,5 @@
+import AvocadoHBox from "../../../containers/hbox.js";
+
 import AvocadoInput from "../../../controls/input.js";
 
 export default class RemotePersonProfile extends HTMLElement {
@@ -24,9 +26,36 @@ export default class RemotePersonProfile extends HTMLElement {
 
         :host( [hidden] ) {
           display: none;
+        }      
+
+        adc-hbox {
+          gap: 16px;
+        }
+
+        adc-hbox > *  {
+          flex-basis: 0;
+          flex-grow: 1;
         }
       </style>
-      <adc-input label="Profile" light></adc-input>
+      <adc-hbox>      
+        <adc-input id="hire" label="Hire date" light placeholder="Hire date">
+          <adc-label text="7 months"></adc-label>
+        </adc-input>
+        <adc-input id="last" label="Last time off" light placeholder="Last time off">
+          <adc-label text="7 months"></adc-label>
+        </adc-input>        
+        <adc-input id="birth" label="Birth date" light placeholder="Birth date">
+          <adc-label text="7 months"></adc-label>
+        </adc-input>
+      </adc-hbox>
+      <adc-hbox>      
+        <adc-input id="partner" label="Spouse/partner" light placeholder="Spouse/partner"></adc-input>
+        <adc-input id="anniversary" label="Anniversary date" light placeholder="Anniversary date">
+          <adc-label text="7 months"></adc-label>
+        </adc-input>        
+        <adc-input id="family" label="Family" light placeholder="Family"></adc-input>
+      </adc-hbox>      
+
     `;
 
     // Private
@@ -35,10 +64,25 @@ export default class RemotePersonProfile extends HTMLElement {
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
+
+    // Elements
+    this.$hire = this.shadowRoot.querySelector( '#hire' );
+    this.$last = this.shadowRoot.querySelector( '#last' );    
+    this.$birth = this.shadowRoot.querySelector( '#birth' );    
+    this.$partner = this.shadowRoot.querySelector( '#partner' );    
+    this.$anniversary = this.shadowRoot.querySelector( '#anniversary' );
+    this.$family = this.shadowRoot.querySelector( '#family' );    
   }
 
   // When attributes change
-  _render() {;}
+  _render() {
+    this.$hire.readOnly = this.readOnly;
+    this.$last.readOnly = this.readOnly;
+    this.$birth.readOnly = this.readOnly;
+    this.$partner.readOnly = this.readOnly;
+    this.$anniversary.readOnly = this.readOnly;
+    this.$family.readOnly = this.readOnly;
+  }
 
   // Promote properties
   // Values may be set before module load
@@ -54,23 +98,17 @@ export default class RemotePersonProfile extends HTMLElement {
   connectedCallback() {
     this._upgrade( 'concealed' );        
     this._upgrade( 'data' );             
-    this._upgrade( 'disabled' );  
-    this._upgrade( 'helper' );                  
     this._upgrade( 'hidden' );    
-    this._upgrade( 'icon' );        
-    this._upgrade( 'label' );        
+    this._upgrade( 'readOnly' );            
     this._render();
   }
 
   // Watched attributes
   static get observedAttributes() {
     return [
-      'concealed',
-      'disabled',
-      'helper',      
+      'concealed',    
       'hidden',
-      'icon',
-      'label'
+      'read-only'
     ];
   }
 
@@ -114,42 +152,6 @@ export default class RemotePersonProfile extends HTMLElement {
     }
   }
 
-  get disabled() {
-    return this.hasAttribute( 'disabled' );
-  }
-
-  set disabled( value ) {
-    if( value !== null ) {
-      if( typeof value === 'boolean' ) {
-        value = value.toString();
-      }
-
-      if( value === 'false' ) {
-        this.removeAttribute( 'disabled' );
-      } else {
-        this.setAttribute( 'disabled', '' );
-      }
-    } else {
-      this.removeAttribute( 'disabled' );
-    }
-  }  
-
-  get helper() {
-    if( this.hasAttribute( 'helper' ) ) {
-      return this.getAttribute( 'helper' );
-    }
-
-    return null;
-  }
-
-  set helper( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'helper', value );
-    } else {
-      this.removeAttribute( 'helper' );
-    }
-  }        
-
   get hidden() {
     return this.hasAttribute( 'hidden' );
   }
@@ -169,22 +171,6 @@ export default class RemotePersonProfile extends HTMLElement {
       this.removeAttribute( 'hidden' );
     }
   }   
-
-  get icon() {
-    if( this.hasAttribute( 'icon' ) ) {
-      return this.getAttribute( 'icon' );
-    }
-
-    return null;
-  }
-
-  set icon( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'icon', value );
-    } else {
-      this.removeAttribute( 'icon' );
-    }
-  }   
   
   get label() {
     if( this.hasAttribute( 'label' ) ) {
@@ -200,27 +186,27 @@ export default class RemotePersonProfile extends HTMLElement {
     } else {
       this.removeAttribute( 'label' );
     }
+  }  
+
+  get readOnly() {
+    return this.hasAttribute( 'read-only' );
   }
 
-  get reversed() {
-    return this.hasAttribute( 'reversed' );
-  }
-
-  set reversed( value ) {
+  set readOnly( value ) {
     if( value !== null ) {
       if( typeof value === 'boolean' ) {
         value = value.toString();
       }
 
       if( value === 'false' ) {
-        this.removeAttribute( 'reversed' );
+        this.removeAttribute( 'read-only' );
       } else {
-        this.setAttribute( 'reversed', '' );
+        this.setAttribute( 'read-only', '' );
       }
     } else {
-      this.removeAttribute( 'reversed' );
+      this.removeAttribute( 'read-only' );
     }
-  }  
+  }
 }
 
 window.customElements.define( 'arm-person-profile', RemotePersonProfile );

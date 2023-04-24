@@ -148,6 +148,7 @@ export default class AvocadoInput extends HTMLElement {
         }
 
         ::slotted( adc-label ) {
+          --label-color: #6f6f6f;
           --label-font-size: 12px;
         }
       </style>
