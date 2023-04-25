@@ -1,7 +1,8 @@
 import AvocadoHBox from "../../../containers/hbox.js";
 
+import AvocadoDatePicker from "../../../controls/date-picker.js";
 import AvocadoInput from "../../../controls/input.js";
-import AvocadoTextarea from "../../../controls/textarea.js";
+import AvocadoTextArea from "../../../controls/text-area.js";
 
 export default class RemotePersonProfile extends HTMLElement {
   constructor() {
@@ -38,19 +39,20 @@ export default class RemotePersonProfile extends HTMLElement {
           flex-grow: 1;
         }
 
-        adc-textarea {
+        adc-text-area {
           flex-basis: 0;
           flex-grow: 1;
+          padding-bottom: 4px;
         }
 
-        adc-textarea::part( input ) {
+        adc-text-area::part( input ) {
           font-family: 'IBM Plex Mono';
         }
       </style>
       <adc-hbox>      
-        <adc-input id="start" label="Hire date" light placeholder="Hire date">
-          <adc-label text="7 months"></adc-label>
-        </adc-input>
+        <adc-date-picker id="start" label="Hire date" light placeholder="Hire date">
+          <adc-label text="7 months"></adc-label>        
+        </adc-date-picker>
         <adc-input id="pto" label="Last time off" light placeholder="Last time off">
           <adc-label text="7 months"></adc-label>
         </adc-input>        
@@ -65,7 +67,9 @@ export default class RemotePersonProfile extends HTMLElement {
         </adc-input>        
         <adc-input id="family" label="Family" light placeholder="Family"></adc-input>
       </adc-hbox>      
-      <adc-textarea id="notes" label="Notes" light placeholder="Notes"></adc-textarea>
+      <adc-text-area id="notes" label="Notes" light placeholder="Notes">
+        <adc-label text="Show preview"></adc-label>
+      </adc-text-area>
     `;
 
     // Private

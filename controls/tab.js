@@ -33,12 +33,14 @@ export default class AvocadoTab extends HTMLElement {
           border-left: solid 1px #8d8d8d;          
           border-top: solid 2px transparent;
           /* box-shadow: inset 0 2px 0 0 #0f62fe; */
+          box-sizing: border-box;
           cursor: pointer;
           display: flex;
           flex-direction: row;
           height: 48px;
           margin: 0;
-          padding: 0 64px 0 16px;
+          min-width: 145px;
+          padding: 0 16px 0 16px;
         }
 
         button:hover {
