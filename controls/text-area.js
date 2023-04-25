@@ -2,7 +2,6 @@ import AvocadoHBox from "../containers/hbox.js";
 import AvocadoVBox from "../containers/vbox.js";
 
 import AvocadoIcon from "./icon.js";
-import AvocadoIconButton from "./icon-button.js";
 import AvocadoLabel from "./label.js";
 
 export default class AvocadoTextArea extends HTMLElement {
