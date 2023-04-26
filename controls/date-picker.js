@@ -222,7 +222,7 @@ export default class AvocadoDatePicker extends HTMLElement {
         <slot></slot>
       </adc-hbox>
       <label part="field">
-        <input part="input" />
+        <input part="input" readonly />
         <adc-icon filled name="error" part="invalid"></adc-icon>
         <adc-icon-button name="close" part="clear"></adc-icon-button>
         <adc-icon-button name="calendar_month" part="button"></adc-icon-button>        
