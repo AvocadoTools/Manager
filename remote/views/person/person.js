@@ -95,6 +95,7 @@ export default class RemotePerson extends HTMLElement {
 
     // Private
     this._data = null;    
+    this._id = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -116,6 +117,10 @@ export default class RemotePerson extends HTMLElement {
     this.$name = this.shadowRoot.querySelector( '#name' );
     this.$profile = this.shadowRoot.querySelector( 'arm-person-profile' );
     this.$title = this.shadowRoot.querySelector( '#title' );
+  }
+
+  clear() {
+    this.value = null;
   }
 
   // When attributes change
@@ -144,6 +149,7 @@ export default class RemotePerson extends HTMLElement {
     this._upgrade( 'data' );             
     this._upgrade( 'hidden' );    
     this._upgrade( 'readOnly' );     
+    this._upgrade( 'value' );         
     this._render();
   }
 
@@ -172,6 +178,60 @@ export default class RemotePerson extends HTMLElement {
   set data( value ) {
     this._data = value;
   }  
+
+  get value() {
+    const profile = this.$profile.value;
+    return {
+      avatar: this.$avatar.value,
+      fullName: this.$name.value,
+      email: this.$email.value,
+      jobTitle: this.$title.value,
+      location: this.$location.value,
+      startAt: profile.startAt,
+      ptoAt: profile.ptoAt,
+      bornAt: profile.bornAt,
+      partner: profile.partner,
+      anniversaryAt: profile.anniversaryAt,
+      family: profile.family,
+      notes: profile.notes      
+    };
+  }
+
+  set value( data ) {
+    if( data === null ) {
+      this.$avatar.value = null;
+      this.$avatar.label = null;
+      this.$name.value = null;
+      this.$email.value = null;
+      this.$title.value = null;
+      this.$location.value = null;
+      this.$profile.value = {
+        startAt: null,
+        ptoAt: null,
+        bornAt: null,
+        partner: null,
+        anniversaryAt: null,
+        family: null,
+        notes: null
+      };
+    } else {
+      this.$avatar.value = data.avatar;
+      this.$avatar.label = data.avatar === null ? data.fullName : null;
+      this.$name.value = data.fullName;
+      this.$email.value = data.email;
+      this.$title.value = data.jobTitle;
+      this.$location.value = data.location;
+      this.$profile.value = {
+        startAt: data.startAt,
+        ptoAt: data.ptoAt,
+        bornAt: data.bornAt,
+        partner: data.partner,
+        anniversaryAt: data.anniversaryAt,
+        family: data.family,
+        notes: data.notes
+      };
+    }
+  }
 
   // Attributes
   // Reflected
