@@ -150,7 +150,7 @@ export default class AvocadoAvatar extends HTMLElement {
           };
           
           this.label = null;
-          this.src = photo.data;
+          this.value = photo.data;
           // this.$button.style.backgroundImage = `url( ${photo.data} )`;
           // this._value = [... this._value, photo];
       
@@ -166,7 +166,7 @@ export default class AvocadoAvatar extends HTMLElement {
 
   clear() {
     this.label = null;    
-    this.src = null;
+    this.value = null;
   }
 
   // Utility method
@@ -204,8 +204,8 @@ export default class AvocadoAvatar extends HTMLElement {
     this.$button.disabled = this.disabled;
 
     // Image or label
-    if( this.src !== null ) {
-      this.$button.style.backgroundImage = `url( ${this.src} )`;
+    if( this.value !== null ) {
+      this.$button.style.backgroundImage = `url( ${this.value} )`;
     } else {
       this.$button.style.backgroundImage = 'none';
     }
@@ -275,7 +275,7 @@ export default class AvocadoAvatar extends HTMLElement {
     this._upgrade( 'labelFunction' );    
     this._upgrade( 'readOnly' );
     this._upgrade( 'shorten' );
-    this._upgrade( 'src' );
+    this._upgrade( 'value' );
     this._render();
   }
 
@@ -291,7 +291,7 @@ export default class AvocadoAvatar extends HTMLElement {
       'label',
       'read-only',
       'shorten',
-      'src'
+      'value'
     ];
   }
 
@@ -486,19 +486,19 @@ export default class AvocadoAvatar extends HTMLElement {
     }
   }
 
-  get src() {
-    if( this.hasAttribute( 'src' ) ) {
-      return this.getAttribute( 'src' );
+  get value() {
+    if( this.hasAttribute( 'value' ) ) {
+      return this.getAttribute( 'value' );
     }
 
     return null;
   }
 
-  set src( value ) {
+  set value( value ) {
     if( value !== null ) {
-      this.setAttribute( 'src', value );
+      this.setAttribute( 'value', value );
     } else {
-      this.removeAttribute( 'src' );
+      this.removeAttribute( 'value' );
     }
   } 
 }
