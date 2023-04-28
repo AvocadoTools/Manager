@@ -148,7 +148,7 @@ export default class RemotePersonProfile extends HTMLElement {
 
   get value() {
     return {
-      startAt: null,
+      startAt: this.$start.value === null ? null : this.$start.getTime(),
       ptoAt: null,
       bornAt: null,
       partner: this.$partner.value,
@@ -159,6 +159,7 @@ export default class RemotePersonProfile extends HTMLElement {
   }
 
   set value( data ) {
+    this.$start.value = data.startAt === null ? null : new Date( data.startAt );
     this.$partner.value = data.partner;
     this.$family.value = data.family;
     this.$notes.value = data.notes;

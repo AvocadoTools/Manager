@@ -1,8 +1,8 @@
 import AvocadoHBox from "../containers/hbox.js";
 import AvocadoVBox from "../containers/vbox.js";
 
+import AvocadoCalendar from "./calendar.js";
 import AvocadoIcon from "./icon.js";
-import AvocadoIconButton from "./icon-button.js";
 import AvocadoLabel from "./label.js";
 
 export default class AvocadoDatePicker extends HTMLElement {
@@ -19,32 +19,18 @@ export default class AvocadoDatePicker extends HTMLElement {
           position: relative;
         }
 
-        :host( [concealed] ) {
-          visibility: hidden;
-        }
-
-        :host( [hidden] ) {
-          display: none;
-        }
-
-        adc-icon-button {
-          --icon-button-color: #525252;
-          --icon-button-size: 40px;
-        }
-
-        adc-icon-button::part( button ) {
-          min-width: 40px;
-          opacity: 1.0;          
-          transition:
-            min-width 300ms ease-out,
-            opacity 300ms ease-out,            
-            width 300ms ease-out;
-          width: 40px;
-        }
-
-        adc-hbox[part=header] > adc-vbox {
-          flex-basis: 0;
-          flex-grow: 1;
+        label {
+          align-items: center;
+          background-color: #f4f4f4;
+          border-bottom: solid 1px #8d8d8d;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: row;
+          margin: 0;
+          outline: solid 2px transparent;
+          outline-offset: -2px;
+          padding: 0;
+          transition: background-color 150ms ease-in-out;
         }
 
         input {
@@ -52,7 +38,6 @@ export default class AvocadoDatePicker extends HTMLElement {
           background: none;
           border: none;
           box-sizing: border-box;
-          color: #c6c6c6;
           cursor: pointer;
           flex-basis: 0;
           flex-grow: 1;
@@ -62,47 +47,32 @@ export default class AvocadoDatePicker extends HTMLElement {
           height: 40px;
           margin: 0;
           min-height: 40px;
-          min-width: 0;
           outline: none;
           padding: 0 16px 0 16px;
-          text-align: left;
           text-rendering: optimizeLegibility;
           width: 0;
-          -webkit-appearance: none;          
         }
 
         input::placeholder {
           color: #a8a8a8;
-        }                 
-
-        label {
-          align-items: center;
-          background-color: #f4f4f4;
-          border-bottom: solid 1px #8d8d8d;          
-          box-sizing: border-box;
-          cursor: pointer;
-          display: flex;
-          flex-direction: row;
-          margin: 0;
-          outline: solid 2px transparent;
-          outline-offset: -2px;
-          padding: 0;
-          transition: background-color 150ms ease-in-out;
-          width: 100%;
-        }
+        }        
 
         label:focus-within {
           outline: solid 2px #0f62fe;
         }
-
+        
         adc-icon {
-          --icon-color: #da1e28;
+          overflow: hidden;
         }
 
         adc-icon::part( icon ) {
+          color: #161616;
+          cursor: pointer;
           height: 40px;
+          line-height: 40px;
           min-width: 40px;
           opacity: 1.0;
+          text-align: center;
           transition:
             min-width 300ms ease-out,
             opacity 300ms ease-out,
@@ -110,182 +80,178 @@ export default class AvocadoDatePicker extends HTMLElement {
           width: 40px;
         }
 
-        adc-label[part=error] {
-          padding: 4px 0 0 0;
-          --label-color: #6f6f6f;
-          --label-font-size: 12px;
-        }
-
-        adc-label[part=helper] {
-          padding: 0 0 4px 0;          
-          --label-color: #6f6f6f;
-          --label-font-size: 12px;
-        }
-
-        adc-label[part=label] {
-          flex-basis: 0;
-          flex-grow: 1;          
-          --label-color: #525252;
-          --label-font-size: 12px;
-        }
-
-        ::slotted( adc-label ) {
-          margin: 0 0 4px 0;
-          --label-color: #6f6f6f;
-          --label-font-size: 12px;
-        }
-
-        ::slotted( adc-link ) {
-          margin: 0 0 2px 0;
-          --link-font-size: 12px;
-        }
-
-        :host( [error] ) adc-label[part=error] {
-          visibility: visible;
-        }
-
-        :host( [invalid] ) adc-icon[part=invalid]::part( icon ) {
-          min-width: 40px;
-          opacity: 1.0;
-          width: 40px;
-        }        
-
-        :host( [invalid] ) label {
-          outline: solid 2px #da1e28;
-        }
-
         :host( [invalid] ) adc-label[part=error] {
           --label-color: #da1e28;
         }
 
-        :host( [invalid] ) adc-icon::part( icon ) {
-          min-width: 40px;
-          opacity: 1.0;
-          width: 40px;
+        :host( :not( [helper] ) ) adc-label[part=helper] {
+          display: none;
         }
 
-        :host( :not( [invalid] ) ) adc-icon[part=invalid]::part( icon ) {
+        :host( :not( [helper] ) ) adc-label[part=label] {
+          padding: 0 0 4px 0;
+        }        
+
+        :host( :not( [invalid] ) ) adc-icon:nth-of-type( 1 ) {
           min-width: 0;
           opacity: 0;
           width: 0;
         }
 
+        :host( :not( [label] ) ) adc-label[part=label] {
+          display: none;
+        }        
+
         :host( [light] ) label {
           background-color: #ffffff;
         }
 
-        :host( [value]:not( [read-only] ) ) label:focus-within adc-icon::part( icon ) {
-          min-width: 40px;
-          opacity: 1.0;
-          width: 40px;
-        }
-
-        :host( [value]:not( [read-only] ) ) label:focus-within adc-icon-button[part=clear]::part( button ) {
-          min-width: 40px;
-          opacity: 1.0;
-          width: 40px;
-        }
-
-        :host( [read-only] ) adc-icon-button[part=button]::part( button ),
-        :host( [read-only] ) adc-icon-button[part=clear]::part( button ) {
+        :host( [read-only] ) label adc-icon:nth-of-type( 2 )::part( icon ) {
           min-width: 0;
           opacity: 0;
-          width: 0;                    
+          width: 0;
         }
 
         :host( [read-only] ) input {
           cursor: default;
-        }        
+        }
 
         :host( [read-only] ) label {
           border-bottom: solid 1px transparent;
           cursor: default;
+        }
+
+        :host( [read-only] ) label:focus-within {
+          outline: none;
         }        
 
-        :host( [read-only] ) label:hover {
-          background-color: #f4f4f4;
-        }                
+        :host( [invalid] ) label:not( :focus-within ) {
+          outline: solid 2px #da1e28;
+        }
+
+        adc-calendar {
+          position: absolute;
+          left: 0;
+          top: 40px;          
+        }
+
+        adc-icon-button {
+          --icon-button-size: 40px;
+        }
+
+        adc-icon:nth-of-type( 1 ) {
+          --icon-color: #da1e28;
+        }        
+
+        adc-label[part=helper] {
+          padding: 0 0 4px 0;
+          --label-color: #6f6f6f;
+        }
         
-        :host( [read-only][light] ) label:hover {
-          background-color: #ffffff;
-        }                        
+        adc-vbox {
+          flex-basis: 0;
+          flex-grow: 1;
+        }
 
-        :host( [read-only] ) label:focus-within {        
-          outline: solid 2px transparent;
-        }        
+        adc-label {
+          --label-color: #525252;
+          --label-font-size: 12px;
+        }
+
+        adc-label[part=error] {
+          height: 16px;
+          margin: 4px 0 0 0;
+          min-height: 16px;
+        }
+
+        :host( :not( [error] ) ) adc-label[part=error] {
+          visibility: hidden;
+        }
+
+        :host( :not( [type=password] ) ) adc-icon-button[part=password] {
+          display: none;
+        }
+
+        :host( [value]:not( :focus-within ) ) adc-icon-button[part=clear],
+        :host( :not( [value] ) ) adc-icon-button[part=clear] {
+          display: none;
+        }
+
+        ::slotted( adc-label ) {
+          --label-color: #6f6f6f;
+          --label-font-size: 12px;
+        }
       </style>
-      <adc-hbox part="header">
+      <adc-hbox>
         <adc-vbox>
           <adc-label part="label"></adc-label>
-          <adc-label part="helper"></adc-label>
+          <adc-label part="helper"></adc-label>                
         </adc-vbox>
-        <slot></slot>
+        <slot></slot>        
       </adc-hbox>
       <label part="field">
-        <input part="input" readonly />
-        <adc-icon filled name="error" part="invalid"></adc-icon>
+        <slot name="prefix"></slot>
+        <input part="input" readonly type="button" />
+        <adc-icon filled name="error"></adc-icon>
         <adc-icon-button name="close" part="clear"></adc-icon-button>
-        <adc-icon-button name="calendar_month" part="button"></adc-icon-button>        
+        <adc-icon filled name="calendar_month"></adc-icon>
       </label>
       <adc-label part="error"></adc-label>
+      <adc-calendar></adc-calendar>
     `;
 
-    // Private
-    this._calendar = null;
+    // Properties
     this._data = null;
     this._value = null;
-
-    // Removable events
-    this.doCalendarChange = this.doCalendarChange.bind( this );
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$calendar = this.shadowRoot.querySelector( 'adc-icon-button[part=button]' );
-    this.$calendar.addEventListener( 'click', () => this.doCalendarClick() );    
-    this.$error = this.shadowRoot.querySelector( 'adc-label[part=error]' );
-    this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );
-    this.$input = this.shadowRoot.querySelector( 'input[part=input]' );
-    this.$input.addEventListener( 'click', () => this.doInputClick() );
-    this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );
+    this.$calendar = this.shadowRoot.querySelector( 'adc-calendar' );
+    this.$calendar.addEventListener( 'change', ( evt ) => {
+      console.log( evt.detail );
+    } );
+    this.$clear = this.shadowRoot.querySelector( 'adc-icon-button[part=clear]' );
+    this.$clear.addEventListener( 'click', () => {
+      this.clear();
+      this.focus();
+
+      this.dispatchEvent( new CustomEvent( 'clear' ) );
+    } );    
+    this.$error = this.shadowRoot.querySelector( 'adc-label[part=error]' );    
+    this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );        
+    this.$input = this.shadowRoot.querySelector( 'input' );
+    this.$input.addEventListener( 'click', () => {
+      this.$calendar.display = this.value;
+      this.$calendar.value = this.value;
+      this.$calendar.show();
+    } );
+    this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );    
   }
 
-  doCalendarChange( evt ) {
-    this._calendar.hide();
-    this._calendar.removeEventListener( 'change', this.doCalendarChange );    
-    
-    this.value = evt.detail;
-
-    this.dispatchEvent( new CustomEvent( 'change', {
-      detail: new Date( this.value.getTime() )
-    } ) );
+  blur() {
+    this.$input.blur();
   }
 
-  doCalendarClick() {
-    if( this._calendar.opened ) {
-      this._calendar.hide();
-      this._calendar.removeEventListener( 'change', this.doCalendarChange );
-    } else {
-      this._calendar.addEventListener( 'change', this.doCalendarChange );
-      this._calendar.today = true;      
-      this._calendar.value = this.value;
-      this._calendar.show( this );
-    }
+  clear() {
+    this.$input.value = '';
+    this.value = null;
   }
 
-  doInputClick() {
-    if( this.editable ) return;
-    if( this.readOnly ) return;
-    this.doCalendarClick();
+  focus() {
+    this.$input.focus();
   }
 
-   // When attributes change
+  // When things change
   _render() {
-    this.$helper.text = this.helper;
     this.$label.text = this.label;
-    this.$input.placeholder = this.placeholder;
+    this.$helper.text = this.helper;    
+    this.$input.placeholder = this.placeholder === null ? '' : this.placeholder;
+    // this.$input.readOnly = this.readOnly;
+    this.$input.type = this.type === null ? 'text' : this.type;
+    // this.$input.value = this.value === null ? '' : this.value;
     this.$error.text = this.error;
   }
 
@@ -303,15 +269,15 @@ export default class AvocadoDatePicker extends HTMLElement {
   connectedCallback() {
     this._upgrade( 'concealed' );
     this._upgrade( 'data' );
-    this._upgrade( 'error' );
+    this._upgrade( 'error' );    
     this._upgrade( 'helper' );
     this._upgrade( 'hidden' );
-    this._upgrade( 'invalid' );
-    this._upgrade( 'label' );
-    this._upgrade( 'light' );
-    this._upgrade( 'placeholder' );    
+    this._upgrade( 'invalid' );    
+    this._upgrade( 'label' );        
+    this._upgrade( 'light' );        
+    this._upgrade( 'placeholder' );
     this._upgrade( 'readOnly' );
-    this._upgrade( 'value' );    
+    this._upgrade( 'value' );
     this._render();
   }
 
@@ -330,15 +296,15 @@ export default class AvocadoDatePicker extends HTMLElement {
     ];
   }
 
-  // Observed attribute has changed
+  // Observed tag attribute has changed
   // Update render
   attributeChangedCallback( name, old, value ) {
     this._render();
   }
 
-  // Properties
-  // Not reflected
-  // Array, Date, Object, null
+  // Arbitrary storage
+  // For your convenience
+  // Not used in component
   get data() {
     return this._data;
   }
@@ -352,22 +318,12 @@ export default class AvocadoDatePicker extends HTMLElement {
   }
 
   set value( date ) {
-    if( date === null ) {
-      this._value = null;
-    } else {
-      if( date instanceof Date ) {
-        this._value = new Date( date.getTime() );
-      } else if( typeof( date ) === 'number' ) {
-        this._value = new Date( date );
-      }
-    }
-
+    this._value = date === null ? null : new Date( date.getTime() );
     this._render();
-  }
+  }    
 
-  // Attributes
-  // Reflected
-  // Boolean, Number, String, null
+  // Reflect attributes
+  // Return typed value (Number, Boolean, String, null)
   get concealed() {
     return this.hasAttribute( 'concealed' );
   }
@@ -402,7 +358,7 @@ export default class AvocadoDatePicker extends HTMLElement {
     } else {
       this.removeAttribute( 'error' );
     }
-  }
+  }  
 
   get helper() {
     if( this.hasAttribute( 'helper' ) ) {
@@ -418,7 +374,7 @@ export default class AvocadoDatePicker extends HTMLElement {
     } else {
       this.removeAttribute( 'helper' );
     }
-  }
+  }  
 
   get hidden() {
     return this.hasAttribute( 'hidden' );
@@ -458,7 +414,7 @@ export default class AvocadoDatePicker extends HTMLElement {
     } else {
       this.removeAttribute( 'invalid' );
     }
-  }
+  }  
 
   get label() {
     if( this.hasAttribute( 'label' ) ) {
@@ -494,7 +450,7 @@ export default class AvocadoDatePicker extends HTMLElement {
     } else {
       this.removeAttribute( 'light' );
     }
-  }
+  }  
 
   get placeholder() {
     if( this.hasAttribute( 'placeholder' ) ) {
@@ -510,7 +466,7 @@ export default class AvocadoDatePicker extends HTMLElement {
     } else {
       this.removeAttribute( 'placeholder' );
     }
-  }  
+  }
 
   get readOnly() {
     return this.hasAttribute( 'read-only' );
@@ -530,7 +486,7 @@ export default class AvocadoDatePicker extends HTMLElement {
     } else {
       this.removeAttribute( 'read-only' );
     }
-  }  
+  }
 }
 
 window.customElements.define( 'adc-date-picker', AvocadoDatePicker );
