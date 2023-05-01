@@ -38,6 +38,7 @@ export default class AvocadoInput extends HTMLElement {
           background: none;
           border: none;
           box-sizing: border-box;
+          color: #161616;
           flex-basis: 0;
           flex-grow: 1;
           font-family: 'IBM Plex Sans', sans-serif;

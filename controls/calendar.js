@@ -18,9 +18,6 @@ export default class AvocadoCalendar extends HTMLElement {
           flex-direction: column;
           opacity: 1.0;
           padding: 4px 4px 8px 4px;
-          transition:
-            opacity 300ms ease-in-out,
-            transform 300ms ease-in-out;
           z-index: 100;
         }
 
@@ -177,7 +174,6 @@ export default class AvocadoCalendar extends HTMLElement {
     // Private
     this._display = new Date();
     this._height = 0;
-    this._open = false;
     this._value = null;    
 
     // Root
@@ -240,7 +236,17 @@ export default class AvocadoCalendar extends HTMLElement {
     } ) );
   }
 
-  hide() {
+  hide( animate = false ) {
+    if( animate ) {
+
+    } else {
+      this.style.opacity = 0;
+      this.style.transform = 'translateY( 20px )';
+    }
+
+    this.opened = false;
+
+    /*
     this.opened = false;
 
     setTimeout( () => {
@@ -248,9 +254,21 @@ export default class AvocadoCalendar extends HTMLElement {
       this.style.top = `${0 - this.clientHeight}px`;
       this._owner = null;
     }, 300 );
+    */
   }
 
-  show( owner ) {
+  show( animate = false ) {
+    if( animate ) {
+
+    } else {
+      console.log( 'SHOW' );      
+      this.style.opacity = 1.0;
+      this.style.transform = 'translateY( 0 )';
+    }
+
+    this.opened = true;
+
+    /*
     this._owner = owner;
 
     if( this._displayed === null )
@@ -261,6 +279,7 @@ export default class AvocadoCalendar extends HTMLElement {
     this.style.top = `${rect.bottom}px`;
 
     this.opened = true;
+    */
   }
 
   // When attributes change
@@ -348,6 +367,7 @@ export default class AvocadoCalendar extends HTMLElement {
     this._upgrade( 'concealed' );
     this._upgrade( 'display' );
     this._upgrade( 'hidden' );
+    this._upgrade( 'opened' );    
     this._upgrade( 'value' );
     this._render();
   }
@@ -356,7 +376,8 @@ export default class AvocadoCalendar extends HTMLElement {
   static get observedAttributes() {
     return [
       'concealed',
-      'hidden'
+      'hidden',
+      'opened'
     ];
   }
 
@@ -437,6 +458,26 @@ export default class AvocadoCalendar extends HTMLElement {
       this.removeAttribute( 'hidden' );
     }
   }
+
+  get opened() {
+    return this.hasAttribute( 'opened' );
+  }
+
+  set opened( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'opened' );
+      } else {
+        this.setAttribute( 'opened', '' );
+      }
+    } else {
+      this.removeAttribute( 'opened' );
+    }
+  }  
 }
 
 window.customElements.define( 'adc-calendar', AvocadoCalendar );

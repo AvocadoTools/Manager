@@ -19,49 +19,46 @@ export default class AvocadoDatePicker extends HTMLElement {
           position: relative;
         }
 
-        label {
+        button {
           align-items: center;
-          background-color: #f4f4f4;
-          border-bottom: solid 1px #8d8d8d;
-          box-sizing: border-box;
-          display: flex;
-          flex-direction: row;
-          margin: 0;
-          outline: solid 2px transparent;
-          outline-offset: -2px;
-          padding: 0;
-          position: relative;
-        }
-
-        input {
           appearance: none;
           background: none;
+          background-color: #f4f4f4;
           border: none;
+          border-bottom: solid 1px #8d8d8d;          
           box-sizing: border-box;
           cursor: pointer;
+          display: flex;
           flex-basis: 0;
+          flex-direction: row;
           flex-grow: 1;
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 400;
           height: 40px;
           margin: 0;
           min-height: 40px;
-          outline: none;
-          padding: 0 16px 0 16px;
-          text-align: left;
-          text-rendering: optimizeLegibility;
-          width: 0;
+          outline: solid 2px transparent;
+          outline-offset: -2px;
+          padding: 0 0 0 16px;
+          position: relative;
         }
 
-        input::placeholder {
-          color: #a8a8a8;
-        }        
-
-        label:focus-within {
+        button:focus-within {
           outline: solid 2px #0f62fe;
         }
+
+        button adc-label {
+          flex-basis: 0;
+          flex-grow: 1;
+          --label-color: #161616;          
+          --label-cursor: pointer;
+          --label-font-size: 14px;
+        }
         
+        adc-calendar {
+          position: absolute;
+          left: 0;
+          top: 41px;          
+        }
+
         adc-icon {
           overflow: hidden;
         }
@@ -79,6 +76,57 @@ export default class AvocadoDatePicker extends HTMLElement {
             opacity 300ms ease-out,
             width 300ms ease-out;
           width: 40px;
+        }
+
+        adc-icon-button::part( button ) {
+          overflow: hidden;
+        }
+
+        adc-icon:nth-of-type( 1 ) {
+          --icon-color: #da1e28;
+        }        
+
+        adc-icon-button {
+          --icon-button-size: auto;
+        }
+
+        adc-icon-button::part( button-icon ) {
+          color: #161616;
+          cursor: pointer;
+          height: 40px;
+          line-height: 40px;
+          min-width: 40px;
+          opacity: 1.0;
+          text-align: center;
+          transition:
+            min-width 300ms ease-out,
+            opacity 300ms ease-out,
+            width 300ms ease-out;
+          width: 40px;
+        }
+
+        adc-label[part=error] {
+          height: 16px;
+          margin: 4px 0 0 0;
+          min-height: 16px;
+          --label-font-size: 12px;
+        }
+
+        adc-label[part=helper] {
+          padding: 0 0 4px 0;
+          --label-color: #6f6f6f;
+          --label-font-size: 12px;
+        }
+
+        adc-label[part=label] {
+          padding: 0 0 4px 0;
+          --label-color: #525252;
+          --label-font-size: 12px;
+        }        
+
+        adc-vbox {
+          flex-basis: 0;
+          flex-grow: 1;
         }
 
         :host( [invalid] ) adc-label[part=error] {
@@ -103,80 +151,44 @@ export default class AvocadoDatePicker extends HTMLElement {
           display: none;
         }        
 
-        :host( [light] ) label {
+        :host( [light] ) button {
           background-color: #ffffff;
         }
 
-        :host( [read-only] ) label adc-icon:nth-of-type( 2 )::part( icon ) {
+        :host( [read-only] ) button {
+          border-bottom: solid 1px transparent;          
+          cursor: default;
+          outline: none;
+        }
+
+        :host( [read-only] ) button adc-icon:nth-of-type( 2 )::part( icon ) {
           min-width: 0;
           opacity: 0;
           width: 0;
         }
 
-        :host( [read-only] ) input {
-          cursor: default;
-        }
-
-        :host( [read-only] ) label {
-          border-bottom: solid 1px transparent;
-          cursor: default;
-        }
-
-        :host( [read-only] ) label:focus-within {
-          outline: none;
+        :host( [read-only] ) button adc-label {
+          --label-cursor: default;
         }        
 
-        :host( [invalid] ) label:not( :focus-within ) {
+        :host( [invalid] ) button:not( :focus-within ) {
           outline: solid 2px #da1e28;
-        }
-
-        adc-calendar {
-          position: absolute;
-          left: 0;
-          top: 40px;          
-        }
-
-        adc-icon-button {
-          --icon-button-size: 40px;
-        }
-
-        adc-icon:nth-of-type( 1 ) {
-          --icon-color: #da1e28;
-        }        
-
-        adc-label[part=helper] {
-          padding: 0 0 4px 0;
-          --label-color: #6f6f6f;
-        }
-        
-        adc-vbox {
-          flex-basis: 0;
-          flex-grow: 1;
-        }
-
-        adc-label {
-          --label-color: #525252;
-          --label-font-size: 12px;
-        }
-
-        adc-label[part=error] {
-          height: 16px;
-          margin: 4px 0 0 0;
-          min-height: 16px;
         }
 
         :host( :not( [error] ) ) adc-label[part=error] {
           visibility: hidden;
         }
 
-        :host( :not( [type=password] ) ) adc-icon-button[part=password] {
-          display: none;
+        :host( [value]:not( :focus-within ) ) adc-icon-button::part( button-icon ),
+        :host( :not( [value] ) ) adc-icon-button::part( button-icon ) {
+          min-width: 0;
+          opacity: 0;
+          width: 0;
         }
 
-        :host( [value]:not( :focus-within ) ) adc-icon-button[part=clear],
-        :host( :not( [value] ) ) adc-icon-button[part=clear] {
-          display: none;
-        }
+        :host( :not( [value] ) ) button adc-label {
+          --label-color: #a8a8a8;
+        }        
 
         ::slotted( adc-label ) {
           --label-color: #6f6f6f;
@@ -190,76 +202,85 @@ export default class AvocadoDatePicker extends HTMLElement {
         </adc-vbox>
         <slot></slot>        
       </adc-hbox>
-      <label part="field">
-        <slot name="prefix"></slot>
-        <input part="input" readonly type="button" />
+      <button part="field">
+        <adc-label part="value"></adc-label>
         <adc-icon filled name="error"></adc-icon>
-        <adc-icon-button name="close" part="clear"></adc-icon-button>
+        <adc-icon-button name="close"></adc-icon-button>
         <adc-icon filled name="calendar_month"></adc-icon>
         <adc-calendar></adc-calendar>        
-      </label>
+      </button>
       <adc-label part="error"></adc-label>
     `;
 
     // Properties
     this._data = null;
-    this._value = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
+    this.$button = this.shadowRoot.querySelector( 'button' );
+    this.$button.addEventListener( 'click', () => {
+      if( this.$calendar.opened ) {
+        this.$calendar.hide();
+      } else {
+        const calendar = this.$calendar.getBoundingClientRect();
+        if( ( calendar.x + calendar.width ) > window.innerWidth ) {
+          this.$calendar.style.left = `${this.clientWidth - calendar.width}px`;
+        }
+        // TODO: Shift vertical based on window height
+
+        const now = new Date();
+        this.$calendar.display = this.value === null ? now : new Date( this.value );
+        this.$calendar.value = this.value === null ? now : new Date( this.value );
+        this.$calendar.show();
+      }
+    } );
     this.$calendar = this.shadowRoot.querySelector( 'adc-calendar' );
     this.$calendar.addEventListener( 'change', ( evt ) => {
-      this.value = evt.detail;
-      this.$calendar.hidden = true;
+      this.value = evt.detail.getTime();
     } );
-    this.$clear = this.shadowRoot.querySelector( 'adc-icon-button[part=clear]' );
-    this.$clear.addEventListener( 'click', () => {
+    this.$calendar.hide();
+    this.$clear = this.shadowRoot.querySelector( 'button adc-icon-button' );
+    this.$clear.addEventListener( 'click', ( evt ) => {
+      evt.stopImmediatePropagation();
       this.clear();
       this.focus();
-
       this.dispatchEvent( new CustomEvent( 'clear' ) );
     } );    
     this.$error = this.shadowRoot.querySelector( 'adc-label[part=error]' );    
     this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );        
-    this.$input = this.shadowRoot.querySelector( 'input' );
-    this.$input.addEventListener( 'click', () => {
-      this.$calendar.display = this.value;
-      this.$calendar.value = this.value;
-      // this.$calendar.show();
-    } );
     this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );    
+    this.$value = this.shadowRoot.querySelector( 'button adc-label' );
   }
 
   blur() {
-    this.$input.blur();
+    this.$button.blur();
   }
 
   clear() {
-    this.$input.value = '';
     this.value = null;
   }
 
   focus() {
-    this.$input.focus();
+    this.$button.focus();
   }
 
   // When things change
   _render() {
     this.$label.text = this.label;
     this.$helper.text = this.helper;    
-    this.$input.placeholder = this.placeholder === null ? '' : this.placeholder;
     
     if( this.value !== null ) {
       const formatted = new Intl.DateTimeFormat( navigator.language, {
-        month: 'long',
+        day: 'numeric',
+        month: 'short',
         year: 'numeric'
-      } ).format( this.value );
-      this.$input.value = formatted;
+      } ).format( new Date( this.value ) );
+      this.$value.text = formatted;
     } else {
-      this.$input.value = '';
+      this.$value.text = this.placeholder;      
     }
 
     this.$error.text = this.error;
@@ -302,7 +323,8 @@ export default class AvocadoDatePicker extends HTMLElement {
       'label',
       'light',
       'placeholder',
-      'read-only'
+      'read-only',
+      'value'
     ];
   }
 
@@ -322,15 +344,6 @@ export default class AvocadoDatePicker extends HTMLElement {
   set data( value ) {
     this._data = value;
   }
-
-  get value() {
-    return this._value;
-  }
-
-  set value( date ) {
-    this._value = date === null ? null : new Date( date.getTime() );
-    this._render();
-  }    
 
   // Reflect attributes
   // Return typed value (Number, Boolean, String, null)
@@ -497,6 +510,22 @@ export default class AvocadoDatePicker extends HTMLElement {
       this.removeAttribute( 'read-only' );
     }
   }
+
+  get value() {
+    if( this.hasAttribute( 'value' ) ) {
+      return parseInt( this.getAttribute( 'value' ) );
+    }
+
+    return null;
+  }
+
+  set value( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'value', value );
+    } else {
+      this.removeAttribute( 'value' );
+    }
+  }            
 }
 
 window.customElements.define( 'adc-date-picker', AvocadoDatePicker );

@@ -18,6 +18,7 @@ export default class RemotePersonProfile extends HTMLElement {
           flex-basis: 0;
           flex-direction: column;
           flex-grow: 1;
+          overflow: hidden;
           padding: 16px 16px 0 16px;
           position: relative;
         }
@@ -56,9 +57,9 @@ export default class RemotePersonProfile extends HTMLElement {
         <adc-input id="pto" label="Last time off" light placeholder="Last time off">
           <adc-label text="7 months"></adc-label>
         </adc-input>        
-        <adc-input id="born" label="Birth date" light placeholder="Birth date">
-          <adc-label text="7 months"></adc-label>
-        </adc-input>
+        <adc-date-picker id="born" label="Birth date" light placeholder="Birth date">
+          <adc-label text="7 months"></adc-label>        
+        </adc-date-picker>
       </adc-hbox>
       <adc-hbox>      
         <adc-input id="partner" label="Spouse/partner" light placeholder="Spouse/partner"></adc-input>
@@ -148,7 +149,7 @@ export default class RemotePersonProfile extends HTMLElement {
 
   get value() {
     return {
-      startAt: this.$start.value === null ? null : this.$start.getTime(),
+      startAt: this.$start.value,
       ptoAt: null,
       bornAt: null,
       partner: this.$partner.value,
@@ -159,7 +160,7 @@ export default class RemotePersonProfile extends HTMLElement {
   }
 
   set value( data ) {
-    this.$start.value = data.startAt === null ? null : new Date( data.startAt );
+    this.$start.value = data.startAt;
     this.$partner.value = data.partner;
     this.$family.value = data.family;
     this.$notes.value = data.notes;

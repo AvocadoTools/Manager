@@ -36,7 +36,7 @@ export default class AvocadoToolbar extends HTMLElement {
         }        
 
         ::slotted( adc-label[slot=prefix] ) {
-          padding: 0 0 0 12px;
+          padding: 0 0 0 0;
           --label-font-weight: 400;          
         }
 

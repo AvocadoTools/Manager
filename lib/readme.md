@@ -2,7 +2,7 @@
 
 ## Dexie
 
-[Dexie](https://dexie.org/) is an [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) wrapper. It is the base of all data storage in Taste Buddy. Without it, everything is stored in memory, and deleted with every page refresh.
+[Dexie](https://dexie.org/) is an [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) wrapper. It is the base of all data storage in the Avocado Manager tooling.
 
 **Accessing the source:**
 
