@@ -57,6 +57,7 @@ export default class AvocadoTextArea extends HTMLElement {
 
         textarea::placeholder {
           color: #a8a8a8;
+          opacity: 1.0;
         }        
 
         label:focus-within {

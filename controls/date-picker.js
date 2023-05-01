@@ -226,7 +226,7 @@ export default class AvocadoDatePicker extends HTMLElement {
         this.$calendar.hide();
       } else {
         const calendar = this.$calendar.getBoundingClientRect();
-        if( ( calendar.x + calendar.width ) > window.innerWidth ) {
+        if( ( calendar.x + calendar.width + 16 ) > window.innerWidth ) {
           this.$calendar.style.left = `${this.clientWidth - calendar.width}px`;
         }
         // TODO: Shift vertical based on window height

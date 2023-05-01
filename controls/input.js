@@ -55,8 +55,9 @@ export default class AvocadoInput extends HTMLElement {
 
         input::placeholder {
           color: #a8a8a8;
-        }        
-
+          opacity: 1.0;
+        } 
+        
         label:focus-within {
           outline: solid 2px #0f62fe;
         }
