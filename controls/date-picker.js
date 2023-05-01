@@ -30,7 +30,7 @@ export default class AvocadoDatePicker extends HTMLElement {
           outline: solid 2px transparent;
           outline-offset: -2px;
           padding: 0;
-          transition: background-color 150ms ease-in-out;
+          position: relative;
         }
 
         input {
@@ -49,6 +49,7 @@ export default class AvocadoDatePicker extends HTMLElement {
           min-height: 40px;
           outline: none;
           padding: 0 16px 0 16px;
+          text-align: left;
           text-rendering: optimizeLegibility;
           width: 0;
         }
@@ -195,9 +196,9 @@ export default class AvocadoDatePicker extends HTMLElement {
         <adc-icon filled name="error"></adc-icon>
         <adc-icon-button name="close" part="clear"></adc-icon-button>
         <adc-icon filled name="calendar_month"></adc-icon>
+        <adc-calendar></adc-calendar>        
       </label>
       <adc-label part="error"></adc-label>
-      <adc-calendar></adc-calendar>
     `;
 
     // Properties
@@ -211,7 +212,8 @@ export default class AvocadoDatePicker extends HTMLElement {
     // Elements
     this.$calendar = this.shadowRoot.querySelector( 'adc-calendar' );
     this.$calendar.addEventListener( 'change', ( evt ) => {
-      console.log( evt.detail );
+      this.value = evt.detail;
+      this.$calendar.hidden = true;
     } );
     this.$clear = this.shadowRoot.querySelector( 'adc-icon-button[part=clear]' );
     this.$clear.addEventListener( 'click', () => {
@@ -226,7 +228,7 @@ export default class AvocadoDatePicker extends HTMLElement {
     this.$input.addEventListener( 'click', () => {
       this.$calendar.display = this.value;
       this.$calendar.value = this.value;
-      this.$calendar.show();
+      // this.$calendar.show();
     } );
     this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );    
   }
@@ -249,9 +251,17 @@ export default class AvocadoDatePicker extends HTMLElement {
     this.$label.text = this.label;
     this.$helper.text = this.helper;    
     this.$input.placeholder = this.placeholder === null ? '' : this.placeholder;
-    // this.$input.readOnly = this.readOnly;
-    this.$input.type = this.type === null ? 'text' : this.type;
-    // this.$input.value = this.value === null ? '' : this.value;
+    
+    if( this.value !== null ) {
+      const formatted = new Intl.DateTimeFormat( navigator.language, {
+        month: 'long',
+        year: 'numeric'
+      } ).format( this.value );
+      this.$input.value = formatted;
+    } else {
+      this.$input.value = '';
+    }
+
     this.$error.text = this.error;
   }
 

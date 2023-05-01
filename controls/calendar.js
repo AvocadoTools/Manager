@@ -18,8 +18,6 @@ export default class AvocadoCalendar extends HTMLElement {
           flex-direction: column;
           opacity: 1.0;
           padding: 4px 4px 8px 4px;
-          position: absolute;
-          transform: translate( 0, 24px );
           transition:
             opacity 300ms ease-in-out,
             transform 300ms ease-in-out;
