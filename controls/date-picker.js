@@ -283,6 +283,7 @@ export default class AvocadoDatePicker extends HTMLElement {
       this.$value.text = this.placeholder;      
     }
 
+    this.$button.disabled = this.readOnly;
     this.$error.text = this.error;
   }
 
