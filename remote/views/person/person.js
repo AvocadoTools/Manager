@@ -77,7 +77,7 @@ export default class RemotePerson extends HTMLElement {
           </adc-avatar>
           <adc-input id="name" label="Full name" placeholder="Full name"></adc-input>      
           <adc-input id="email" label="Email" placeholder="Email">
-            <adc-label text="Send email"></adc-label>
+            <adc-label hidden text="Send email"></adc-label>
           </adc-input>        
         </adc-hbox>
         <adc-hbox>
@@ -113,9 +113,14 @@ export default class RemotePerson extends HTMLElement {
     } );
     this.$avatar = this.shadowRoot.querySelector( '#avatar' );
     this.$email = this.shadowRoot.querySelector( '#email' );
+    this.$email.addEventListener( 'clear', () => this.$send.hidden = true );
+    this.$email.addEventListener( 'input', () => {
+      this.$send.hidden = this.$email.value === null ? true : false;
+    } );
     this.$location = this.shadowRoot.querySelector( '#location' );
     this.$name = this.shadowRoot.querySelector( '#name' );
     this.$profile = this.shadowRoot.querySelector( 'arm-person-profile' );
+    this.$send = this.shadowRoot.querySelector( '#email adc-label' );
     this.$title = this.shadowRoot.querySelector( '#title' );
   }
 

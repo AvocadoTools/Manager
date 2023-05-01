@@ -232,6 +232,9 @@ export default class AvocadoCalendar extends HTMLElement {
     this.value = new Date( selected.getTime() );
 
     this.dispatchEvent( new CustomEvent( 'change', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
       detail: this.value
     } ) );
   }
@@ -240,8 +243,9 @@ export default class AvocadoCalendar extends HTMLElement {
     if( animate ) {
 
     } else {
-      this.style.opacity = 0;
-      this.style.transform = 'translateY( 20px )';
+      // this.style.opacity = 0;
+      // this.style.transform = 'translateY( 20px )';
+      this.hidden = true;
     }
 
     this.opened = false;
@@ -261,9 +265,9 @@ export default class AvocadoCalendar extends HTMLElement {
     if( animate ) {
 
     } else {
-      console.log( 'SHOW' );      
-      this.style.opacity = 1.0;
-      this.style.transform = 'translateY( 0 )';
+      // this.style.opacity = 1.0;
+      // this.style.transform = 'translateY( 0 )';
+      this.hidden = false;
     }
 
     this.opened = true;

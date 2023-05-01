@@ -108,7 +108,18 @@ export default class AvocadoInput extends HTMLElement {
         }
 
         adc-icon-button {
-          --icon-button-size: 40px;
+          --icon-button-size: auto;
+        }
+
+        adc-icon-button::part( button ) {
+          min-width: 40px;
+          opacity: 1.0;
+          overflow: hidden;
+          transition:
+            min-width 300ms ease-out,
+            opacity 300ms ease-out,
+            width 300ms ease-out;          
+          width: 40px;
         }
 
         adc-icon:nth-of-type( 1 ) {
@@ -144,9 +155,11 @@ export default class AvocadoInput extends HTMLElement {
           display: none;
         }
 
-        :host( [value]:not( :focus-within ) ) adc-icon-button[part=clear],
-        :host( :not( [value] ) ) adc-icon-button[part=clear] {
-          display: none;
+        :host( [value]:not( :focus-within ) ) adc-icon-button[part=clear]::part( button ),
+        :host( :not( [value] ) ) adc-icon-button[part=clear]::part( button ) {
+          min-width: 0;
+          opacity: 0;
+          width: 0;
         }
 
         ::slotted( adc-label ) {

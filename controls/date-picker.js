@@ -225,10 +225,12 @@ export default class AvocadoDatePicker extends HTMLElement {
       if( this.$calendar.opened ) {
         this.$calendar.hide();
       } else {
-        const calendar = this.$calendar.getBoundingClientRect();
-        if( ( calendar.x + calendar.width + 16 ) > window.innerWidth ) {
-          this.$calendar.style.left = `${this.clientWidth - calendar.width}px`;
+        const picker = this.getBoundingClientRect();
+        if( ( picker.x + 300 ) > window.innerWidth ) {
+          this.$calendar.style.left = `${picker.width - 288}px`;
         }
+
+        // TODO: Fix icky magic numbers
         // TODO: Shift vertical based on window height
 
         const now = new Date();
@@ -253,6 +255,9 @@ export default class AvocadoDatePicker extends HTMLElement {
     this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );        
     this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );    
     this.$value = this.shadowRoot.querySelector( 'button adc-label' );
+
+    this.tabIndex = 100;
+    this.addEventListener( 'blur', () => this.$calendar.hidden = true );
   }
 
   blur() {
@@ -285,6 +290,12 @@ export default class AvocadoDatePicker extends HTMLElement {
 
     this.$button.disabled = this.readOnly;
     this.$error.text = this.error;
+    
+    if( this.readOnly ) {
+      if( this.$calendar.opened ) {
+        this.$calendar.hide();
+      }
+    }
   }
 
   // Promote properties

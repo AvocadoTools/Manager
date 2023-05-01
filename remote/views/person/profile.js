@@ -52,24 +52,24 @@ export default class RemotePersonProfile extends HTMLElement {
       </style>
       <adc-hbox>      
         <adc-date-picker id="start" label="Hire date" light placeholder="Hire date">
-          <adc-label text="7 months"></adc-label>        
+          <adc-label hidden text="7 months"></adc-label>        
         </adc-date-picker>
-        <adc-input id="pto" label="Last time off" light placeholder="Last time off">
-          <adc-label text="7 months"></adc-label>
-        </adc-input>        
+        <adc-date-picker id="pto" label="Last time off" light placeholder="Last time off">
+          <adc-label hidden text="7 months"></adc-label>
+        </adc-date-picker>        
         <adc-date-picker id="born" label="Birth date" light placeholder="Birth date">
-          <adc-label text="7 months"></adc-label>        
+          <adc-label hidden text="7 months"></adc-label>        
         </adc-date-picker>
       </adc-hbox>
       <adc-hbox>      
         <adc-input id="partner" label="Spouse/partner" light placeholder="Spouse/partner"></adc-input>
-        <adc-input id="anniversary" label="Anniversary date" light placeholder="Anniversary date">
-          <adc-label text="7 months"></adc-label>
-        </adc-input>        
+        <adc-date-picker id="anniversary" label="Anniversary date" light placeholder="Anniversary date">
+          <adc-label hidden text="7 months"></adc-label>
+        </adc-date-picker>        
         <adc-input id="family" label="Family" light placeholder="Family"></adc-input>
       </adc-hbox>      
       <adc-text-area id="notes" label="Notes" light placeholder="Notes">
-        <adc-label text="Show preview"></adc-label>
+        <adc-label hidden text="Show preview"></adc-label>
       </adc-text-area>
     `;
 
@@ -82,10 +82,30 @@ export default class RemotePersonProfile extends HTMLElement {
 
     // Elements
     this.$start = this.shadowRoot.querySelector( '#start' );
-    this.$pto = this.shadowRoot.querySelector( '#pto' );    
+    this.$start.addEventListener( 'clear', () => this.$employed.hidden = true );
+    this.$start.addEventListener( 'change', ( evt ) => {
+      this.$employed.hidden = evt.detail === null ? true : false;
+    } );
+    this.$employed = this.shadowRoot.querySelector( '#start adc-label' );
+    this.$pto = this.shadowRoot.querySelector( '#pto' );
+    this.$pto.addEventListener( 'clear', () => this.$vacation.hidden = true );
+    this.$pto.addEventListener( 'change', ( evt ) => {
+      this.$vacation.hidden = evt.detail === null ? true : false;
+    } );    
+    this.$vacation = this.shadowRoot.querySelector( '#pto adc-label' );
     this.$born = this.shadowRoot.querySelector( '#born' );    
+    this.$born.addEventListener( 'clear', () => this.$age.hidden = true );
+    this.$born.addEventListener( 'change', ( evt ) => {
+      this.$age.hidden = evt.detail === null ? true : false;
+    } );        
+    this.$age = this.shadowRoot.querySelector( '#born adc-label' );
     this.$partner = this.shadowRoot.querySelector( '#partner' );    
     this.$anniversary = this.shadowRoot.querySelector( '#anniversary' );
+    this.$anniversary.addEventListener( 'clear', () => this.$together.hidden = true );
+    this.$anniversary.addEventListener( 'change', ( evt ) => {
+      this.$together.hidden = evt.detail === null ? true : false;
+    } );            
+    this.$together = this.shadowRoot.querySelector( '#anniversary adc-label' );
     this.$family = this.shadowRoot.querySelector( '#family' );    
     this.$notes = this.shadowRoot.querySelector( '#notes' );        
   }
@@ -150,8 +170,8 @@ export default class RemotePersonProfile extends HTMLElement {
   get value() {
     return {
       startAt: this.$start.value,
-      ptoAt: null,
-      bornAt: null,
+      ptoAt: this.$pto.value,
+      bornAt: this.$born.value,
       partner: this.$partner.value,
       anniversaryAt: null,
       family: this.$family.value,
@@ -161,7 +181,14 @@ export default class RemotePersonProfile extends HTMLElement {
 
   set value( data ) {
     this.$start.value = data.startAt;
+    this.$employed.hidden = data.startAt === null ? true : false;
+    this.$pto.value = data.ptoAt;
+    this.$vacation.hidden = data.ptoAt === null ? true : false;    
+    this.$born.value = data.bornAt;
+    this.$age.hidden = data.bornAt === null ? true : false;    
     this.$partner.value = data.partner;
+    this.$anniversary.value = data.anniversaryAt;
+    this.$together.hidden = data.anniversaryAt === null ? true : false;    
     this.$family.value = data.family;
     this.$notes.value = data.notes;
   }
