@@ -1,8 +1,3 @@
-import AvocadoVBox from "../containers/vbox.js";
-
-import AvocadoIcon from "./icon-button.js";
-import AvocadoLabel from "./label.js";
-
 export default class AvocadoTab extends HTMLElement {
   constructor() {
     super();
@@ -12,7 +7,7 @@ export default class AvocadoTab extends HTMLElement {
       <style>
         :host {
           box-sizing: border-box;
-          display: inline-block;
+          display: block;
           position: relative;
         }
 
@@ -26,59 +21,114 @@ export default class AvocadoTab extends HTMLElement {
 
         button {
           align-items: center;
-          appearance: none;
           background: none;
           background-color: #e0e0e0;
           border: none;
-          border-left: solid 1px #8d8d8d;          
-          border-top: solid 2px transparent;
-          /* box-shadow: inset 0 2px 0 0 #0f62fe; */
+          border-left: solid 1px #8d8d8d;            
           box-sizing: border-box;
-          cursor: pointer;
+          cursor: var( --tab-cursor, pointer );
           display: flex;
           flex-direction: row;
-          height: 48px;
+          height: var( --tab-height, 48px );
           margin: 0;
-          min-width: 145px;
+          min-width: var( --tab-min-width, 145px );
+          outline: none;
           padding: 0 16px 0 16px;
+          transition: background-color 150ms ease-in-out;
         }
 
         button:hover {
           background-color: #cacaca;
         }
 
-        adc-label {
-          --label-cursor: pointer;
-        }
-
-        adc-label[part=label] {
-          --label-font-weight: 400;
-        }
-
-        :host( :not( [closable] ) ) adc-icon {
+        button > p {
+          color: var( --tab-icon-color, #6f6f6f );
+          cursor: default;
+          direction: ltr;
           display: none;
+          font-family: 'Material Symbols Outlined';
+          font-size: var( --tab-icon-font-size, 18px );
+          font-style: normal;
+          font-weight: normal;
+          height: var( --tab-icon-size, 20px );
+          letter-spacing: normal;
+          margin: 0 0 0 -4px;
+          min-height: var( --tab-icon-size, 20px );
+          min-width: var( --tab-icon-size, 20px );
+          padding: 0 12px 0 0;
+          text-transform: none;
+          white-space: nowrap;
+          width: var( --tab-icon-size, 20px );
+          word-wrap: normal;
         }
 
-        :host( :not( [helper] ) ) adc-label[part=helper] {
+        div {
+          display: flex;
+          flex-direction: column;
+        }
+
+        div p {
+          color: var( --tab-color, #393939 );
+          cursor: var( --tab-cursor, pointer );
           display: none;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: var( --tab-font-size, 14px );
+          font-weight: var( --tab-font-weight, 400 );
+          margin: 0;
+          padding: 0;
+          text-align: left;
+          text-rendering: optimizeLegibility;
         }
 
-        :host( [active] ) adc-label[part=label] {
-          --label-font-weight: 600;
+        p[part=helper] {
+          color: #6f6f6f;
+          font-size: 12px;
         }
 
-        :host( [active] ) button {
-          background-color: #f4f4f4;          
-          border-left: solid 1px transparent;  
-          border-top: solid 2px #0f62fe;          
+        :host( [icon] ) button > p {
+          display: block;
+        }
+
+        :host( [label] ) p[part=helper],
+        :host( [label] ) p[part=label] {
+          display: block;
+        }
+
+        :host( [selected] ) button {
+          background-color: #f4f4f4;
+          border-left: solid 1px transparent;          
+          box-shadow: inset 0 2px 0 0 #0f62fe;
+        }
+
+        :host( [selected] ) button > p {
+          color: #525252;
+        }
+
+        :host( [selected] ) div p:first-of-type {
+          color: #161616;
+          font-weight: 600;
+        }
+
+        :host( [selected] ) div p:last-of-type {
+          color: #525252;
+        }
+
+        :host( [disabled] ) button {
+          background-color: #c6c6c6;
+          cursor: not-allowed;
+        }
+
+        :host( [disabled] ) button p {
+          color: #8d8d8d;
+          cursor: not-allowed;
         }
       </style>
       <button part="button">
-        <adc-vbox>
-          <adc-label part="label"></adc-label>
-          <adc-label part="helper"></adc-label>
-        </adc-vbox>
-        <adc-icon name="close" part="close"></adc-icon>
+        <p part="icon"></p>
+        <div>
+          <p part="label"></p>
+          <p part="helper"></p>
+        </div>
       </button>
     `;
 
@@ -90,13 +140,18 @@ export default class AvocadoTab extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );    
-    this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );
+    this.$button = this.shadowRoot.querySelector( 'button' );
+    this.$helper = this.shadowRoot.querySelector( 'p[part=helper]' );
+    this.$icon = this.shadowRoot.querySelector( 'p[part=icon]' );
+    this.$label = this.shadowRoot.querySelector( 'p[part=label]' );
   }
 
-  // When things change
+   // When attributes change
   _render() {
-    this.$label.text = this.label;
+    this.$button.disabled = this.disabled;
+    this.$helper.innerText = this.helper === null ? '' : this.helper;
+    this.$icon.innerText = this.icon === null ? '' : this.icon;
+    this.$label.innerText = this.label === null ? '' : this.label;
   }
 
   // Promote properties
@@ -111,31 +166,31 @@ export default class AvocadoTab extends HTMLElement {
 
   // Setup
   connectedCallback() {
-    this._upgrade( 'active' );    
-    this._upgrade( 'closable' );    
     this._upgrade( 'concealed' );
-    this._upgrade( 'disabled' );    
     this._upgrade( 'data' );
-    this._upgrade( 'helper' );    
+    this._upgrade( 'disabled' );
+    this._upgrade( 'helper' );
     this._upgrade( 'hidden' );
+    this._upgrade( 'icon' );
     this._upgrade( 'label' );
+    this._upgrade( 'selected' );
     this._render();
   }
 
   // Watched attributes
   static get observedAttributes() {
     return [
-      'active',
-      'closable',      
       'concealed',
       'disabled',
       'helper',
       'hidden',
-      'label'
+      'icon',
+      'label',
+      'selected'
     ];
   }
 
-  // Observed tag attribute has changed
+  // Observed attribute has changed
   // Update render
   attributeChangedCallback( name, old, value ) {
     this._render();
@@ -155,46 +210,6 @@ export default class AvocadoTab extends HTMLElement {
   // Attributes
   // Reflected
   // Boolean, Number, String, null
-  get active() {
-    return this.hasAttribute( 'active' );
-  }
-
-  set active( value ) {
-    if( value !== null ) {
-      if( typeof value === 'boolean' ) {
-        value = value.toString();
-      }
-
-      if( value === 'false' ) {
-        this.removeAttribute( 'active' );
-      } else {
-        this.setAttribute( 'active', '' );
-      }
-    } else {
-      this.removeAttribute( 'active' );
-    }
-  }
-
-  get closable() {
-    return this.hasAttribute( 'closable' );
-  }
-
-  set closable( value ) {
-    if( value !== null ) {
-      if( typeof value === 'boolean' ) {
-        value = value.toString();
-      }
-
-      if( value === 'false' ) {
-        this.removeAttribute( 'closable' );
-      } else {
-        this.setAttribute( 'closable', '' );
-      }
-    } else {
-      this.removeAttribute( 'closable' );
-    }
-  }
-
   get concealed() {
     return this.hasAttribute( 'concealed' );
   }
@@ -233,7 +248,7 @@ export default class AvocadoTab extends HTMLElement {
     } else {
       this.removeAttribute( 'disabled' );
     }
-  }  
+  }
 
   get helper() {
     if( this.hasAttribute( 'helper' ) ) {
@@ -249,7 +264,7 @@ export default class AvocadoTab extends HTMLElement {
     } else {
       this.removeAttribute( 'helper' );
     }
-  }  
+  }
 
   get hidden() {
     return this.hasAttribute( 'hidden' );
@@ -271,6 +286,22 @@ export default class AvocadoTab extends HTMLElement {
     }
   }
 
+  get icon() {
+    if( this.hasAttribute( 'icon' ) ) {
+      return this.getAttribute( 'icon' );
+    }
+
+    return null;
+  }
+
+  set icon( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'icon', value );
+    } else {
+      this.removeAttribute( 'icon' );
+    }
+  }
+
   get label() {
     if( this.hasAttribute( 'label' ) ) {
       return this.getAttribute( 'label' );
@@ -284,6 +315,26 @@ export default class AvocadoTab extends HTMLElement {
       this.setAttribute( 'label', value );
     } else {
       this.removeAttribute( 'label' );
+    }
+  }
+
+  get selected() {
+    return this.hasAttribute( 'selected' );
+  }
+
+  set selected( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'selected' );
+      } else {
+        this.setAttribute( 'selected', '' );
+      }
+    } else {
+      this.removeAttribute( 'selected' );
     }
   }
 }

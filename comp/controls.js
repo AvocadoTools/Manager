@@ -1,7 +1,7 @@
-import AvocadoButton from "./button.js";
-import AvocadoSpacer from "./spacer.js";
+import AvocadoButton from "../controls/button.js";
+import AvocadoSpacer from "../controls/spacer.js";
 
-export default class AvocadoActionBar extends HTMLElement {
+export default class AvocadoControls extends HTMLElement {
   constructor() {
     super();
 
@@ -66,7 +66,7 @@ export default class AvocadoActionBar extends HTMLElement {
     const mode = this.mode === null ? 0 : this.mode;
 
     switch( mode ) {
-      case AvocadoActionBar.ADD_ONLY:
+      case AvocadoControls.ADD_ONLY:
         this.$add.hidden = false;
         this.$cancel.hidden = true;
         this.$delete.hidden = true;
@@ -74,7 +74,7 @@ export default class AvocadoActionBar extends HTMLElement {
         this.$save.hidden = true;
         break;
 
-      case AvocadoActionBar.CANCEL_SAVE: 
+      case AvocadoControls.CANCEL_SAVE: 
         this.$add.hidden = true;
         this.$cancel.hidden = false;
         this.$delete.hidden = true;
@@ -82,7 +82,7 @@ export default class AvocadoActionBar extends HTMLElement {
         this.$save.hidden = false;      
         break;
 
-      case AvocadoActionBar.ADD_EDIT: 
+      case AvocadoControls.ADD_EDIT: 
         this.$add.hidden = false;
         this.$cancel.hidden = true;
         this.$delete.hidden = true;
@@ -90,7 +90,7 @@ export default class AvocadoActionBar extends HTMLElement {
         this.$save.hidden = true;      
         break;
         
-      case AvocadoActionBar.DELETE_CANCEL_SAVE: 
+      case AvocadoControls.DELETE_CANCEL_SAVE: 
         this.$add.hidden = true;
         this.$cancel.hidden = false;
         this.$delete.hidden = false;
@@ -98,7 +98,7 @@ export default class AvocadoActionBar extends HTMLElement {
         this.$save.hidden = false;      
         break;        
 
-      case AvocadoActionBar.NONE: 
+      case AvocadoControls.NONE: 
         this.$add.hidden = true;
         this.$cancel.hidden = true;
         this.$delete.hidden = true;
@@ -213,10 +213,10 @@ export default class AvocadoActionBar extends HTMLElement {
   }    
 }
 
-AvocadoActionBar.ADD_ONLY = 0;
-AvocadoActionBar.CANCEL_SAVE = 1;
-AvocadoActionBar.ADD_EDIT = 2;
-AvocadoActionBar.DELETE_CANCEL_SAVE = 3;
-AvocadoActionBar.NONE = 4;
+AvocadoControls.ADD_ONLY = 0;
+AvocadoControls.CANCEL_SAVE = 1;
+AvocadoControls.ADD_EDIT = 2;
+AvocadoControls.DELETE_CANCEL_SAVE = 3;
+AvocadoControls.NONE = 4;
 
-window.customElements.define( 'adc-action-bar', AvocadoActionBar );
+window.customElements.define( 'adc-controls', AvocadoControls );

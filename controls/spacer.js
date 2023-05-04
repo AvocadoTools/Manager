@@ -16,14 +16,6 @@ export default class AvocadoSpacer extends HTMLElement {
           min-width: var( --spacer-width );
           max-width: var( --spacer-width );          
         } 
-
-        :host( [concealed] ) {
-          visibility: hidden;
-        }
-
-        :host( [hidden] ) {
-          display: none;
-        }
       </style>
     `;
 
@@ -31,8 +23,8 @@ export default class AvocadoSpacer extends HTMLElement {
     this._data = null;
 
     // Root
-    const shadowRoot = this.attachShadow( {mode: 'open'} );
-    shadowRoot.appendChild( template.content.cloneNode( true ) );
+    this.attachShadow( {mode: 'open'} );
+    this.shadowRoot.appendChild( template.content.cloneNode( true ) );
   }
 
   // When things change
@@ -49,7 +41,6 @@ export default class AvocadoSpacer extends HTMLElement {
 
   // Setup
   connectedCallback() {
-    this._upgrade( 'concealed' );               
     this._upgrade( 'data' );           
     this._upgrade( 'hidden' );                      
     this._render();
@@ -58,7 +49,6 @@ export default class AvocadoSpacer extends HTMLElement {
   // Watched attributes
   static get observedAttributes() {
     return [
-      'concealed',
       'hidden'
     ];
   }
@@ -83,26 +73,6 @@ export default class AvocadoSpacer extends HTMLElement {
   // Attributes
   // Reflected
   // Boolean, Number, String, null
-  get concealed() {
-    return this.hasAttribute( 'concealed' );
-  }
-
-  set concealed( value ) {
-    if( value !== null ) {
-      if( typeof value === 'boolean' ) {
-        value = value.toString();
-      }
-
-      if( value === 'false' ) {
-        this.removeAttribute( 'concealed' );
-      } else {
-        this.setAttribute( 'concealed', '' );
-      }
-    } else {
-      this.removeAttribute( 'concealed' );
-    }
-  }  
-
   get hidden() {
     return this.hasAttribute( 'hidden' );
   }

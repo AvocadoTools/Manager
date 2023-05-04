@@ -10,10 +10,8 @@ export default class AvocadoDrawer extends HTMLElement {
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
-          min-width: 250px;
           padding: 16px 0 16px 0;
           position: relative;
-          width: 250px;
         }
 
         :host( [concealed] ) {
@@ -24,18 +22,62 @@ export default class AvocadoDrawer extends HTMLElement {
           display: none;
         }
       </style>
+      <slot></slot>
     `;
 
     // Private
     this._data = null;
 
+    // Events
+    this.doItemClick = this.doItemClick.bind( this );
+
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
+
+    // Elements
+    this.$slot = this.shadowRoot.querySelector( 'slot' );
+    this.$slot.addEventListener( 'slotchange', () => {
+      var index = 0;
+
+      for( let c = 0; c < this.children.length; c++ ) {
+        if( this.children[c].tagName === 'ADC-DRAWER-ITEM' ) {
+          this.children[c].setAttribute( 'data-index', index );
+          this.children[c].removeEventListener( 'click', this.doItemClick );
+          this.children[c].addEventListener( 'click', this.doItemClick );
+          index = index + 1;
+        }        
+      }
+    } );
   }
 
-  // When things change
-  _render() {;}
+  doItemClick( evt ) {
+    const index = parseInt( evt.currentTarget.getAttribute( 'data-index' ) );
+
+    if( this.selectedIndex === index ) return;
+
+    this.dispatchEvent( new CustomEvent( 'change', {
+      detail: {
+        selectedIndex: index,
+        previousIndex: this.selectedIndex === null ? 0 : this.selectedIndex
+      }
+    } ) );
+
+    this.selectedIndex = index;
+  }
+
+   // When attributes change
+  _render() {
+    const selected = this.selectedIndex === null ? 0 : this.selectedIndex;
+    var index = 0;
+
+    for( let c = 0; c < this.children.length; c++ ) {
+      if( this.children[c].tagName === 'ADC-DRAWER-ITEM' ) {
+        this.children[c].selected = selected === index ? true : false;
+        index = index + 1;
+      }
+    }
+  }
 
   // Promote properties
   // Values may be set before module load
@@ -49,9 +91,10 @@ export default class AvocadoDrawer extends HTMLElement {
 
   // Setup
   connectedCallback() {
-    this._upgrade( 'concealed' );
-    this._upgrade( 'data' );
-    this._upgrade( 'hidden' );
+    this._upgrade( 'concealed' );        
+    this._upgrade( 'data' );                
+    this._upgrade( 'hidden' );    
+    this._upgrade( 'selectedIndex' );        
     this._render();
   }
 
@@ -59,15 +102,16 @@ export default class AvocadoDrawer extends HTMLElement {
   static get observedAttributes() {
     return [
       'concealed',
-      'hidden'
+      'disabled',
+      'selected-index'
     ];
   }
 
-  // Observed tag attribute has changed
+  // Observed attribute has changed
   // Update render
   attributeChangedCallback( name, old, value ) {
     this._render();
-  }
+  } 
 
   // Properties
   // Not reflected
@@ -101,7 +145,7 @@ export default class AvocadoDrawer extends HTMLElement {
     } else {
       this.removeAttribute( 'concealed' );
     }
-  }
+  }  
 
   get hidden() {
     return this.hasAttribute( 'hidden' );
@@ -121,7 +165,23 @@ export default class AvocadoDrawer extends HTMLElement {
     } else {
       this.removeAttribute( 'hidden' );
     }
+  }   
+
+  get selectedIndex() {
+    if( this.hasAttribute( 'selected-index' ) ) {
+      return parseInt( this.getAttribute( 'selected-index' ) );
+    }
+
+    return null;
   }
+
+  set selectedIndex( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'selected-index', value );
+    } else {
+      this.removeAttribute( 'selected-index' );
+    }
+  }   
 }
 
 window.customElements.define( 'adc-drawer', AvocadoDrawer );

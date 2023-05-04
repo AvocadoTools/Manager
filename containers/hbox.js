@@ -19,23 +19,19 @@ export default class AvocadoHBox extends HTMLElement {
         :host( [hidden] ) {
           display: none;
         }
-
-        :host( [reversed] ) {
-          flex-direction: row-reverse;
-        }
       </style>
       <slot></slot>
     `;
 
     // Private
-    this._data = null;    
+    this._data = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
   }
 
-  // When attributes change
+   // When attributes change
   _render() {;}
 
   // Promote properties
@@ -51,13 +47,12 @@ export default class AvocadoHBox extends HTMLElement {
   // Setup
   connectedCallback() {
     this._upgrade( 'concealed' );        
-    this._upgrade( 'data' );             
+    this._upgrade( 'data' );                
     this._upgrade( 'disabled' );  
     this._upgrade( 'helper' );                  
     this._upgrade( 'hidden' );    
     this._upgrade( 'icon' );        
     this._upgrade( 'label' );        
-    this._upgrade( 'reversed' );            
     this._render();
   }
 
@@ -69,8 +64,7 @@ export default class AvocadoHBox extends HTMLElement {
       'helper',      
       'hidden',
       'icon',
-      'label',
-      'reversed'
+      'label'
     ];
   }
 
@@ -89,7 +83,7 @@ export default class AvocadoHBox extends HTMLElement {
 
   set data( value ) {
     this._data = value;
-  }  
+  }
 
   // Attributes
   // Reflected
@@ -200,27 +194,7 @@ export default class AvocadoHBox extends HTMLElement {
     } else {
       this.removeAttribute( 'label' );
     }
-  }
-
-  get reversed() {
-    return this.hasAttribute( 'reversed' );
-  }
-
-  set reversed( value ) {
-    if( value !== null ) {
-      if( typeof value === 'boolean' ) {
-        value = value.toString();
-      }
-
-      if( value === 'false' ) {
-        this.removeAttribute( 'reversed' );
-      } else {
-        this.setAttribute( 'reversed', '' );
-      }
-    } else {
-      this.removeAttribute( 'reversed' );
-    }
-  }  
+  }     
 }
 
 window.customElements.define( 'adc-hbox', AvocadoHBox );

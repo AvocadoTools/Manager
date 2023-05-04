@@ -1,5 +1,3 @@
-import AvocadoLabel from "./label.js";
-
 export default class AvocadoAvatar extends HTMLElement {
   constructor() {
     super();
@@ -66,11 +64,12 @@ export default class AvocadoAvatar extends HTMLElement {
           display: none;
         }
 
-        adc-label {
-          --label-font-size: 20px;
-        }
-
-        adc-label::part( label ) {
+        p {
+          color: var( --avatar-color, #161616 );
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: var( --avatar-font-size, 20px );
+          font-weight: 400;
+          text-rendering: optimizeLegibility;
           text-transform: uppercase;
         }
 
@@ -92,9 +91,9 @@ export default class AvocadoAvatar extends HTMLElement {
       </style>
       <button>
         <slot name="icon"></slot>
-        <adc-label></adc-label>
+        <p></p>
       </button>
-      <input accept="image/png, image/jpeg" type="file" />
+      <input accept="image/png, image/jpeg" type="file">
       <canvas></canvas>
     `;
 
@@ -103,17 +102,17 @@ export default class AvocadoAvatar extends HTMLElement {
     this._label = null;
 
     // Root
-    const shadowRoot = this.attachShadow( {mode: 'open'} );
-    shadowRoot.appendChild( template.content.cloneNode( true ) );
+    this.attachShadow( {mode: 'open'} );
+    this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$button = shadowRoot.querySelector( 'button' );
+    this.$button = this.shadowRoot.querySelector( 'button' );
     this.$button.addEventListener( 'click', () => {
       if( !this.readOnly ) 
         this.$input.click() 
     } );
-    this.$canvas = shadowRoot.querySelector( 'canvas' );
-    this.$input = shadowRoot.querySelector( 'input' );
+    this.$canvas = this.shadowRoot.querySelector( 'canvas' );
+    this.$input = this.shadowRoot.querySelector( 'input' );
     this.$input.addEventListener( 'change', () => {
       if( this.$input.files.length > 0 ) {
         const img = new Image();
@@ -150,7 +149,7 @@ export default class AvocadoAvatar extends HTMLElement {
           };
           
           this.label = null;
-          this.value = photo.data;
+          this.src = photo.data;
           // this.$button.style.backgroundImage = `url( ${photo.data} )`;
           // this._value = [... this._value, photo];
       
@@ -161,12 +160,12 @@ export default class AvocadoAvatar extends HTMLElement {
         this.$input.value = '';        
       }
     } );
-    this.$label = shadowRoot.querySelector( 'adc-label' );
+    this.$label = this.shadowRoot.querySelector( 'p' );
   }
 
   clear() {
     this.label = null;    
-    this.value = null;
+    this.src = null;
   }
 
   // Utility method
@@ -204,8 +203,8 @@ export default class AvocadoAvatar extends HTMLElement {
     this.$button.disabled = this.disabled;
 
     // Image or label
-    if( this.value !== null ) {
-      this.$button.style.backgroundImage = `url( ${this.value} )`;
+    if( this.src !== null ) {
+      this.$button.style.backgroundImage = `url( ${this.src} )`;
     } else {
       this.$button.style.backgroundImage = 'none';
     }
@@ -248,7 +247,7 @@ export default class AvocadoAvatar extends HTMLElement {
     }
 
     // Place content
-    this.$label.text = content;
+    this.$label.innerText = content;
   }
 
   // Properties set before module loaded
@@ -275,7 +274,7 @@ export default class AvocadoAvatar extends HTMLElement {
     this._upgrade( 'labelFunction' );    
     this._upgrade( 'readOnly' );
     this._upgrade( 'shorten' );
-    this._upgrade( 'value' );
+    this._upgrade( 'src' );
     this._render();
   }
 
@@ -291,7 +290,7 @@ export default class AvocadoAvatar extends HTMLElement {
       'label',
       'read-only',
       'shorten',
-      'value'
+      'src'
     ];
   }
 
@@ -486,19 +485,19 @@ export default class AvocadoAvatar extends HTMLElement {
     }
   }
 
-  get value() {
-    if( this.hasAttribute( 'value' ) ) {
-      return this.getAttribute( 'value' );
+  get src() {
+    if( this.hasAttribute( 'src' ) ) {
+      return this.getAttribute( 'src' );
     }
 
     return null;
   }
 
-  set value( value ) {
+  set src( value ) {
     if( value !== null ) {
-      this.setAttribute( 'value', value );
+      this.setAttribute( 'src', value );
     } else {
-      this.removeAttribute( 'value' );
+      this.removeAttribute( 'src' );
     }
   } 
 }

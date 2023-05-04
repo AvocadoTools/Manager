@@ -14,6 +14,10 @@
 6. Save the source code to `lib` as `dexie-VERSION.js`
 7. Update the `index.html` page to point to the new version
 
+## Marked
+
+[Marked](https://github.com/markedjs/marked) is a Markdown lexer for transforming Markdown to HTML. This allows for inline preview of Markdown notes. The compiled source was obtained by viewing the source of the Maarked [demo](https://marked.js.org/demo), which lead to the demonstrations [source](view-source:https://marked.js.org/demo/demo.js). The URL for the [compiled version](https://cdn.jsdelivr.net/gh/markedjs/marked/marked.min.js) was noted in the list of global variables.
+
 ## UUIDv4
 
 Data records often need unique identifiers, for which a common solution is [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) generation. There are many UUID JavaScript libraries, but Taste Buddy requires support for [ECMAScript Modules](https://hospodarets.com/native-ecmascript-modules-the-first-overview) (ESM). ESM is the JavaScript-native solution to modules.

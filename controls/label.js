@@ -19,29 +19,20 @@ export default class AvocadoLabel extends HTMLElement {
           display: none;
         }
 
-        :host( [truncate] ) p {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
         p {
-          box-sizing: border-box;
           color: var( --label-color, #161616 );
           cursor: var( --label-cursor, default );
-          font-family: var( --font-family, 'IBM Plex Sans' );
+          font-family: 'IBM Plex Sans', sans-serif;
           font-size: var( --label-font-size, 14px );
           font-weight: var( --label-font-weight, 400 );
-          line-height: var( --label-line-height );
-          margin: 0;
-          padding: 0;
-          text-align: var( --label-text-align, left );
+          margin: var( --label-margin, 0 );
+          padding: var( --label-padding, 0 );
           text-rendering: optimizeLegibility;
-          text-transform: var( --label-text-transform );
-          width: 100%;
         }
       </style>
-      <p part="label"></p>
+      <p part="label">
+        <slot></slot>
+      </p>
     `;
 
     // Private
@@ -55,9 +46,10 @@ export default class AvocadoLabel extends HTMLElement {
     this.$label = this.shadowRoot.querySelector( 'p' );
   }
 
-  // When things change
+   // When attributes change
   _render() {
-    this.$label.innerText = this.text === null ? '' : this.text;
+    if( this.text !== null )
+      this.innerText = this.text;
   }
 
   // Promote properties
@@ -72,11 +64,10 @@ export default class AvocadoLabel extends HTMLElement {
 
   // Setup
   connectedCallback() {
-    this._upgrade( 'concealed' );
-    this._upgrade( 'data' );
-    this._upgrade( 'hidden' );
-    this._upgrade( 'text' );
-    this._upgrade( 'truncate' );
+    this._upgrade( 'concealed' );        
+    this._upgrade( 'data' );                
+    this._upgrade( 'hidden' );    
+    this._upgrade( 'text' );    
     this._render();
   }
 
@@ -85,16 +76,15 @@ export default class AvocadoLabel extends HTMLElement {
     return [
       'concealed',
       'hidden',
-      'text',
-      'truncate'
+      'text'
     ];
   }
 
-  // Observed tag attribute has changed
+  // Observed attribute has changed
   // Update render
   attributeChangedCallback( name, old, value ) {
     this._render();
-  }
+  } 
 
   // Properties
   // Not reflected
@@ -148,7 +138,7 @@ export default class AvocadoLabel extends HTMLElement {
     } else {
       this.removeAttribute( 'hidden' );
     }
-  }
+  }   
 
   get text() {
     if( this.hasAttribute( 'text' ) ) {
@@ -164,27 +154,7 @@ export default class AvocadoLabel extends HTMLElement {
     } else {
       this.removeAttribute( 'text' );
     }
-  }
-
-  get truncate() {
-    return this.hasAttribute( 'hidden' );
-  }
-
-  set truncate( value ) {
-    if( value !== null ) {
-      if( typeof value === 'boolean' ) {
-        value = value.toString();
-      }
-
-      if( value === 'false' ) {
-        this.removeAttribute( 'truncate' );
-      } else {
-        this.setAttribute( 'truncate', '' );
-      }
-    } else {
-      this.removeAttribute( 'truncate' );
-    }
-  }
+  }      
 }
 
 window.customElements.define( 'adc-label', AvocadoLabel );

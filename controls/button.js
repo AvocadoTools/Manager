@@ -1,5 +1,3 @@
-import AvocadoLabel from "./label.js";
-
 export default class AvocadoButton extends HTMLElement {
   constructor() {
     super();
@@ -55,9 +53,16 @@ export default class AvocadoButton extends HTMLElement {
             inset 0 0 0 2px #ffffff;
         }
 
-        adc-label {
-          --label-color: #ffffff;
-          --label-cursor: pointer;
+        p {
+          color: #ffffff;
+          flex-basis: 0;
+          flex-grow: 1;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 14px;
+          font-weight: 400;
+          margin: 0;
+          padding: 0;
+          text-rendering: optimizeLegibility;
         }
 
         ::slotted( adc-icon ) {
@@ -120,15 +125,15 @@ export default class AvocadoButton extends HTMLElement {
           background-color: transparent;
           border: solid 1px #0f62fe;
         }
-        :host( [kind=tertiary] ) adc-label { 
-          --label-color: #0f62fe; 
+        :host( [kind=tertiary] ) p { 
+          color: #0f62fe; 
         }
         :host( [kind=tertiary] ) button:hover {
           background-color: #0353e9;
           border: solid 1px #0353e9;
           color: #ffffff;
         }
-        :host( [kind=tertiary] ) button:hover adc-label { --label-color: #ffffff; }
+        :host( [kind=tertiary] ) button:hover p { color: #ffffff; }
         :host( [kind=tertiary] ) button:focus {
           background-color: #0f62fe;
           border-color: #0f62fe;
@@ -136,7 +141,7 @@ export default class AvocadoButton extends HTMLElement {
             inset 0 0 0 1px #0f62fe,
             inset 0 0 0 2px #ffffff;
         }
-        :host( [kind=tertiary] ) button:focus adc-label { --label-color: #ffffff; }
+        :host( [kind=tertiary] ) button:focus p { color: #ffffff; }
         :host( [kind=tertiary] ) button:active { background-color: #002d9c; }
         :host( [kind=tertiary] ) ::slotted( adc-icon ) { --icon-color: #0f62fe; }                
         :host( [kind=tertiary] ) button:hover ::slotted( adc-icon ) { --icon-color: #ffffff; }                        
@@ -153,7 +158,7 @@ export default class AvocadoButton extends HTMLElement {
         }
 
         :host( [kind=ghost] ) button { background-color: transparent; }
-        :host( [kind=ghost] ) button adc-label { --label-color: #0f62fe; }
+        :host( [kind=ghost] ) button p { color: #0f62fe; }
         :host( [kind=ghost] ) button:hover { background-color: #e5e5e5e4; }
         :host( [kind=ghost] ) button:active { background-color: #8d8d8d80; }
         :host( [kind=ghost] ) button:focus {
@@ -172,13 +177,15 @@ export default class AvocadoButton extends HTMLElement {
           cursor: not-allowed;
         }
 
-        :host( [disabled] ) button adc-label {        
-          --label-color: #8d8d8d;
+        :host( [disabled] ) button p {        
+          color: #8d8d8d;
         }
       </style>
       <button type="button">
         <slot name="prefix"></slot>
-        <adc-label part="label"></adc-label>
+        <p>
+          <slot></slot>
+        </p>
         <slot name="suffix"></slot>
       </button>
     `;
@@ -192,13 +199,15 @@ export default class AvocadoButton extends HTMLElement {
 
     // Elements
     this.$button = this.shadowRoot.querySelector( 'button' );
-    this.$label = this.shadowRoot.querySelector( 'adc-label' );
+    this.$label = this.shadowRoot.querySelector( 'p' );
   }
 
    // When attributes change
   _render() {
     this.$button.disabled = this.disabled;
-    this.$label.text = this.label;
+
+    if( this.label !== null )
+      this.$label.innerText = this.label;
   }
 
   // Promote properties

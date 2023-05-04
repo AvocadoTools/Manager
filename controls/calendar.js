@@ -1,8 +1,3 @@
-import AvocadoHBox from "../containers/hbox.js";
-
-import AvocadoIconButton from "./icon-button.js";
-import AvocadoLabel from "./label.js";
-
 export default class AvocadoCalendar extends HTMLElement {
   constructor() {
     super();
@@ -16,9 +11,15 @@ export default class AvocadoCalendar extends HTMLElement {
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
-          opacity: 1.0;
+          left: -300px;
+          opacity: 0;
           padding: 4px 4px 8px 4px;
-          z-index: 100;
+          position: absolute;
+          top: -300;
+          transform: translate( 0, 24px );
+          transition:
+            opacity 300ms ease-in-out,
+            transform 300ms ease-in-out;
         }
 
         :host( [concealed] ) {
@@ -29,15 +30,19 @@ export default class AvocadoCalendar extends HTMLElement {
           display: none;
         }
 
+        :host( [opened] ) {
+          opacity: 1.0;
+          transform: translate( 0, -24px );
+        }
+
         button {
           background: none;
           border: none;
           box-sizing: border-box;
           color: #161616;
           cursor: pointer;
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 400;
+          font-style: normal;
+          font-weight: normal;
           height: 40px;
           margin: 0;
           padding: 0;
@@ -50,38 +55,48 @@ export default class AvocadoCalendar extends HTMLElement {
           background-color: #e8e8e8;
         }
 
-        adc-hbox {
-          align-items: center;
+        button.icon {
+          color: #525252;
+          direction: ltr;
+          font-family: 'Material Symbols Outlined';
+          font-size: 18px;
+          height: 40px;
+          letter-spacing: normal;
+          min-height: 40px;
+          min-width: 40px;
+          text-transform: none;
+          white-space: nowrap;
+          width: 40px;
+          word-wrap: normal;
+        }
+
+        button[part=page] {
           flex-basis: 0;
           flex-grow: 1;
+          font-weight: 600;
+          margin: 0 4px 0 4px;
         }
 
-        adc-hbox[part=header] {
-          justify-content: center;
+        div {
+          align-items: center;
+          display: flex;
+          flex-direction: row;
         }
 
-        adc-hbox > adc-hbox {
+        div > div {
+          align-items: center;
+          display: flex;
+          flex-basis: 0;
+          flex-grow: 1;
           gap: 4px;
           justify-content: center;
         }
 
-        adc-hbox[part=days] adc-label::part( label ) {
-          height: 40px;
-          line-height: 40px;
-          min-width: 40px;
-          text-align: center;
-          width: 40px;
+        div > div p {
+          font-weight: 600;
         }
 
-        adc-icon-button {
-          --icon-button-size: 40px;
-        }
-
-        adc-label[part=display] {
-          --label-font-weight: 600;
-        }
-
-        div[part=month] {
+        div[part=calendar] {
           box-sizing: border-box;
           display: grid;
           grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
@@ -117,22 +132,41 @@ export default class AvocadoCalendar extends HTMLElement {
           outline: solid 2px #0f62fe;          
         }
 
+        p {
+          box-sizing: border-box;
+          color: #161616;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 14px;
+          margin: 0;
+          padding: 0;
+        }
+
+        p.square {
+          cursor: default;
+          height: 40px;
+          line-height: 40px;
+          min-height: 40px;
+          min-width: 40px;
+          text-align: center;
+          width: 40px;
+        }
+
         .outside {
-          color: #6f6f6f;
+          color: var( --calendar-outside-color, #6f6f6f );
         }
 
         .selected {
-          background-color: #0f62fe;
+          background-color: var( --calendar-selected-color, #0f62fe );
           color: #ffffff;
         }
 
         .today {
-          color: #0f62fe;
+          color: var( --calendar-today-color, #0f62fe );
           font-weight: 600;
         }
 
         .today::after {
-          background-color: #0f62fe;
+          background-color: var( --calendar-today-color, #0f62fe );
           bottom: 6px;
           content: ' ';
           height: 4px;
@@ -142,7 +176,7 @@ export default class AvocadoCalendar extends HTMLElement {
         }
 
         .selected.today {
-          background-color: #0f62fe;
+          background-color: var( --calendar-selected-color, #0f62fe );
           color: #ffffff;
           font-weight: 600;
         }
@@ -150,107 +184,108 @@ export default class AvocadoCalendar extends HTMLElement {
         .selected.today::after {
           background-color: #ffffff;
         }
+
+        .weekend,
+        :host( [weekends] ) div[part=days] p:first-of-type,
+        :host( [weekends] ) div[part=days] p:last-of-type {
+          color: var( --calendar-weekend-color, #da1e28 );
+        }
       </style>
-      <adc-hbox part="header">
-        <adc-icon-button name="chevron_left" part="before"></adc-icon-button>
-        <adc-hbox>
-          <adc-label part="display"></adc-label>
-          <input min="0" part="year" step="1" type="number" />
-        </adc-hbox>
-        <adc-icon-button name="chevron_right" part="next"></adc-icon-button>        
-      </adc-hbox>
-      <adc-hbox part="days">
-        <adc-label text="S"></adc-label>
-        <adc-label text="M"></adc-label>
-        <adc-label text="T"></adc-label>
-        <adc-label text="W"></adc-label>
-        <adc-label text="Th"></adc-label>
-        <adc-label text="F"></adc-label>
-        <adc-label text="S"></adc-label>                                                
-      </adc-hbox>
-      <div part="month"></div>
+      <div>
+        <button class="icon" part="left">chevron_left</button>
+        <div>
+          <p part="month"></p>
+          <input min="0" part="year" step="1" type="number">
+        </div>
+        <button class="icon" part="right">chevron_right</button>
+      </div>
+      <div part="days">
+        <p class="square">S</p>
+        <p class="square">M</p>
+        <p class="square">T</p>
+        <p class="square">W</p>
+        <p class="square">Th</p>
+        <p class="square">F</p>
+        <p class="square">S</p>
+      </div>
+      <div part="calendar"></div>
     `;
 
     // Private
-    this._display = new Date();
-    this._height = 0;
-    this._value = null;    
+    this._data = null;
+    this._displayed = null;
+    this._selected = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$grid = this.shadowRoot.querySelector( 'div[part=month]' );
-    this.$display = this.shadowRoot.querySelector( 'adc-label[part=display]' );
-    this.$before = this.shadowRoot.querySelector( 'adc-icon-button[part=before]' );
-    this.$before.addEventListener( 'click', () => {
-      let month = this._display.getMonth();
-      let year = this._display.getFullYear();
-
-      // Adjust
-      // Watch for edges of the year
-      year = ( month === 0 ) ? year - 1 : year;
-      month = ( month === 0 ) ? 11 : month - 1;
-
-      this.display = new Date( year, month, this._display.getDate() );
-    } );
-    this.$input = this.shadowRoot.querySelector( 'input' );
-    this.$input.addEventListener( 'change', () => {
-      this._display.setFullYear( parseInt( this.$input.value ) );
+    this.$calendar = this.shadowRoot.querySelector( 'div[part=calendar]' );
+    this.$left = this.shadowRoot.querySelector( 'button[part=left]' );
+    this.$left.addEventListener( 'click', () => this.doLeftClick() );
+    this.$month = this.shadowRoot.querySelector( 'p[part=month]' );
+    this.$right = this.shadowRoot.querySelector( 'button[part=right]' );
+    this.$right.addEventListener( 'click', () => this.doRightClick() );
+    this.$year = this.shadowRoot.querySelector( 'input' );
+    this.$year.addEventListener( 'change', () => {
+      this._displayed.setFullYear( this.$year.value );
       this._render();
-    } ); 
-    this.$next = this.shadowRoot.querySelector( 'adc-icon-button[part=next]' );
-    this.$next.addEventListener( 'click', () => {
-      let month = this._display.getMonth();
-      let year = this._display.getFullYear();
-  
-      // Adjust
-      // Watch for the edges of the year
-      year = ( month === 11 ) ? year + 1 : year;
-      month = ( month + 1 ) % 12;
-  
-      this.display = new Date( year, month, this._display.getDate() );
-    } );    
+    } );
   }
 
   doDateClick( evt ) {
-    const date = parseInt( evt.currentTarget.getAttribute( 'data-date' ) );
-    const month = parseInt( evt.currentTarget.getAttribute( 'data-month' ) );
-    const year = parseInt( evt.currentTarget.getAttribute( 'data-year' ) );
-    const value = this.value === null ? new Date() : new Date( this.value );
-
     const selected = new Date(
-      year,
-      month,
-      date,
-      value.getHours(),
-      value.getMinutes()
+      parseInt( evt.currentTarget.getAttribute( 'data-year' ) ),
+      parseInt( evt.currentTarget.getAttribute( 'data-month' ) ),
+      parseInt( evt.currentTarget.getAttribute( 'data-date' ) )
     );
 
-    this._display = new Date( selected.getTime() );
-    this.value = new Date( selected.getTime() );
-
+    this.selected = selected;
     this.dispatchEvent( new CustomEvent( 'change', {
-      bubbles: true,
-      cancelable: true,
-      composed: true,
-      detail: this.value
+      detail: new Date( selected.getTime() )
     } ) );
   }
 
-  hide( animate = false ) {
-    if( animate ) {
+  doLeftClick() {
+    let month = this._displayed.getMonth();
+    let year = this._displayed.getFullYear();
 
-    } else {
-      // this.style.opacity = 0;
-      // this.style.transform = 'translateY( 20px )';
-      this.hidden = true;
-    }
+    year = ( month === 0 ) ? year - 1 : year;
+    month = ( month === 0 ) ? 11 : month - 1;
 
-    this.opened = false;
+    this._displayed = new Date(
+      year,
+      month,
+      this._displayed.getDate()
+    );
+    this._render();
 
-    /*
+    this.dispatchEvent( new CustomEvent( 'previous', {
+      detail: new Date( this._displayed.getTime() )
+    } ) );
+  }
+
+  doRightClick() {
+    let month = this._displayed.getMonth();
+    let year = this._displayed.getFullYear();
+
+    year = ( month === 11 ) ? year + 1 : year;
+    month = ( month + 1 ) % 12;
+
+    this._displayed = new Date(
+      year,
+      month,
+      this._displayed.getDate()
+    );
+    this._render();
+
+    this.dispatchEvent( new CustomEvent( 'next', {
+      detail: new Date( this._displayed.getTime() )
+    } ) );
+  }
+
+  hide() {
     this.opened = false;
 
     setTimeout( () => {
@@ -258,21 +293,9 @@ export default class AvocadoCalendar extends HTMLElement {
       this.style.top = `${0 - this.clientHeight}px`;
       this._owner = null;
     }, 300 );
-    */
   }
 
-  show( animate = false ) {
-    if( animate ) {
-
-    } else {
-      // this.style.opacity = 1.0;
-      // this.style.transform = 'translateY( 0 )';
-      this.hidden = false;
-    }
-
-    this.opened = true;
-
-    /*
+  show( owner ) {
     this._owner = owner;
 
     if( this._displayed === null )
@@ -280,78 +303,94 @@ export default class AvocadoCalendar extends HTMLElement {
 
     const rect = owner.getBoundingClientRect();
     this.style.left = `${rect.left}px`;
-    this.style.top = `${rect.bottom}px`;
+    this.style.top = `${rect.bottom + 4}px`;
 
     this.opened = true;
-    */
   }
 
   // When attributes change
   _render() {
-    while( this.$grid.children.length < 42 ) {
-      const button = document.createElement( 'button' );
-      button.type = 'button';
-      button.addEventListener( 'click', ( evt ) => this.doDateClick( evt ) );
-      this.$grid.appendChild( button );
+    while( this.$calendar.children.length < 42 ) {
+      const date = document.createElement( 'button' );
+      date.addEventListener( 'click', ( evt ) => this.doDateClick( evt ) );
+      this.$calendar.appendChild( date );
     }
 
-    const value = this._value === null ? new Date() : new Date( this._value );
+    const displayed = this._displayed === null ? new Date() : new Date( this._displayed );
+    const selected = this._selected === null ? null : new Date( this._selected );
     const today = new Date();
+
+    const formatted = new Intl.DateTimeFormat( navigator.language, {
+      month: 'long'
+    } ).format( displayed );    
+    this.$month.innerText = formatted;
+    this.$year.value = displayed.getFullYear();
+
+    // Calendar used in iteration
     const calendar = new Date(
-      this._display.getFullYear(),
-      this._display.getMonth(),
+      displayed.getFullYear(),
+      displayed.getMonth(),
       1
     );
 
-    let month = new Intl.DateTimeFormat( navigator.language, {
-      month: 'long'
-    } ).format( calendar );
-    let year = new Intl.DateTimeFormat( navigator.language, {
-      year: 'numeric'
-    } ).format( calendar );    
-    this.$display.text = month;
-    this.$input.value = year;
-
+    // First day of month may not be first day of week
+    // Roll back until first day of week
     calendar.setDate( calendar.getDate() - calendar.getDay() );
 
-    for( let b = 0; b < 42; b++ ) {
-      this.$grid.children[b].setAttribute( 'data-month', calendar.getMonth() );
-      this.$grid.children[b].setAttribute( 'data-year', calendar.getFullYear() );
+    for( let d = 0; d < 42; d++ ) {
+      // Date
+      this.$calendar.children[d].innerText = calendar.getDate();
+      this.$calendar.children[d].setAttribute( 'data-year', calendar.getFullYear() );
+      this.$calendar.children[d].setAttribute( 'data-month', calendar.getMonth() );
+      this.$calendar.children[d].setAttribute( 'data-date', calendar.getDate() );
 
-      if(
-        calendar.getFullYear() === this._display.getFullYear() &&
-        calendar.getMonth() === this._display.getMonth()
-      ) {
-        this.$grid.children[b].setAttribute( 'data-date', calendar.getDate() );
-        this.$grid.children[b].innerText = calendar.getDate();
-        this.$grid.children[b].classList.remove( 'outside' );
-      } else {
-        this.$grid.children[b].setAttribute( 'data-date', calendar.getDate() );
-        this.$grid.children[b].innerText = calendar.getDate();
-        this.$grid.children[b].classList.add( 'outside' );
+      if( this.weekends ) {
+        if( calendar.getDay() === 0 || calendar.getDay() === 6 ) {
+          this.$calendar.children[d].classList.add( 'weekend' );
+        } else {
+          this.$calendar.children[d].classList.remove( 'weekend' );
+        }
       }
 
       if(
-        calendar.getFullYear() === today.getFullYear() &&
-        calendar.getMonth() === today.getMonth() &&
-        calendar.getDate() === today.getDate()
+        calendar.getFullYear() === displayed.getFullYear() &&
+        calendar.getMonth() === displayed.getMonth()
       ) {
-        this.$grid.children[b].classList.add( 'today' );
+        this.$calendar.children[d].classList.remove( 'outside' );
       } else {
-        this.$grid.children[b].classList.remove( 'today' );
+        this.$calendar.children[d].classList.add( 'outside' );
       }
 
-      if(
-        calendar.getFullYear() === value.getFullYear() &&
-        calendar.getMonth() === value.getMonth() &&
-        calendar.getDate() === value.getDate() &&
-        calendar.getMonth() === value.getMonth()
-      ) {
-        this.$grid.children[b].classList.add( 'selected' );
-      } else {
-        this.$grid.children[b].classList.remove( 'selected' );
+      // Check for today
+      if( this.today ) {
+        if(
+          calendar.getFullYear() === today.getFullYear() &&
+          calendar.getMonth() === today.getMonth() &&
+          calendar.getDate() === today.getDate()
+        ) {
+          this.$calendar.children[d].classList.add( 'today' );
+        } else {
+          this.$calendar.children[d].classList.remove( 'today' );
+        }
       }
 
+      // Check for selection
+      if( selected === null ) {
+        this.$calendar.children[d].classList.remove( 'selected' );
+      } else {
+        if(
+          calendar.getFullYear() === selected.getFullYear() &&
+          calendar.getMonth() === selected.getMonth() &&
+          calendar.getDate() === selected.getDate() &&
+          calendar.getMonth() === selected.getMonth()
+        ) {
+          this.$calendar.children[d].classList.add( 'selected' );
+        } else {
+          this.$calendar.children[d].classList.remove( 'selected' );
+        }
+      }
+
+      // Keep rolling
       calendar.setDate( calendar.getDate() + 1 );
     }
   }
@@ -369,10 +408,14 @@ export default class AvocadoCalendar extends HTMLElement {
   // Setup
   connectedCallback() {
     this._upgrade( 'concealed' );
-    this._upgrade( 'display' );
+    this._upgrade( 'data' );
+    this._upgrade( 'displayed' );
     this._upgrade( 'hidden' );
-    this._upgrade( 'opened' );    
+    this._upgrade( 'opened' );
+    this._upgrade( 'selected' );
+    this._upgrade( 'today' );
     this._upgrade( 'value' );
+    this._upgrade( 'weekends' );
     this._render();
   }
 
@@ -381,7 +424,8 @@ export default class AvocadoCalendar extends HTMLElement {
     return [
       'concealed',
       'hidden',
-      'opened'
+      'opened',
+      'today'
     ];
   }
 
@@ -402,23 +446,33 @@ export default class AvocadoCalendar extends HTMLElement {
     this._data = value;
   }
 
-  get display() {
-    return this._display;
+  get displayed() {
+    return this._displayed;
   }
 
-  set display( value ) {
-    this._display = value === null ? new Date() : new Date( value.getTime() );
+  set displayed( date ) {
+    this._displayed = date === null ? null : new Date( date.getTime() );
+    this._render();
+  }
+
+  get selected() {
+    return this._selected;
+  }
+
+  set selected( date ) {
+    this._selected = date === null ? null : new Date( date.getTime() );
     this._render();
   }
 
   get value() {
-    return this._value;
+    return this._selected;
   }
 
   set value( date ) {
-    this._value = date === null ? null : new Date( date.getTime() );
+    this._displayed = date === null ? null : new Date( date.getTime() );
+    this._selected = date === null ? null : new Date( date.getTime() );
     this._render();
-  }  
+  }
 
   // Attributes
   // Reflected
@@ -481,7 +535,47 @@ export default class AvocadoCalendar extends HTMLElement {
     } else {
       this.removeAttribute( 'opened' );
     }
-  }  
+  }
+
+  get today() {
+    return this.hasAttribute( 'today' );
+  }
+
+  set today( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'today' );
+      } else {
+        this.setAttribute( 'today', '' );
+      }
+    } else {
+      this.removeAttribute( 'today' );
+    }
+  }
+
+  get weekends() {
+    return this.hasAttribute( 'weekends' );
+  }
+
+  set weekends( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'weekends' );
+      } else {
+        this.setAttribute( 'weekends', '' );
+      }
+    } else {
+      this.removeAttribute( 'weekends' );
+    }
+  }
 }
 
 window.customElements.define( 'adc-calendar', AvocadoCalendar );

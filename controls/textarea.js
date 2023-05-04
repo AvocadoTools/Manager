@@ -1,14 +1,8 @@
-import AvocadoHBox from "../containers/hbox.js";
-import AvocadoVBox from "../containers/vbox.js";
-
-import AvocadoIcon from "./icon.js";
-import AvocadoLabel from "./label.js";
-
-export default class AvocadoTextArea extends HTMLElement {
+export default class AvocadoTextarea extends HTMLElement {
   constructor() {
     super();
 
-    const template = document.createElement( 'template' );
+    const template = document.createElement( 'template' )
     template.innerHTML = /* template */ `
       <style>
         :host {
@@ -18,25 +12,107 @@ export default class AvocadoTextArea extends HTMLElement {
           position: relative;
         }
 
+        :host( [concealed] ) {
+          visibility: hidden;
+        }
+        
+        :host( [hidden] ) {
+          display: none;
+        }
+
+        div {
+          align-items: flex-end;
+          display: none;
+          flex-basis: 0;
+          flex-direction: row;
+          flex-grow: 1;
+          margin: 0;
+          padding: 0;
+        }
+
+        div > div {
+          align-items: flex-start;
+          display: flex;
+          flex-direction: column;
+        }
+
         label {
           align-items: center;
           background-color: #f4f4f4;
           border-bottom: solid 1px #8d8d8d;
           box-sizing: border-box;
           display: flex;
-          flex-basis: 0;
           flex-direction: row;
-          flex-grow: 1;
+          height: 100%;
           margin: 0;
           outline: solid 2px transparent;
           outline-offset: -2px;
           padding: 0;
           position: relative;
-          transition: background-color 150ms ease-in-out;
+        }
+
+        label:focus-within {
+          outline: solid 2px #0f62fe;
+        }
+
+        p.icon {
+          color: #da1e28;
+          cursor: default;
+          direction: ltr;
+          font-family: 'Material Symbols Outlined';
+          font-size: 18px;
+          font-style: normal;
+          font-weight: normal;
+          height: 20px;
+          letter-spacing: normal;
+          margin: 0;
+          min-height: 20px;
+          min-width: 0;          
+          opacity: 0;
+          overflow: hidden;
+          padding: 0;
+          position: absolute;
+          right: 12px;
+          text-transform: none;
+          top: 12px;
+          white-space: nowrap;
+          width: 0;
+          word-wrap: normal;
+        }                
+
+        p.text {
+          cursor: default;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 14px;
+          font-weight: 400;
+          margin: 0;
+          padding: 0;
+          text-rendering: optimizeLegibility;
+        }
+
+        p[part=error] {
+          color: #6f6f6f;          
+          font-size: 12px;
+          padding: 4px 0 4px 0;
+          visibility: hidden;
+        }
+
+        p[part=helper] {
+          color: #6f6f6f;     
+          display: none;
+          font-size: 12px;          
+          padding: 0 0 4px 0;            
+        }
+
+        p[part=label] {
+          color: #525252;          
+          flex-basis: 0;
+          flex-grow: 1;
+          font-size: 12px;
+          padding: 0;
         }
 
         textarea {
-          appearance: none;
           background: none;
           border: none;
           box-sizing: border-box;
@@ -49,126 +125,101 @@ export default class AvocadoTextArea extends HTMLElement {
           margin: 0;
           min-height: 40px;
           outline: none;
-          padding: 11px 40px 11px 16px;          
+          padding: 11px 40px 11px 16px;
           resize: none;
           text-rendering: optimizeLegibility;
-          width: 0;
         }
 
         textarea::placeholder {
           color: #a8a8a8;
-          opacity: 1.0;
-        }        
+        }                
 
-        label:focus-within {
-          outline: solid 2px #0f62fe;
-        }
-        
-        adc-icon {
-          position: absolute;
-          right: 12px;
-          top: 12px;
-          --icon-color: #da1e28; 
+        ::slotted( adc-link ) {
+          margin: 0 0 2px 0;
+          --link-font-size: 12px;
         }
 
-        adc-icon::part( icon ) {
-          height: 20px;
-          line-height: 20px;
-          min-width: 20px;
-          opacity: 1.0;          
-          text-align: center;
-          transition:
-            min-width 300ms ease-out,
-            opacity 300ms ease-out,
-            width 300ms ease-out;
-          width: 20px;
+        :host( [error] ) p[part=error] {
+          visibility: visible;
         }
 
-        :host( [invalid] ) adc-label[part=error] {
-          --label-color: #da1e28;
+        :host( [label] ) div {
+          display: flex;
         }
 
-        :host( :not( [helper] ) ) adc-label[part=helper] {
-          display: none;
-        }
-
-        :host( :not( [helper] ) ) adc-label[part=label] {
+        :host( [label]:not( [helper] ) ) p[part=label] {
           padding: 0 0 4px 0;
         }        
 
-        :host( :not( [invalid] ) ) adc-icon::part( icon ) {
-          min-width: 0;
-          opacity: 0;
-          width: 0;
+        :host( [helper] ) p[part=helper] {
+          display: block;
         }
 
-        :host( :not( [label] ) ) adc-label[part=label] {
-          display: none;
-        }        
+        :host( [invalid] ) label {
+          outline: solid 2px #da1e28;
+        }
+
+        :host( [invalid] ) label:focus-within {
+          outline: solid 2px #0f62fe;
+        }
+
+        :host( [invalid] ) p[part=error] {
+          color: #da1e28;
+        }
+
+        :host( [invalid] ) p.icon {
+          min-width: 20px;
+          opacity: 1.0;
+          width: 20px;
+        }
 
         :host( [light] ) label {
           background-color: #ffffff;
         }
 
-        :host( [read-only] ) textarea {
-          cursor: default;
-        }
-
         :host( [read-only] ) label {
           border-bottom: solid 1px transparent;
-          cursor: default;
-        }
-
-        :host( [read-only] ) label:focus-within {
-          outline: none;
         }        
 
-        :host( [invalid] ) label:not( :focus-within ) {
-          outline: solid 2px #da1e28;
+        :host( [read-only] ) label:focus-within {        
+          outline: solid 2px transparent;
         }
 
-        adc-label[part=helper] {
-          padding: 0 0 4px 0;
-          --label-color: #6f6f6f;
-        }
-        
-        adc-vbox {
-          flex-basis: 0;
-          flex-grow: 1;
+        :host( [read-only] ) textarea {
+          cursor: default;
+        }                
+
+        :host( [disabled] ) label {
+          border-bottom: solid 1px transparent;
         }
 
-        adc-label {
-          --label-color: #525252;
-          --label-font-size: 12px;
+        :host( [disabled] ) p[part=error],
+        :host( [disabled] ) p[part=helper],
+        :host( [disabled] ) p[part=label] {
+          color: #16161640;
         }
 
-        adc-label[part=error] {
-          height: 16px;
-          margin: 4px 0 0 0;
-          min-height: 16px;
+        :host( [disabled] ) textarea {
+          color: #c6c6c6;
+          cursor: not-allowed;
         }
 
-        :host( :not( [error] ) ) adc-label[part=error] {
-          visibility: hidden;
-        }
-
-        ::slotted( adc-label ) {
-          --label-color: #6f6f6f;
-          --label-font-size: 12px;
+        :host( [disabled][invalid] ) p[part=error] {
+          color: #da1e28;
         }
       </style>
-      <adc-hbox>
-        <adc-vbox>
-          <adc-label part="label"></adc-label>
-          <adc-label part="helper"></adc-label>                
-        </adc-vbox>
+      <div>
+        <div>      
+          <p class="text" part="label"></p>
+          <p class="text" part="helper"></p>
+        </div>
         <slot></slot>        
-      </adc-hbox>
+      </div>
       <label part="field">
         <textarea part="input"></textarea>
-        <adc-icon filled name="error" part="icon"></adc-icon>
+        <p class="icon" part="invalid">error</p>        
       </label>
-      <adc-label part="error"></adc-label>
+      <p class="text" part="error"></p>
     `;
 
     // Properties
@@ -179,36 +230,38 @@ export default class AvocadoTextArea extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$error = this.shadowRoot.querySelector( 'adc-label[part=error]' );    
-    this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );        
-    this.$input = this.shadowRoot.querySelector( 'textarea' );
-    this.$input.addEventListener( 'input', ( evt ) => {
+    this.$error = this.shadowRoot.querySelector( 'p[part=error]' );    
+    this.$label = this.shadowRoot.querySelector( 'p[part=label]' );
+    this.$helper = this.shadowRoot.querySelector( 'p[part=helper]' );
+    this.$textarea = this.shadowRoot.querySelector( 'textarea' );
+    this.$textarea.addEventListener( 'input', ( evt ) => {
       this.value = evt.currentTarget.value;
-    } );    
-    this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );    
+    } );
   }
 
   blur() {
-    this.$input.blur();
+    this.$textarea.blur();
   }
 
   clear() {
-    this.$input.value = '';
+    this.$textarea.value = '';
     this.value = null;
   }
 
   focus() {
-    this.$input.focus();
+    this.$textarea.focus();
   }
 
   // When things change
   _render() {
-    this.$label.text = this.label;
-    this.$helper.text = this.helper;    
-    this.$input.placeholder = this.placeholder === null ? '' : this.placeholder;
-    this.$input.readOnly = this.readOnly;
-    this.$input.value = this.value === null ? '' : this.value;
-    this.$error.text = this.error;
+    this.$error.innerText = this.error === null ? '&nbsp;' : this.error;
+    this.$textarea.disabled = this.disabled;
+    this.$textarea.inputMode = this.mode === null ? '' : this.mode;
+    this.$textarea.placeholder = this.placeholder === null ? '' : this.placeholder;
+    this.$textarea.readOnly = this.readOnly;
+    this.$textarea.value = this.value === null ? '' : this.value;
+    this.$label.innerText = this.label === null ? '' : this.label;
+    this.$helper.innerText = this.helper === null ? '' : this.helper;
   }
 
   // Promote properties
@@ -225,12 +278,14 @@ export default class AvocadoTextArea extends HTMLElement {
   connectedCallback() {
     this._upgrade( 'concealed' );
     this._upgrade( 'data' );
-    this._upgrade( 'error' );    
+    this._upgrade( 'disabled' );
+    this._upgrade( 'error' );
     this._upgrade( 'helper' );
     this._upgrade( 'hidden' );
-    this._upgrade( 'invalid' );    
-    this._upgrade( 'label' );        
-    this._upgrade( 'light' );        
+    this._upgrade( 'invalid' );
+    this._upgrade( 'label' );
+    this._upgrade( 'light' );
+    this._upgrade( 'mode' );
     this._upgrade( 'placeholder' );
     this._upgrade( 'readOnly' );
     this._upgrade( 'value' );
@@ -241,12 +296,14 @@ export default class AvocadoTextArea extends HTMLElement {
   static get observedAttributes() {
     return [
       'concealed',
+      'disabled',
       'error',
       'helper',
       'hidden',
       'invalid',
       'label',
       'light',
+      'mode',
       'placeholder',
       'read-only',
       'value'
@@ -292,6 +349,26 @@ export default class AvocadoTextArea extends HTMLElement {
     }
   }
 
+  get disabled() {
+    return this.hasAttribute( 'disabled' );
+  }
+
+  set disabled( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'disabled' );
+      } else {
+        this.setAttribute( 'disabled', '' );
+      }
+    } else {
+      this.removeAttribute( 'disabled' );
+    }
+  }
+
   get error() {
     if( this.hasAttribute( 'error' ) ) {
       return this.getAttribute( 'error' );
@@ -306,7 +383,7 @@ export default class AvocadoTextArea extends HTMLElement {
     } else {
       this.removeAttribute( 'error' );
     }
-  }  
+  }
 
   get helper() {
     if( this.hasAttribute( 'helper' ) ) {
@@ -322,7 +399,7 @@ export default class AvocadoTextArea extends HTMLElement {
     } else {
       this.removeAttribute( 'helper' );
     }
-  }  
+  }
 
   get hidden() {
     return this.hasAttribute( 'hidden' );
@@ -362,7 +439,7 @@ export default class AvocadoTextArea extends HTMLElement {
     } else {
       this.removeAttribute( 'invalid' );
     }
-  }  
+  }
 
   get label() {
     if( this.hasAttribute( 'label' ) ) {
@@ -398,7 +475,23 @@ export default class AvocadoTextArea extends HTMLElement {
     } else {
       this.removeAttribute( 'light' );
     }
-  }  
+  }
+
+  get mode() {
+    if( this.hasAttribute( 'mode' ) ) {
+      return this.getAttribute( 'mode' );
+    }
+
+    return null;
+  }
+
+  set mode( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'mode', value );
+    } else {
+      this.removeAttribute( 'mode' );
+    }
+  }
 
   get placeholder() {
     if( this.hasAttribute( 'placeholder' ) ) {
@@ -440,7 +533,7 @@ export default class AvocadoTextArea extends HTMLElement {
     let result = null;
 
     if( this.hasAttribute( 'value' ) ) {
-      if( this.getAttribute( 'value').length > 0 ) {
+      if( this.getAttribute( 'value').trim().length > 0 ) {
         result = this.getAttribute( 'value' );
       }
     }
@@ -461,4 +554,4 @@ export default class AvocadoTextArea extends HTMLElement {
   }
 }
 
-window.customElements.define( 'adc-text-area', AvocadoTextArea );
+window.customElements.define( 'adc-textarea', AvocadoTextarea );

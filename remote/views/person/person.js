@@ -1,15 +1,25 @@
 import AvocadoHBox from "../../../containers/hbox.js";
-import AvocadoTabGroup from "../../../containers/tab-group.js";
+import AvocadoTabs from "../../../containers/tabs.js";
 import AvocadoVBox from "../../../containers/vbox.js";
 
-import AvocadoActionBar from "../../../controls/action-bar.js";
 import AvocadoAvatar from "../../../controls/avatar.js";
-import AvocadoButton from "../../../controls/button.js";
+import AvocadoColumn from "../../../controls/column.js";
+import AvocadoIcon from "../../../controls/icon.js";
 import AvocadoInput from "../../../controls/input.js";
+import AvocadoLabel from "../../../controls/label.js";
+import AvocadoLink from "../../../controls/link.js";
+import AvocadoSpacer from "../../../controls/spacer.js";
 import AvocadoTable from "../../../controls/table.js";
 
-import RemotePersonAttachments from "./attachments.js";
+import AvocadoControls from "../../../comp/controls.js";
+
+import RemotePersonItemRenderer from "./person-item-renderer.js";
 import RemotePersonProfile from "./profile.js";
+
+import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
+
+import { db } from "../../db.js";
+import { store } from "../../store.js";
 
 export default class RemotePerson extends HTMLElement {
   constructor() {
@@ -21,10 +31,9 @@ export default class RemotePerson extends HTMLElement {
         :host {
           box-sizing: border-box;
           display: flex;
-          flex-basis: 0;
           flex-direction: row;
-          flex-grow: 1;
           position: relative;
+          height: 100%;
         }
 
         :host( [concealed] ) {
@@ -35,107 +44,457 @@ export default class RemotePerson extends HTMLElement {
           display: none;
         }
 
-        adc-hbox {
+        adc-input[type=search]::part( error ) {
+          display: none;
+        }
+
+        adc-input[type=search]::part( input ) {
+          height: 48px;
+        }        
+
+        adc-input[type=search]::part( field ) {
+          border-bottom: none;
+        }        
+
+        adc-table {
+          flex-basis: 0;
+          flex-grow: 1;
+          --table-row-height: 56px;
+        }         
+
+        adc-vbox:nth-of-type( 1 ) {
+          background-color: #f4f4f4;
+          min-width: 300px;
+        }
+
+        adc-vbox:nth-of-type( 2 ) {
+          flex-basis: 0;
+          flex-grow: 1;
+          padding: 16px 0 0 0;
+        }
+
+        adc-vbox adc-hbox {
           gap: 16px;
           padding: 0 16px 0 16px;
         }
 
-        adc-input {
+        adc-input:not( [type=search] ) {
           flex-basis: 0;
           flex-grow: 1;
         }
 
         adc-spacer {
-          flex-grow: 0;
-          min-width: 61px;
+          --spacer-width: 61px;
         }
 
-        adc-table {
-          background-color: #f4f4f4;
-          min-width: 300px;
-          width: 300px;
-        }
-
-        adc-tab-group {
+        adc-tabs {
           margin: 0 16px 16px 16px;
         }
 
-        adc-vbox {
-          flex-basis: 0;
-          flex-grow: 1;
-          padding: 16px 0 0 0;
+        adc-vbox[slot=empty] {
+          align-items: center;
+          justify-content: center;
+        }
+
+        adc-vbox[slot=empty] adc-label {
+          --label-color: #525252;
         }
       </style>
-      <adc-table>
-        <adc-column header-text="People (0)" sortable></adc-column>
-        <adc-label slot="empty" text="No people added yet."></adc-label>
-      </adc-table>
+      <adc-vbox>
+        <adc-input 
+          id="search"
+          placeholder="Search people" 
+          size="lg" 
+          type="search">
+          <adc-icon name="search" slot="prefix"></adc-icon>
+        </adc-input>
+        <adc-table selectable sortable>
+          <adc-column
+            header-text="People"
+            item-renderer="arm-person-item-renderer" 
+            sortable>
+          </adc-column>
+          <adc-vbox slot="empty">
+            <adc-label>No people added yet.</adc-label>
+          </adc-vbox>
+        </adc-table>
+      </adc-vbox>
       <adc-vbox>
         <adc-hbox>
-          <adc-avatar id="avatar">
-            <adc-icon filled name="person" slot="icon"></adc-icon>          
+          <adc-avatar shorten>
+            <adc-icon filled name="person" slot="icon"></adc-icon>
           </adc-avatar>
-          <adc-input id="name" label="Full name" placeholder="Full name"></adc-input>      
-          <adc-input id="email" label="Email" placeholder="Email">
-            <adc-label hidden text="Send email"></adc-label>
-          </adc-input>        
+          <adc-input
+            label="Full name"
+            placeholder="Full name">
+          </adc-input>
+          <adc-input
+            label="Email"
+            placeholder="Email">
+            <adc-link name="send">Send email</adc-link>
+          </adc-input>
         </adc-hbox>
         <adc-hbox>
           <adc-spacer></adc-spacer>
-          <adc-input id="title" label="Job title" placeholder="Job title"></adc-input>      
-          <adc-input id="location" label="Location" placeholder="Location"></adc-input>        
-        </adc-hbox>   
-        <adc-tab-group>
-          <arm-person-profile label="Profile"></arm-person-profile>
-          <arm-person-attachments label="Attachments (0)"></arm-person-attachments>
-        </adc-tab-group>
-        <adc-action-bar></adc-action-bar>
+          <adc-input
+            label="Job title"
+            placeholder="Job title">
+          </adc-input>
+          <adc-input
+            label="Location"
+            placeholder="Location">
+            <adc-link name="weather"></adc-link>
+          </adc-input>
+        </adc-hbox>
+        <adc-tabs>
+          <arm-person-profile label="Profile"></arm-profile>
+          <arm-attachments disabled></arm-attachments>
+        </adc-tabs>
+        <adc-controls></adc-controls>
       </adc-vbox>
     `;
 
     // Private
-    this._data = null;    
-    this._id = null;
+    this._changed = false;
+    this._data = null;
+    this._value = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$actions = this.shadowRoot.querySelector( 'adc-action-bar' );
-    this.$actions.addEventListener( 'add', () => {
-      this.readOnly = false;
-      this.$actions.mode = AvocadoActionBar.CANCEL_SAVE;
-    } );
-    this.$actions.addEventListener( 'cancel', () => {
-      this.readOnly = true;
-      this.$actions.mode = AvocadoActionBar.ADD_ONLY;
-    } );
-    this.$avatar = this.shadowRoot.querySelector( '#avatar' );
-    this.$email = this.shadowRoot.querySelector( '#email' );
-    this.$email.addEventListener( 'clear', () => this.$send.hidden = true );
-    this.$email.addEventListener( 'input', () => {
-      this.$send.hidden = this.$email.value === null ? true : false;
-    } );
-    this.$location = this.shadowRoot.querySelector( '#location' );
-    this.$name = this.shadowRoot.querySelector( '#name' );
+    this.$attach = this.shadowRoot.querySelector( 'arm-attachments' );
+    this.$avatar = this.shadowRoot.querySelector( 'adc-avatar' );
+    this.$column = this.shadowRoot.querySelector( 'adc-column' );
+    this.$column.sortCompareFunction = ( a, b ) => {
+      if( a.fullName > b.fullName ) return 1;
+      if( a.fullName < b.fullName ) return -1;
+      return 0;
+    };
+    this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
+    this.$controls.addEventListener( 'add', () => this.doPersonAdd() );
+    this.$controls.addEventListener( 'cancel', () => this.doPersonCancel() );
+    this.$controls.addEventListener( 'delete', () => this.doPersonDelete() );
+    this.$controls.addEventListener( 'edit', () => this.doPersonEdit() );
+    this.$controls.addEventListener( 'save', () => this.doPersonSave() );
+    this.$email = this.shadowRoot.querySelector( 'adc-hbox:nth-of-type( 1 ) adc-input:nth-of-type( 2 )' );
+    this.$location = this.shadowRoot.querySelector( 'adc-hbox:nth-of-type( 2 ) adc-input:nth-of-type( 2 )' );
+    this.$name = this.shadowRoot.querySelector( 'adc-hbox:nth-of-type( 1 ) adc-input:nth-of-type( 1 )' );
+    this.$name.addEventListener( 'blur', () => this.doNameChange() );    
+    this.$name.addEventListener( 'input', () => this._changed = true );
     this.$profile = this.shadowRoot.querySelector( 'arm-person-profile' );
-    this.$send = this.shadowRoot.querySelector( '#email adc-label' );
-    this.$title = this.shadowRoot.querySelector( '#title' );
+    this.$search = this.shadowRoot.querySelector( '#search' );
+    this.$search.addEventListener( 'input', ( evt ) => this.doSearchInput( evt ) );
+    this.$search.addEventListener( 'clear', ( evt ) => this.doSearchClear( evt ) );    
+    this.$send = this.shadowRoot.querySelector( 'adc-link[name=send]' ); 
+    this.$table = this.shadowRoot.querySelector( 'adc-table' );
+    this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );    
+    this.$table.selectedItemsCompareFunction = ( provider, item ) => { return provider.id === item.id; };
+    this.$title = this.shadowRoot.querySelector( 'adc-hbox:nth-of-type( 2 ) adc-input:nth-of-type( 1 )' );
+    this.$weather = this.shadowRoot.querySelector( 'adc-link[name=weather]' );
+
+    // State
+    const person_index = window.localStorage.getItem( 'person_index' ) === null ? null : parseInt( window.localStorage.getItem( 'person_index' ) );
+
+    // Read
+    db.Person.orderBy( 'fullName' ).toArray()
+    .then( ( results ) => {
+      this.$column.headerText = `People (${results.length})`;      
+      this.$table.provider = results;      
+      this.$table.selectedIndex = person_index === null ? null : person_index;      
+
+      this.readOnly = true;
+      this.value = person_index === null ? null : results[person_index];      
+      this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;      
+      
+      store.person.set( results );
+    } );
   }
 
   clear() {
-    this.value = null;
+    this.$avatar.clear();
+    this.$name.error = null;
+    this.$name.invalid = false;
+    this.$name.value = null;
+    this.$email.value = null;
+    this.$send.concealed = true;
+    this.$title.value = null;
+    this.$location.value = null;
+    this.$weather.label = null;
+    this.$profile.clear();
   }
 
-  // When attributes change
+  doNameChange() {
+    if( this.$avatar.src === null ) {
+      this.$avatar.label = this.$name.value;
+    }
+  }
+
+  doPersonAdd() {
+    this.$table.selectedIndex = null;
+    this.$controls.mode = AvocadoControls.CANCEL_SAVE;
+    this.value = null;
+    this.clear();
+    this._changed = false;
+    this.readOnly = false;
+    this.$name.focus();
+  }
+
+  doPersonCancel() {
+    if( this._changed ) {
+      const response = confirm( 'Do you want to save changes?' );
+      
+      if( response ) {
+        this.doPersonSave();
+        this._changed = false;
+        return;
+      }
+    }
+
+    if( this._value === null ) {
+      this.clear();
+      this.$controls.mode = AvocadoControls.ADD_ONLY;
+    } else {
+      this.value = this._value;
+      this.$controls.mode = AvocadoControls.ADD_EDIT;
+    }
+
+    this._changed = false;
+    this.readOnly = true;    
+  }
+
+  doPersonDelete() {
+    const id = this._value.id;    
+    const response = confirm( `Delete ${this._value.fullName}?` );
+
+    if( response ) {
+      this.clear();
+      this.value = null;
+      this.$table.selectedIndex = null;
+      window.localStorage.removeItem( 'person_index' );
+      this._changed = false;
+      this.readOnly = true;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;
+
+      db.Person.delete( id )
+      .then( () => db.Person.orderBy( 'fullName' ).toArray() )
+      .then( ( results ) => {
+        this.$column.headerText = `People (${results.length})`;      
+        this.$table.provider = results;        
+        store.person.set( results );
+      } );          
+    }
+  }
+  
+  doPersonEdit() {
+    this._changed = false;
+    this.readOnly = false;
+    this.$controls.mode = this._value === null ? AvocadoControls.ADD_EDIT : AvocadoControls.DELETE_CANCEL_SAVE;
+    this.$name.focus();
+  }
+
+  doPersonSave() {
+    if( this.$name.value === null ) {
+      this.$name.error = 'A full name is the only required field.';
+      this.$name.invalid = true;
+      return;
+    } else {
+      this.$name.error = null;
+      this.$name.invalid = false;
+    }
+
+    const record = {
+      avatar: this.$avatar.src,
+      fullName: this.$name.value,
+      email: this.$email.value,
+      jobTitle: this.$title.value,
+      location: this.$location.value,
+      startAt: this.$profile.start === null ? null : this.$profile.start.getTime(),
+      ptoAt: this.$profile.pto === null ? null : this.$profile.pto.getTime(),
+      bornAt: this.$profile.birth === null ? null : this.$profile.birth.getTime(),
+      spouse: this.$profile.spouse,
+      anniversaryAt: this.$profile.anniversary === null ? null : this.$profile.anniversary.getTime(),
+      family: this.$profile.family,
+      notes: this.$profile.notes
+    };  
+
+    if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
+      record.id = this.value.id;
+      record.createdAt = this.value.createdAt;
+      record.updatedAt = Date.now();
+      this.value = record;                
+
+      db.Person.put( record )
+      .then( () => db.Person.orderBy( 'fullName' ).toArray() )
+      .then( ( results ) => {
+        this.$column.headerText = `People (${results.length})`;      
+        this.$table.provider = results;
+
+        for( let r = 0; r < results.length; r++ ) {
+          if( results[r].id === record.id ) {
+            this.$table.selectedIndex = r;
+            window.localStorage.setItem( 'person_index', r );
+            break;
+          }
+        }
+
+        store.person.set( results );
+      } );
+    } else {
+      const at = Date.now();
+
+      record.id = uuidv4();
+      record.createdAt = at;
+      record.updatedAt = at;
+      this.value = record;
+
+      db.Person.put( record )
+      .then( () => db.Person.orderBy( 'fullName' ).toArray() )
+      .then( ( results ) => {
+        this.$column.hederText = `People (${results.length})`;              
+        this.$table.provider = results;     
+
+        for( let r = 0; r < results.length; r++ ) {
+          if( results[r].id === record.id ) {
+            this.$table.selectedIndex = r;
+            window.localStorage.setItem( 'person_index', r );
+            break;
+          }
+        }
+
+        store.person.set( results );
+      } );            
+    }
+
+    this._changed = false;
+    this.readOnly = true;
+    this.$controls.mode = AvocadoControls.ADD_EDIT;
+  }
+  
+  doSearchClear() {
+    db.Person.orderBy( 'fullName' ).toArray()
+    .then( ( results ) => {
+      this.$column.headerText = `People (${results.length})`;      
+      this.$table.provider = results;    
+
+      if( this.value !== null ) {
+        this.$table.selectedItem = this.value;          
+        window.localStorage.setItem( 'person_index', this.$table.selectedIndex );
+      } else {
+        window.localStorage.removeItem( 'person_index' );
+      }
+    } );          
+  }
+
+  doSearchInput() {
+    if( this._changed && !this.readOnly ) {
+      const response = confirm( 'Do you want to save changes?' );
+    
+      if( response ) {
+        this.$search.value = null;
+        this.doPersonSave();
+      }
+    }
+
+    this.$table.selectedIndex = null;
+
+    db.Person.orderBy( 'fullName' ).toArray()
+    .then( ( results ) => {
+      if( this.$search.value === null ) {
+        this.doSearchClear();
+        return;
+      }
+
+      this.$table.provider = results.filter( ( value ) => {
+        const term = this.$search.value.toLowerCase();          
+
+        let name = false;
+        let notes = false;
+        let title = false;
+
+        if( value.fullName.toLowerCase().indexOf( term ) >= 0 )
+          name = true;
+
+        if( value.jobTitle !== null )
+          if( value.jobTitle.toLowerCase().indexOf( term ) >= 0 )
+            title = true;
+
+        if( value.notes !== null )
+          if( value.notes.toLowerCase().indexOf( term ) >= 0 )
+            notes = true;              
+
+        if( name || title || notes )
+          return true;
+        
+        return false;
+      } );
+
+      this.$column.headerText = `People (${this.$table.provider.length})`;
+    } );    
+  }  
+
+  doTableChange( evt ) {
+    if( this._changed && !this.readOnly ) {
+      const response = confirm( 'Do you want to save changes?' );
+    
+      if( response ) {
+        this.doPersonSave();
+      }
+    }
+
+    this.readOnly = true;
+    this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem;      
+    this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
+
+    if( evt.detail.selectedItem === null ) {
+      window.localStorage.removeItem( 'person_index' );
+    } else {
+      window.localStorage.setItem( 'person_index', evt.detail.selectedIndex );      
+    }
+  }
+
+   // When attributes change
   _render() {
-    this.$avatar.readOnly = this.readOnly;    
-    this.$name.readOnly = this.readOnly;
+    this.$attach.readOnly = this.readOnly;
+    this.$attach.label = 'Attachments (0)';
+    this.$avatar.readOnly = this.readOnly;
     this.$email.readOnly = this.readOnly;
-    this.$title.readOnly = this.readOnly;
     this.$location.readOnly = this.readOnly;
+    this.$name.readOnly = this.readOnly;
     this.$profile.readOnly = this.readOnly;
+    this.$title.readOnly = this.readOnly;
+
+    if( this._value === null ) {
+      this.$avatar.clear();
+      this.$send.concealed = true;
+      this.$weather.concealed = true;
+    } else {
+      if( this._value.avatar === null ) {
+        this.$avatar.label = this._value.fullName;
+        this.$avatar.src = null;        
+      } else {
+        this.$avatar.label = null;
+        this.$avatar.src = this._value.avatar;
+      }
+
+      this.$send.concealed = this._value.email === null ? true : false;
+      this.$send.href = this._value.email === null ? null : `mailto:${this._value.email}`;
+      
+      this.$weather.concealed = this._value.location === null ? true : false;
+    }
+    console.log( this._value );
+    this.$name.value = this._value === null ? null : this._value.fullName;
+    this.$email.value = this._value === null ? null : this._value.email;        
+    this.$title.value = this._value === null ? null : this._value.jobTitle;    
+    this.$location.value = this._value === null ? null : this._value.location;    
+    this.$profile.start = this._value === null ? null : this._value.startAt;
+    this.$profile.pto = this._value === null ? null : this._value.ptoAt;    
+    this.$profile.birth = this._value === null ? null : this._value.bornAt;    
+    this.$profile.spouse = this._value === null ? null : this._value.spouse;    
+    this.$profile.anniversary = this._value === null ? null : this._value.anniversaryAt;    
+    this.$profile.family = this._value === null ? null : this._value.family;
+    this.$profile.notes = this._value === null ? null : this._value.notes;        
   }
 
   // Promote properties
@@ -150,11 +509,11 @@ export default class RemotePerson extends HTMLElement {
 
   // Setup
   connectedCallback() {
-    this._upgrade( 'concealed' );        
-    this._upgrade( 'data' );             
-    this._upgrade( 'hidden' );    
-    this._upgrade( 'readOnly' );     
-    this._upgrade( 'value' );         
+    this._upgrade( 'concealed' );
+    this._upgrade( 'data' );
+    this._upgrade( 'hidden' );
+    this._upgrade( 'readOnly' );
+    this._upgrade( 'value' );
     this._render();
   }
 
@@ -171,7 +530,7 @@ export default class RemotePerson extends HTMLElement {
   // Update render
   attributeChangedCallback( name, old, value ) {
     this._render();
-  } 
+  }
 
   // Properties
   // Not reflected
@@ -182,60 +541,15 @@ export default class RemotePerson extends HTMLElement {
 
   set data( value ) {
     this._data = value;
-  }  
+  }
 
   get value() {
-    const profile = this.$profile.value;
-    return {
-      avatar: this.$avatar.value,
-      fullName: this.$name.value,
-      email: this.$email.value,
-      jobTitle: this.$title.value,
-      location: this.$location.value,
-      startAt: profile.startAt,
-      ptoAt: profile.ptoAt,
-      bornAt: profile.bornAt,
-      partner: profile.partner,
-      anniversaryAt: profile.anniversaryAt,
-      family: profile.family,
-      notes: profile.notes      
-    };
+    return this._value;
   }
 
   set value( data ) {
-    if( data === null ) {
-      this.$avatar.value = null;
-      this.$avatar.label = null;
-      this.$name.value = null;
-      this.$email.value = null;
-      this.$title.value = null;
-      this.$location.value = null;
-      this.$profile.value = {
-        startAt: null,
-        ptoAt: null,
-        bornAt: null,
-        partner: null,
-        anniversaryAt: null,
-        family: null,
-        notes: null
-      };
-    } else {
-      this.$avatar.value = data.avatar;
-      this.$avatar.label = data.avatar === null ? data.fullName : null;
-      this.$name.value = data.fullName;
-      this.$email.value = data.email;
-      this.$title.value = data.jobTitle;
-      this.$location.value = data.location;
-      this.$profile.value = {
-        startAt: data.startAt,
-        ptoAt: data.ptoAt,
-        bornAt: data.bornAt,
-        partner: data.partner,
-        anniversaryAt: data.anniversaryAt,
-        family: data.family,
-        notes: data.notes
-      };
-    }
+    this._value = data === null ? null : Object.assign( {}, data );
+    this._render();
   }
 
   // Attributes
@@ -279,7 +593,7 @@ export default class RemotePerson extends HTMLElement {
     } else {
       this.removeAttribute( 'hidden' );
     }
-  }   
+  }
 
   get readOnly() {
     return this.hasAttribute( 'read-only' );
@@ -299,7 +613,7 @@ export default class RemotePerson extends HTMLElement {
     } else {
       this.removeAttribute( 'read-only' );
     }
-  }     
+  }
 }
 
 window.customElements.define( 'arm-person', RemotePerson );

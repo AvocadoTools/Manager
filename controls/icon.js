@@ -2,94 +2,89 @@ export default class AvocadoIcon extends HTMLElement {
   constructor() {
     super();
 
-    const template = document.createElement( 'template' );
+    const template = document.createElement( 'template' )
     template.innerHTML = /* template */ `
       <style>
         :host {
-          align-items: center;
           box-sizing: border-box;
-          display: flex;
-          justify-content: center;
+          display: inline-block;
           position: relative;
         }
 
         :host( [concealed] ) {
           visibility: hidden;
-        }
+        }        
 
         :host( [hidden] ) {
           display: none;
+        }        
+
+        img {
+          display: block;
         }
 
-        i {
-          box-sizing: border-box;
+        p {
           color: var( --icon-color, #161616 );
-          cursor: var( --icon-cursor, default );
           direction: ltr;
-          display: inline-block;
+          display: none;
           font-family: 'Material Symbols Outlined';
+          font-size: var( --icon-size, 20px );
           font-style: normal;
+          font-variation-settings: 'wght' 300;
           font-weight: normal;
-          font-size: var( --icon-size, 18px );
-          height: var( --icon-size, 18px );
+          height: var( --icon-size, 20px );
           letter-spacing: normal;
-          line-height: var( --icon-size, 18px );
+          line-height: var( --icon-size, 20px );
           margin: 0;
           padding: 0;
           text-align: center;
           text-rendering: optimizeLegibility;
           text-transform: none;
           white-space: nowrap;
-          width: var( --icon-size, 18px );
-          word-wrap: normal;
+          width: var( --icon-size, 20px );
+          word-wrap: normal;                    
         }
+
+        :host( [name] ) img {
+          display: none;
+        }
+
+        :host( [name] ) p {
+          display: block;
+        }        
       </style>
-      <i part="icon"></i>
+      <img part="image" />
+      <p part="font"></p>
     `;
 
-    // Private
+    // Properties
     this._data = null;
 
     // Root
-    this.attachShadow( {mode: 'open'} );
-    this.shadowRoot.appendChild( template.content.cloneNode( true ) );
+    const shadowRoot = this.attachShadow( {mode: 'open'} );
+    shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$icon = this.shadowRoot.querySelector( 'i' );
+    this.$image = shadowRoot.querySelector( 'img' );
+    this.$font = shadowRoot.querySelector( 'p' );    
   }
 
   // When things change
   _render() {
-    this.$icon.innerText = this.name === null ? '' : this.name;
+    this.$font.innerText = this.name === null ? '' : this.name;
+    this.$image.src = this.src === null ? '' : this.src;
 
     if( this.name !== null ) {
       const variation = [];
 
-      if( this.filled ) {
+      if( this.filled )
         variation.push( '\'FILL\' 1' );
-      } else {
-        variation.push( '\'FILL\' 0' );
-      }
-
+  
       if( this.weight !== null ) {
         variation.push( `'wght' ${this.weight}` );
-      } else {
-        variation.push( '\'wght\' 400' );
       }
-
-      if( this.grade !== null ) {
-        variation.push( `'GRAD' ${this.grade}` );
-      } else {
-        variation.push( '\'GRAD\' 0' );
-      }
-
-      if( this.opticalSize !== null ) {
-        variation.push( `'opsz' ${this.opticalSize}` );
-      } else {
-        variation.push( '\'opsz\' 48' );
-      }
-
-      this.$icon.style.fontVariationSettings = variation.toString();
+  
+      this.$font.style.fontVariationSettings = variation.toString();    
     }
   }
 
@@ -100,19 +95,18 @@ export default class AvocadoIcon extends HTMLElement {
       const value = this[property];
       delete this[property];
       this[property] = value;
-    }
-  }
+    }    
+  }    
 
   // Setup
   connectedCallback() {
-    this._upgrade( 'concealed' );
-    this._upgrade( 'data' );
-    this._upgrade( 'filled' );
-    this._upgrade( 'grade' );
-    this._upgrade( 'hidden' );
-    this._upgrade( 'name' );
-    this._upgrade( 'opticalSize' );
-    this._upgrade( 'weight' );
+    this._upgrade( 'concealed' );    
+    this._upgrade( 'data' );            
+    this._upgrade( 'filled' );                
+    this._upgrade( 'hidden' );    
+    this._upgrade( 'name' );        
+    this._upgrade( 'src' );    
+    this._upgrade( 'weight' );                
     this._render();
   }
 
@@ -121,10 +115,9 @@ export default class AvocadoIcon extends HTMLElement {
     return [
       'concealed',
       'filled',
-      'grade',
       'hidden',
       'name',
-      'optical-size',
+      'src',
       'weight'
     ];
   }
@@ -137,7 +130,7 @@ export default class AvocadoIcon extends HTMLElement {
 
   // Properties
   // Not reflected
-  // Array, Date, Object, null
+  // Array, Date, Object, null 
   get data() {
     return this._data;
   }
@@ -189,22 +182,6 @@ export default class AvocadoIcon extends HTMLElement {
     }
   }
 
-  get grade() {
-    if( this.hasAttribute( 'grade' ) ) {
-      return parseInt( this.getAttribute( 'grade' ) );
-    }
-
-    return null;
-  }
-
-  set grade( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'grade', value );
-    } else {
-      this.removeAttribute( 'grade' );
-    }
-  }
-
   get hidden() {
     return this.hasAttribute( 'hidden' );
   }
@@ -240,22 +217,22 @@ export default class AvocadoIcon extends HTMLElement {
       this.removeAttribute( 'name' );
     }
   }
-
-  get opticalSize() {
-    if( this.hasAttribute( 'optical-size' ) ) {
-      return parseInt( this.getAttribute( 'optical-size' ) );
+  
+  get src() {
+    if( this.hasAttribute( 'src' ) ) {
+      return this.getAttribute( 'src' );
     }
 
     return null;
   }
 
-  set opticalSize( value ) {
+  set src( value ) {
     if( value !== null ) {
-      this.setAttribute( 'optical-size', value );
+      this.setAttribute( 'src', value );
     } else {
-      this.removeAttribute( 'optical-size' );
+      this.removeAttribute( 'src' );
     }
-  }
+  }  
 
   get weight() {
     if( this.hasAttribute( 'weight' ) ) {
@@ -271,7 +248,7 @@ export default class AvocadoIcon extends HTMLElement {
     } else {
       this.removeAttribute( 'weight' );
     }
-  }
+  }  
 }
 
 window.customElements.define( 'adc-icon', AvocadoIcon );

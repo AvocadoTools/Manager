@@ -1,7 +1,4 @@
-import AvocadoVBox from "../containers/vbox.js";
-
 import AvocadoIcon from "./icon.js";
-import AvocadoLabel from "./label.js";
 
 export default class AvocadoColumn extends HTMLElement {
   constructor() {
@@ -24,13 +21,32 @@ export default class AvocadoColumn extends HTMLElement {
           display: none;
         }
 
+        adc-icon {
+          display: none;
+          color: #161616;
+          direction: ltr;
+          display: inline-block;
+          font-family: 'Material Symbols Outlined';
+          font-size: 20px;
+          font-style: normal;
+          font-variation-settings: 'wght' 300;
+          font-weight: normal;
+          letter-spacing: normal;
+          line-height: 1;
+          text-rendering: optimizeLegibility;
+          text-transform: none;
+          white-space: nowrap;
+          width: 20px;
+          word-wrap: normal;          
+        }
+
         button {
           align-items: center;
           background: none;
           background-color: #e0e0e0;
           border: none;
           box-sizing: border-box;
-          cursor: pointer;
+          cursor: default;
           display: flex;
           flex-direction: row;
           height: 48px;
@@ -43,31 +59,40 @@ export default class AvocadoColumn extends HTMLElement {
           -webkit-tap-highlight-color: transparent;          
         }
 
-        adc-label {
-          --label-cursor: pointer;
-        }
-
-        adc-label[part=helper] {
-          --label-color: #525252;
-          --label-font-size: 12px;
-        }
-
-        adc-label[part=label] {
-          --label-font-weight: 600;
-        }
-
-        adc-vbox {
+        div {
+          display: flex;
           flex-basis: 0;
+          flex-direction: column;
           flex-grow: 1;
         }
 
-        :host( [helper-text] ) adc-label[part=helper] {
+        p[part=helper] {
+          display: none;
+          color: #525252;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 12px;
+          font-weight: 400;
+          margin: 0;
+          padding: 0;
+          text-rendering: optimizeLegibility;
+        }
+
+        p[part=label] {
+          color: #161616;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 14px;
+          font-weight: 600;
+          margin: 0;
+          padding: 0;
+          text-rendering: optimizeLegibility;          
+        }
+
+        :host( [helper-text] ) p[part=helper] {
           display: block;
         }
 
         :host( [sortable] ) adc-icon {
           display: inline-block;
-          --icon-cursor: pointer;          
         }
 
         :host( [sortable] ) button {
@@ -95,11 +120,11 @@ export default class AvocadoColumn extends HTMLElement {
           display: inline-block;
         }
       </style>
-      <button part="button" type="button">
-        <adc-vbox>
-          <adc-label part="label"></adc-label>
-          <adc-label part="helper"></adc-label>
-        </adc-vbox>
+      <button part="button">
+        <div>
+          <p part="label"></p>
+          <p part="helper"></p>
+        </div>
         <adc-icon exportparts="image, font" part="icon"></adc-icon>
       </button>
     `;
@@ -116,8 +141,8 @@ export default class AvocadoColumn extends HTMLElement {
     // Elements
     this.$button = this.shadowRoot.querySelector( 'button' );
     this.$button.addEventListener( 'click', () => this.doButtonClick() );
-    this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );
-    this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );
+    this.$label = this.shadowRoot.querySelector( 'p[part=label]' );
+    this.$helper = this.shadowRoot.querySelector( 'p[part=helper]' );
     this.$icon = this.shadowRoot.querySelector( 'adc-icon' );
   }
 
@@ -150,8 +175,8 @@ export default class AvocadoColumn extends HTMLElement {
     this.style.minWidth = this.width === null ? '' : `${this.width}px`;
     this.style.maxWidth = this.width === null ? '' : `${this.width}px`;
 
-    this.$label.text = this.headerText;
-    this.$helper.text = this.helperText;
+    this.$label.innerText = this.headerText === null ? '' : this.headerText;
+    this.$helper.innerText = this.helperText === null ? '' : this.helperText;
 
     if( this.sortable ) {
       if( this.sortDirection === null ) {

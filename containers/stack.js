@@ -7,9 +7,7 @@ export default class AvocadoStack extends HTMLElement {
       <style>
         :host {
           box-sizing: border-box;
-          display: flex;
-          flex-basis: 0;
-          flex-grow: 1;
+          display: block;
           position: relative;
         }
 
@@ -25,20 +23,22 @@ export default class AvocadoStack extends HTMLElement {
     `;
 
     // Private
-    this._data = null;    
+    this._data = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
+
+    // Elements
+    this.$slot = this.shadowRoot.querySelector( 'slot' );
   }
 
-  // When attributes change
+   // When attributes change
   _render() {
     const index = this.selectedIndex === null ? 0 : this.selectedIndex;
 
-    for( let c = 0; c < this.children.length; c++ ) {
+    for( let c = 0; c < this.children.length; c++ )
       this.children[c].hidden = index === c ? false : true;
-    }
   }
 
   // Promote properties
@@ -54,9 +54,9 @@ export default class AvocadoStack extends HTMLElement {
   // Setup
   connectedCallback() {
     this._upgrade( 'concealed' );        
+    this._upgrade( 'data' );                
     this._upgrade( 'hidden' );    
     this._upgrade( 'selectedIndex' );        
-    this._upgrade( 'selectedItem' );            
     this._render();
   }
 
@@ -84,24 +84,6 @@ export default class AvocadoStack extends HTMLElement {
 
   set data( value ) {
     this._data = value;
-  }    
-
-  get selectedItem() {
-    return this.selectedIndex === null ? null : this.children[this.selectedIndex].label;
-  }
-
-  set selectedItem( value ) {
-    if( value === null ) {
-      this.selectedIndex = null;
-      return;
-    }
-
-    for( let c = 0; c < this.children.length; c++ ) {
-      if( this.children[c].label === value ) {
-        this.selectedIndex = c;
-        break;
-      }
-    }
   }
 
   // Attributes

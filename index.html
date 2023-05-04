@@ -16,35 +16,30 @@
 
     <adc-header>
       <adc-toolbar>
-        <adc-icon-button slot="prefix" name="menu"></adc-icon-button>        
-        <adc-label slot="prefix" text="Avocado"></adc-label>
-        <adc-label text="Remote Manager"></adc-label>
-        <adc-icon-button name="apps"></adc-icon-button>
+        <adc-icon-button kind="ghost" name="menu" slot="prefix"></adc-icon-button>        
+        <adc-label slot="prefix">Avocado</adc-label>
+        <adc-label>Remote Manager</adc-label>
+        <adc-icon-button id="export" kind="ghost" name="file_upload"></adc-icon-button>        
+        <adc-icon-button kind="ghost" name="apps"></adc-icon-button>
       </adc-toolbar>
     </adc-header>
     <arm-manager></arm-manager>
 
-    <script src="containers/header.js" type="module"></script>
-    <script src="containers/toolbar.js" type="module"></script>    
-    <script src="controls/label.js" type="module"></script>
-    <script src="remote/manager.js" type="module"></script>  
+    <script src="./lib/dexie-3.2.2.js"></script>
+    <script src="./lib/marked.min.js"></script>
+
+    <script src="./containers/header.js" type="module"></script>
+    <script src="./containers/toolbar.js" type="module"></script>    
+    <script src="./controls/icon-button.js" type="module"></script>
+    <script src="./controls/label.js" type="module"></script>
+    <script src="./remote/manager.js" type="module"></script>  
 
     <script>
-      /*
-      const backup = new Worker( 'backup.js', {type: 'module'} );
-      backup.addEventListener( 'message', ( evt ) => {
-        console.log( 'MESSAGE FROM WORKER' );
-      } );      
-      */
-    
-      /*
-      const button = document.querySelector( 'adc-icon-button' );
+      const button = document.querySelector( '#export' );
       button.addEventListener( 'click', () => {
-        // backup.postMessage( {type: 'RUN'} );
         const manager = document.querySelector( 'arm-manager' );
         manager.backup();
       } );
-      */
     </script>
 
   </body>

@@ -2,7 +2,7 @@ export default class AvocadoLink extends HTMLElement {
   constructor() {
     super();
 
-    const template = document.createElement( 'template' );
+    const template = document.createElement( 'template' )
     template.innerHTML = /* template */ `
       <style>
         :host {
@@ -65,7 +65,7 @@ export default class AvocadoLink extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$button = shadowRoot.querySelector( 'button' );
+    this.$button = this.shadowRoot.querySelector( 'button' );
     this.$button.addEventListener( 'click', () => this.doButtonClick() );
   }
 
