@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Build trust. Make heroes. Facilitate serendipity.">
+
+    <title>Community Manager</title>
+
+    <link href="img/avocado.ico" rel="icon">
+    <link href="avocado.css" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <adc-header>
+      <adc-toolbar>
+        <adc-icon-button kind="ghost" name="menu" slot="prefix"></adc-icon-button>        
+        <adc-label slot="prefix">Avocado</adc-label>
+        <adc-label>Community Manager</adc-label>
+        <adc-icon-button id="export" kind="ghost" name="file_upload"></adc-icon-button>        
+        <adc-icon-button kind="ghost" name="apps"></adc-icon-button>
+      </adc-toolbar>
+    </adc-header>
+    <acm-manager></acm-manager>
+
+    <script src="./lib/dexie-3.2.2.js"></script>
+    <script src="./lib/marked.min.js"></script>
+
+    <script src="./containers/header.js" type="module"></script>
+    <script src="./containers/toolbar.js" type="module"></script>    
+    <script src="./controls/icon-button.js" type="module"></script>
+    <script src="./controls/label.js" type="module"></script>
+    <script src="./community/manager.js" type="module"></script>  
+
+    <script>
+      const button = document.querySelector( '#export' );
+      button.addEventListener( 'click', () => {
+        const manager = document.querySelector( 'acm-manager' );
+        manager.backup();
+      } );
+    </script>
+
+  </body>
+</html>
