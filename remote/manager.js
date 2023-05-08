@@ -98,7 +98,7 @@ export default class RemoteManager extends HTMLElement {
         <adc-drawer-item>
           <adc-icon name="spa" slot="prefix" weight="100"></adc-icon>
           Growth
-          <adc-label id="action" slot="suffix">0</adc-label>
+          <adc-label id="growth" slot="suffix">0</adc-label>
         </adc-drawer-item>                  
         <adc-drawer-item>
           <adc-icon name="checklist" slot="prefix" weight="100"></adc-icon>
@@ -136,7 +136,7 @@ export default class RemoteManager extends HTMLElement {
         <arm-one-on-one read-only></arm-one-on-one>
         <arm-situation read-only></arm-situation>        
         <arm-growth></arm-growth>
-        <arm-action></arm-action>      
+        <arm-action read-only></arm-action>      
         <arm-document read-only></arm-document>                              
         <arm-link read-only></arm-link>              
         <arm-action></arm-action>                      
@@ -196,6 +196,7 @@ export default class RemoteManager extends HTMLElement {
       window.localStorage.setItem( 'drawer_index', evt.detail.selectedIndex );
     } );
     
+    this.$action_count = this.shadowRoot.querySelector( 'adc-label[id=action]' )
     this.$conversation_count = this.shadowRoot.querySelector( 'adc-label[id=conversation]' );      
     this.$document_count = this.shadowRoot.querySelector( 'adc-label[id=document]' );    
     this.$link_count = this.shadowRoot.querySelector( 'adc-label[id=link]' );      
@@ -203,6 +204,7 @@ export default class RemoteManager extends HTMLElement {
     this.$person_count = this.shadowRoot.querySelector( 'adc-label[id=person]' );        
     this.$situation_count = this.shadowRoot.querySelector( 'adc-label[id=situation]' );
 
+    this.$action = this.shadowRoot.querySelector( 'arm-action' );
     this.$conversation = this.shadowRoot.querySelector( 'arm-one-on-one' );
     this.$document = this.shadowRoot.querySelector( 'arm-document' );    
     this.$link = this.shadowRoot.querySelector( 'arm-link' );
@@ -219,6 +221,7 @@ export default class RemoteManager extends HTMLElement {
     const drawer_index = window.localStorage.getItem( 'drawer_index' ) === null ? 0 : parseInt( window.localStorage.getItem( 'drawer_index' ) )
     this.$stack.selectedIndex = this.$drawer.selectedIndex = drawer_index;
 
+    store.action.subscribe( ( data ) => this.$action_count.text = data.length );    
     store.conversation.subscribe( ( data ) => this.$conversation_count.text = data.length );    
     store.document.subscribe( ( data ) => this.$document_count.text = data.length );                
     store.link.subscribe( ( data ) => this.$link_count.text = data.length );    

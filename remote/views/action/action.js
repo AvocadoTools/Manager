@@ -189,7 +189,12 @@ export default class RemoteAction extends HTMLElement {
     };   
     this.$columns[3].labelFunction = ( data ) => {
       const update = new Date( data.dueAt );
-      return format( update, 'MMM d, yyyy' );
+      const formatted = new Intl.DateTimeFormat( navigator.language, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      } ).format( update );    
+      return formatted;
     };   
     this.$columns[4].labelFunction = ( data ) => {
       let status = null;
