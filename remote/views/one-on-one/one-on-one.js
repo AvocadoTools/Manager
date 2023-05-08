@@ -248,7 +248,7 @@ export default class RemoteOneOnOne extends HTMLElement {
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );        
 
     // State
-    const index = window.localStorage.getItem( 'conversation_index' ) === null ? null : parseInt( window.localStorage.getItem( 'conversation_index' ) );
+    const index = window.localStorage.getItem( 'remote_conversation_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_conversation_index' ) );
 
     store.person.subscribe( ( data ) => {
       this.$organizer.provider = data      
@@ -335,7 +335,7 @@ export default class RemoteOneOnOne extends HTMLElement {
       this.clear();
       this.value = null;
       this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'conversation_index' );
+      window.localStorage.removeItem( 'remote_conversation_index' );
       this._changed = false;
       this.readOnly = true;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
@@ -422,7 +422,7 @@ export default class RemoteOneOnOne extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'conversation_index', r );
+            window.localStorage.setItem( 'remote_conversation_index', r );
             break;
           }
         }
@@ -446,7 +446,7 @@ export default class RemoteOneOnOne extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'conversation_index', r );
+            window.localStorage.setItem( 'remote_conversation_index', r );
             break;
           }
         }
@@ -474,9 +474,9 @@ export default class RemoteOneOnOne extends HTMLElement {
     this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'conversation_index' );
+      window.localStorage.removeItem( 'remote_conversation_index' );
     } else {
-      window.localStorage.setItem( 'conversation_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_conversation_index', evt.detail.selectedIndex );      
     }
   }  
 

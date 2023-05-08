@@ -127,7 +127,7 @@ export default class RemoteResource extends HTMLElement {
 
     // Read
     if( this.dataType !== null ) {
-      const index = this.dataType.toLocaleLowerCase() + '_index';
+      const index = 'remote_' + this.dataType.toLocaleLowerCase() + '_index';
       const resource_index = window.localStorage.getItem( index ) === null ? null : parseInt( window.localStorage.getItem( index ) );    
 
       db[this.dataType].orderBy( 'name' ).toArray()
@@ -189,7 +189,7 @@ export default class RemoteResource extends HTMLElement {
     const response = confirm( `Delete ${this._value.name}?` );
 
     if( response ) {
-      const index = this.dataType.toLowerCase() + '_index';
+      const index = 'remote_' + this.dataType.toLowerCase() + '_index';
 
       this.clear();
       this.value = null;
@@ -239,7 +239,7 @@ export default class RemoteResource extends HTMLElement {
       db[this.dataType].put( record )
       .then( () => db[this.dataType].orderBy( 'name' ).toArray() )
       .then( ( results ) => {
-        const index = this.dataType.toLowerCase() + '_index';
+        const index = 'remote_' + this.dataType.toLowerCase() + '_index';
 
         this.$table.provider = results;
 
@@ -264,7 +264,7 @@ export default class RemoteResource extends HTMLElement {
       db[this.dataType].put( record )
       .then( () => db[this.dataType].orderBy( 'name' ).toArray() )
       .then( ( results ) => {
-        const index = this.dataType.toLowerCase() + '_index';
+        const index = 'remote_' + this.dataType.toLowerCase() + '_index';
 
         this.$table.provider = results;
 
@@ -298,7 +298,7 @@ export default class RemoteResource extends HTMLElement {
     this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem;      
     this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
-    const index = this.dataType.toLowerCase() + '_index';
+    const index = 'remote_' + this.dataType.toLowerCase() + '_index';
 
     if( evt.detail.selectedItem === null ) {
       window.localStorage.removeItem( index );

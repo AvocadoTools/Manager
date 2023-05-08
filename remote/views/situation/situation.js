@@ -187,7 +187,7 @@ export default class RemoteSituation extends HTMLElement {
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );  
 
     // State
-    const index = window.localStorage.getItem( 'situation_index' ) === null ? null : parseInt( window.localStorage.getItem( 'situation_index' ) );
+    const index = window.localStorage.getItem( 'remote_situation_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_situation_index' ) );
 
     store.person.subscribe( ( data ) => {
       this.$contributor.provider = data      
@@ -278,7 +278,7 @@ export default class RemoteSituation extends HTMLElement {
       this.clear();
       this.value = null;
       this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'situation_index' );
+      window.localStorage.removeItem( 'remote_situation_index' );
       this._changed = false;
       this.readOnly = true;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
@@ -344,7 +344,7 @@ export default class RemoteSituation extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'situation_index', r );
+            window.localStorage.setItem( 'remote_situation_index', r );
             break;
           }
         }
@@ -368,7 +368,7 @@ export default class RemoteSituation extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'situation_index', r );
+            window.localStorage.setItem( 'remote_situation_index', r );
             break;
           }
         }
@@ -396,9 +396,9 @@ export default class RemoteSituation extends HTMLElement {
     this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'situation_index' );
+      window.localStorage.removeItem( 'remote_situation_index' );
     } else {
-      window.localStorage.setItem( 'situation_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_situation_index', evt.detail.selectedIndex );      
     }
   }    
 

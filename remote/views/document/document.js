@@ -162,7 +162,7 @@ export default class RemoteDocument extends HTMLElement {
     this.$tags = this.shadowRoot.querySelector( '#tags' );                   
     
     // State
-    const document_index = window.localStorage.getItem( 'document_index' ) === null ? null : parseInt( window.localStorage.getItem( 'document_index' ) );
+    const document_index = window.localStorage.getItem( 'remote_document_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_document_index' ) );
 
     // Read
     db.Document.orderBy( 'updatedAt' ).reverse().toArray()
@@ -228,7 +228,7 @@ export default class RemoteDocument extends HTMLElement {
       this.clear();
       this.value = null;
       this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'document_index' );
+      window.localStorage.removeItem( 'remote_document_index' );
       this._changed = false;
       this.readOnly = true;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
@@ -281,7 +281,7 @@ export default class RemoteDocument extends HTMLElement {
           if( results[r].id === record.id ) {
             this.$column.innerText = `Documents (${results.length})`;                          
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'document_index', r );
+            window.localStorage.setItem( 'remote_document_index', r );
             break;
           }
         }
@@ -305,7 +305,7 @@ export default class RemoteDocument extends HTMLElement {
           if( results[r].id === record.id ) {
             this.$column.innerText = `Documents (${results.length})`;                          
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'document_index', r );
+            window.localStorage.setItem( 'remote_document_index', r );
             break;
           }
         }
@@ -333,9 +333,9 @@ export default class RemoteDocument extends HTMLElement {
     this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'document_index' );
+      window.localStorage.removeItem( 'remote_document_index' );
     } else {
-      window.localStorage.setItem( 'document_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_document_index', evt.detail.selectedIndex );      
     }
   }  
 

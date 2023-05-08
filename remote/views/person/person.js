@@ -195,7 +195,7 @@ export default class RemotePerson extends HTMLElement {
     this.$weather = this.shadowRoot.querySelector( 'adc-link[name=weather]' );
 
     // State
-    const person_index = window.localStorage.getItem( 'person_index' ) === null ? null : parseInt( window.localStorage.getItem( 'person_index' ) );
+    const person_index = window.localStorage.getItem( 'remote_person_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_person_index' ) );
 
     // Read
     db.Person.orderBy( 'fullName' ).toArray()
@@ -272,7 +272,7 @@ export default class RemotePerson extends HTMLElement {
       this.clear();
       this.value = null;
       this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'person_index' );
+      window.localStorage.removeItem( 'remote_person_index' );
       this._changed = false;
       this.readOnly = true;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
@@ -334,7 +334,7 @@ export default class RemotePerson extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'person_index', r );
+            window.localStorage.setItem( 'remote_person_index', r );
             break;
           }
         }
@@ -358,7 +358,7 @@ export default class RemotePerson extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'person_index', r );
+            window.localStorage.setItem( 'remote_person_index', r );
             break;
           }
         }
@@ -380,9 +380,9 @@ export default class RemotePerson extends HTMLElement {
 
       if( this.value !== null ) {
         this.$table.selectedItem = this.value;          
-        window.localStorage.setItem( 'person_index', this.$table.selectedIndex );
+        window.localStorage.setItem( 'remote_person_index', this.$table.selectedIndex );
       } else {
-        window.localStorage.removeItem( 'person_index' );
+        window.localStorage.removeItem( 'remote_person_index' );
       }
     } );          
   }
@@ -448,9 +448,9 @@ export default class RemotePerson extends HTMLElement {
     this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'person_index' );
+      window.localStorage.removeItem( 'remote_person_index' );
     } else {
-      window.localStorage.setItem( 'person_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_person_index', evt.detail.selectedIndex );      
     }
   }
 

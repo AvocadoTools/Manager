@@ -193,7 +193,7 @@ export default class RemoteLink extends HTMLElement {
     this.$url.addEventListener( 'input', () => this._changed = true );  
     
     // State
-    const link_index = window.localStorage.getItem( 'link_index' ) === null ? null : parseInt( window.localStorage.getItem( 'link_index' ) );
+    const link_index = window.localStorage.getItem( 'remote_link_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_link_index' ) );
 
     // Read
     db.Link.orderBy( 'name' ).toArray()
@@ -260,7 +260,7 @@ export default class RemoteLink extends HTMLElement {
       this.clear();
       this.value = null;
       this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'link_index' );
+      window.localStorage.removeItem( 'remote_link_index' );
       this._changed = false;
       this.readOnly = true;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
@@ -322,7 +322,7 @@ export default class RemoteLink extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'link_index', r );
+            window.localStorage.setItem( 'remote_link_index', r );
             break;
           }
         }
@@ -345,7 +345,7 @@ export default class RemoteLink extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'link_index', r );
+            window.localStorage.setItem( 'remote_link_index', r );
             break;
           }
         }
@@ -375,9 +375,9 @@ export default class RemoteLink extends HTMLElement {
     this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'link_index' );
+      window.localStorage.removeItem( 'remote_link_index' );
     } else {
-      window.localStorage.setItem( 'link_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_link_index', evt.detail.selectedIndex );      
     }
   }  
 

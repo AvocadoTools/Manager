@@ -193,7 +193,7 @@ export default class RemoteManager extends HTMLElement {
     this.$drawer = this.shadowRoot.querySelector( 'adc-drawer' );
     this.$drawer.addEventListener( 'change', ( evt ) => {
       this.$stack.selectedIndex = evt.detail.selectedIndex
-      window.localStorage.setItem( 'drawer_index', evt.detail.selectedIndex );
+      window.localStorage.setItem( 'remote_drawer_index', evt.detail.selectedIndex );
     } );
     
     this.$action_count = this.shadowRoot.querySelector( 'adc-label[id=action]' )
@@ -218,7 +218,7 @@ export default class RemoteManager extends HTMLElement {
     this.$types = this.shadowRoot.querySelector( 'arm-resource[name=types]' );
 
     // State
-    const drawer_index = window.localStorage.getItem( 'drawer_index' ) === null ? 0 : parseInt( window.localStorage.getItem( 'drawer_index' ) )
+    const drawer_index = window.localStorage.getItem( 'remote_drawer_index' ) === null ? 0 : parseInt( window.localStorage.getItem( 'remote_drawer_index' ) )
     this.$stack.selectedIndex = this.$drawer.selectedIndex = drawer_index;
 
     store.action.subscribe( ( data ) => this.$action_count.text = data.length );    

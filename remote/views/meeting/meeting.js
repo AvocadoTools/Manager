@@ -219,7 +219,7 @@ export default class RemoteMeeting extends HTMLElement {
     this.$time = this.shadowRoot.querySelector( 'adc-input[name=time]' );
 
     // State
-    const meeting_index = window.localStorage.getItem( 'meeting_index' ) === null ? null : parseInt( window.localStorage.getItem( 'meeting_index' ) );    
+    const meeting_index = window.localStorage.getItem( 'remote_meeting_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_meeting_index' ) );    
 
     // Read
     db.Meeting.orderBy( 'startAt' ).reverse().toArray()
@@ -296,7 +296,7 @@ export default class RemoteMeeting extends HTMLElement {
       this.clear();
       this.value = null;
       this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'meeting_index' );      
+      window.localStorage.removeItem( 'remote_meeting_index' );      
       this._changed = false;
       this.readOnly = true;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
@@ -369,7 +369,7 @@ export default class RemoteMeeting extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'meeting_index', r );
+            window.localStorage.setItem( 'remote_meeting_index', r );
             break;
           }
         }
@@ -393,7 +393,7 @@ export default class RemoteMeeting extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'meeting_index', r );
+            window.localStorage.setItem( 'remote_meeting_index', r );
             break;
           }
         }        
@@ -422,9 +422,9 @@ export default class RemoteMeeting extends HTMLElement {
 
     if( evt.detail.selectedItem === null ) {
       this.$tabs.selectedIndex = 0;
-      window.localStorage.removeItem( 'meeting_index' );
+      window.localStorage.removeItem( 'remote_meeting_index' );
     } else {
-      window.localStorage.setItem( 'meeting_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_meeting_index', evt.detail.selectedIndex );      
     }    
   }
 

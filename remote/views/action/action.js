@@ -233,7 +233,7 @@ export default class RemoteAction extends HTMLElement {
     store.status.subscribe( ( data ) => this.$status.provider = data );    
     store.action.subscribe( ( data ) => this.$table.provider = data );    
     
-    const action_index = window.localStorage.getItem( 'action_index' ) === null ? null : parseInt( window.localStorage.getItem( 'action_index' ) );
+    const action_index = window.localStorage.getItem( 'remote_action_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_action_index' ) );
 
     // Read
     // TODO: What happens when reference table changes?
@@ -316,7 +316,7 @@ export default class RemoteAction extends HTMLElement {
       this.clear();
       this.value = null;
       this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'action_index' );
+      window.localStorage.removeItem( 'remote_action_index' );
       this._changed = false;
       this.readOnly = true;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
@@ -370,7 +370,7 @@ export default class RemoteAction extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'action_index', r );
+            window.localStorage.setItem( 'remote_action_index', r );
             break;
           }
         }
@@ -393,7 +393,7 @@ export default class RemoteAction extends HTMLElement {
         for( let r = 0; r < results.length; r++ ) {
           if( results[r].id === record.id ) {
             this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'action_index', r );
+            window.localStorage.setItem( 'remote_action_index', r );
             break;
           }
         }
@@ -423,9 +423,9 @@ export default class RemoteAction extends HTMLElement {
     this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'action_index' );
+      window.localStorage.removeItem( 'remote_action_index' );
     } else {
-      window.localStorage.setItem( 'action_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_action_index', evt.detail.selectedIndex );      
     }
   }  
 
