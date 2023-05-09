@@ -108,28 +108,49 @@ export default class RemoteAction extends HTMLElement {
           label="Due date"
           placeholder="Due date"
           style="flex-grow: 0; min-width: 165px;">
-        </adc-date-picker>                                 
+        </adc-date-picker>                  
+        <adc-date-picker
+          id="complete"
+          label="Completed date"
+          placeholder="Completed date"
+          style="flex-grow: 0; min-width: 165px;">
+        </adc-date-picker>                                                                       
       </adc-hbox>
       <adc-hbox>
         <adc-select
-          id="priority"
-          label="Priority"
+          id="project"
+          label="Project"
           label-field="name"
-          placeholder="Priority"
-          style="min-width: 165px;">
-        </adc-select>                   
+          placeholder="Project"
+          style="flex-basis: 0; flex-grow: 1;">
+        </adc-select>          
+        <adc-select
+          id="milestone"
+          label="Milestone"
+          label-field="name"
+          placeholder="Milestone"
+          style="flex-basis: 0; flex-grow: 1;">
+        </adc-select>          
         <adc-select
           id="status"
           label="Status"
           label-field="name"
           placeholder="Status"
           style="min-width: 250px;">
-        </adc-select>                            
-        <adc-input
-          id="after"
-          label="Next steps"
-          placeholder="Next steps">
-        </adc-input>                                         
+        </adc-select>          
+        <adc-select
+          id="priority"
+          label="Priority"
+          label-field="name"
+          placeholder="Priority"
+          style="min-width: 165px;">
+        </adc-select>    
+        <adc-select
+          id="effort"
+          label="Effort"
+          placeholder="Effort"
+          style="min-width: 165px;">
+        </adc-select>                                                                          
       </adc-hbox>
       <adc-controls></adc-controls>      
       <adc-input 
@@ -137,7 +158,7 @@ export default class RemoteAction extends HTMLElement {
         placeholder="Search actions" 
         size="lg" 
         type="search">
-        <adc-icon slot="prefix">search</adc-icon>
+        <adc-icon name="search" slot="prefix"></adc-icon>
       </adc-input>
       <adc-table sortable selectable>
         <adc-column header-text="Priority" sortable width="150"></adc-column>      
@@ -207,6 +228,7 @@ export default class RemoteAction extends HTMLElement {
 
       return status;
     };             
+    this.$complete = this.shadowRoot.querySelector( '#complete' );
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
     this.$controls.addEventListener( 'add', () => this.doActionAdd() );
     this.$controls.addEventListener( 'cancel', () => this.doActionCancel() );
@@ -214,22 +236,30 @@ export default class RemoteAction extends HTMLElement {
     this.$controls.addEventListener( 'edit', () => this.doActionEdit() );
     this.$controls.addEventListener( 'save', () => this.doActionSave() );        
     this.$description = this.shadowRoot.querySelector( '#description' );
+    this.$effort = this.shadowRoot.querySelector( '#effort' );
+    this.$effort.selectedItemCompareFunction = ( provider, item ) => provider === item ? true : false;    
+    this.$effort.provider = ['Small', 'Medium', 'Large', 'Extra Large'];
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );     
+    this.$milestone = this.shadowRoot.querySelector( '#milestone' ); 
+    this.$milestone.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;       
     this.$owner = this.shadowRoot.querySelector( '#owner' );
     this.$owner.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;    
     this.$priority = this.shadowRoot.querySelector( '#priority' );    
     this.$priority.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
+    this.$project = this.shadowRoot.querySelector( '#project' );
+    this.$project.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;    
     this.$status = this.shadowRoot.querySelector( '#status' );
-    this.$status.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;            
-    this.$after = this.shadowRoot.querySelector( '#after' ); 
+    this.$status.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;
     this.$table = this.shadowRoot.querySelector( 'adc-table' );   
     this.$search = this.shadowRoot.querySelector( '#search' );       
     this.$due = this.shadowRoot.querySelector( 'adc-date-picker' );
 
     // State
+    store.milestone.subscribe( ( data ) => this.$milestone.provider = data );    
     store.person.subscribe( ( data ) => this.$owner.provider = data );    
     store.priority.subscribe( ( data ) => this.$priority.provider = data );    
+    store.project.subscribe( ( data ) => this.$project.provider = data );        
     store.status.subscribe( ( data ) => this.$status.provider = data );    
     store.action.subscribe( ( data ) => this.$table.provider = data );    
     
@@ -348,12 +378,15 @@ export default class RemoteAction extends HTMLElement {
     }
 
     const record = {
+      completedAt: this.$complete.value === null ? null : this.$complete.value.getTime(),
       description: this.$description.value,
-      owner: this.$owner.value.id,
-      dueAt: this.$due.value.getTime(),
-      priority: this.$priority.value.id,
-      status: this.$status.value.id,
-      after: this.$after.value
+      dueAt: this.$due.value === null ? null : this.$due.value.getTime(),      
+      effort: this.$effort.value === null ? null : this.$effort.value,
+      milestone: this.$milestone.value === null ? null : this.$milestone.value.id,      
+      owner: this.$owner.value === null ? null : this.$owner.value.id,
+      priority: this.$priority.value === null ? null : this.$priority.value.id,
+      project: this.$project.value === null ? null : this.$project.value.id,
+      status: this.$status.value === null ? null : this.$status.value.id
     };  
 
     if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
@@ -431,24 +464,31 @@ export default class RemoteAction extends HTMLElement {
 
    // When attributes change
   _render() {
+    this.$complete.readOnly = this.readOnly;
     this.$description.readOnly = this.readOnly;
+    this.$effort.readOnly = this.readOnly;
     this.$owner.readOnly = this.readOnly;
     this.$due.readOnly = this.readOnly;
+    this.$milestone.readOnly = this.readOnly;
     this.$priority.readOnly = this.readOnly;
+    this.$project.readOnly = this.readOnly;
     this.$status.readOnly = this.readOnly;
-    this.$after.readOnly = this.readOnly;
 
     if( this.value === null ) {
-      this.$due.value = null;   
+      this.$due.value = null; 
+      this.$complete.value = null;  
     } else {
       this.$due.value = this.value.dueAt === null ? null : this.value.dueAt;
+      this.$complete.value = this.value.completedAt === null ? null : this.value.completedAt;      
     }
 
-    this.$description.value = this._value === null ? null : this._value.description;        
+    this.$description.value = this._value === null ? null : this._value.description;
+    this.$effort.selectedItem = this._value === null ? null : this._value.effort;        
+    this.$milestone.selectedItem = this._value === null ? null : {id: this._value.milestone};             
     this.$owner.selectedItem = this._value === null ? null : {id: this._value.owner};
     this.$priority.selectedItem = this._value === null ? null : {id: this._value.priority};    
-    this.$status.selectedItem = this._value === null ? null : {id: this._value.status};        
-    this.$after.value = this._value === null ? null : this._value.after;
+    this.$project.selectedItem = this._value === null ? null : {id: this._value.project};        
+    this.$status.selectedItem = this._value === null ? null : {id: this._value.status};
   }
 
   // Promote properties

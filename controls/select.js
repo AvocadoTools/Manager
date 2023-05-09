@@ -102,11 +102,16 @@ export default class AvocadoSelect extends HTMLElement {
           min-height: 40px;
           min-width: 0;
           outline: none;
-          padding: 0 16px 0 16px;
+          padding: 0 0 0 16px;
           text-align: left;
           text-rendering: optimizeLegibility;
           width: 0;
           -webkit-appearance: none;          
+
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;          
         }
 
         input::placeholder {
@@ -266,6 +271,7 @@ export default class AvocadoSelect extends HTMLElement {
 
         :host( [read-only] ) input {
           cursor: default;
+          padding: 0 16px 0 16px;          
         }        
 
         :host( [read-only] ) label {

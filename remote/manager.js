@@ -124,7 +124,9 @@ export default class RemoteManager extends HTMLElement {
           <adc-icon name="inventory_2" weight="100"></adc-icon>
           <adc-label>Resources</adc-label>
         </adc-hbox>
+        <adc-drawer-item>Milestones</adc-drawer-item>                        
         <adc-drawer-item>Priorities</adc-drawer-item>                
+        <adc-drawer-item>Projects</adc-drawer-item>                                
         <adc-drawer-item>Rooms</adc-drawer-item>        
         <adc-drawer-item>Status</adc-drawer-item>                        
         <adc-drawer-item>Tags</adc-drawer-item>                                
@@ -139,7 +141,15 @@ export default class RemoteManager extends HTMLElement {
         <arm-action read-only></arm-action>      
         <arm-document read-only></arm-document>                              
         <arm-link read-only></arm-link>              
-        <arm-action></arm-action>                      
+        <arm-action></arm-action>          
+        <arm-resource 
+          data-type="Milestone"
+          helper="Milestones used for project management." 
+          label="Milestones"
+          name="milestone"
+          read-only>
+          No milestones added yet.
+        </arm-resource>                                    
         <arm-resource 
           data-type="Priority"
           helper="Priorities used for action items." 
@@ -147,7 +157,15 @@ export default class RemoteManager extends HTMLElement {
           name="priorities"
           read-only>
           No priorities added yet.
-        </arm-resource>                
+        </arm-resource>    
+        <arm-resource 
+          data-type="Project"
+          helper="Projects for organizing or assigning work." 
+          label="Projects"
+          name="project"
+          read-only>
+          No projects added yet.
+        </arm-resource>                             
         <arm-resource 
           data-type="Room"        
           helper="Meeting rooms wether physical or virtual." 

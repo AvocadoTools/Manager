@@ -33,6 +33,7 @@
     "Approved",
     "At Risk",
     "Backlog",
+    "Blocked",
     "Cancelled",
     "Closed",
     "Completed",
@@ -46,6 +47,7 @@
     "Late",
     "Live",
     "Needs Review",
+    "New",
     "Not Started",
     "On Hold",
     "On Track",
@@ -54,7 +56,9 @@
     "Planning",
     "Proposed",
     "Ready",
+    "Researching",
     "Rejected",
+    "Reviewing",
     "Scheduled",
     "Shipped",
     "Started",
@@ -62,6 +66,7 @@
     "Suspended",
     "Terminated",
     "Testing",
+    "Waiting",
     "Watching"
   ],
   "Tag": [

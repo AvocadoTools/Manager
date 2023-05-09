@@ -63,6 +63,7 @@ export default class RemoteResource extends HTMLElement {
 
         adc-vbox[slot=empty] {
           align-items: center;
+          background-color: #f4f4f4;
           flex-basis: 0;
           flex-grow: 1;
           justify-content: center;
