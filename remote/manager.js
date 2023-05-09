@@ -46,6 +46,7 @@ export default class RemoteManager extends HTMLElement {
 
         adc-drawer {
           min-width: 250px;
+          transition: transform 300ms ease-in-out;
           width: 250px;
         }
 
@@ -72,6 +73,21 @@ export default class RemoteManager extends HTMLElement {
         adc-stack {
           flex-basis: 0;
           flex-grow: 1;
+        }
+
+        @media ( max-width: 1120px ) {
+          adc-drawer {
+            bottom: 0;
+            left: 0;
+            position: absolute;
+            top: 0;
+            transform: translateX( -250px );
+            z-index: 100;
+          }
+
+          adc-drawer[opened] {
+            transform: translateX( 0 );
+          }
         }
       </style>
       <adc-drawer>
@@ -210,6 +226,8 @@ export default class RemoteManager extends HTMLElement {
     // Elements
     this.$drawer = this.shadowRoot.querySelector( 'adc-drawer' );
     this.$drawer.addEventListener( 'change', ( evt ) => {
+      this.$drawer.opened = false;
+      window.closed();
       this.$stack.selectedIndex = evt.detail.selectedIndex
       window.localStorage.setItem( 'remote_drawer_index', evt.detail.selectedIndex );
     } );
@@ -293,6 +311,10 @@ export default class RemoteManager extends HTMLElement {
       a.click();
       document.body.removeChild( a );    
     } );
+  }
+
+  menu() {
+    this.$drawer.opened = !this.$drawer.opened;
   }
 
    // When attributes change

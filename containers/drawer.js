@@ -94,6 +94,7 @@ export default class AvocadoDrawer extends HTMLElement {
     this._upgrade( 'concealed' );        
     this._upgrade( 'data' );                
     this._upgrade( 'hidden' );    
+    this._upgrade( 'opened' );        
     this._upgrade( 'selectedIndex' );        
     this._render();
   }
@@ -103,6 +104,7 @@ export default class AvocadoDrawer extends HTMLElement {
     return [
       'concealed',
       'disabled',
+      'opened',
       'selected-index'
     ];
   }
@@ -166,6 +168,26 @@ export default class AvocadoDrawer extends HTMLElement {
       this.removeAttribute( 'hidden' );
     }
   }   
+
+  get opened() {
+    return this.hasAttribute( 'opened' );
+  }
+
+  set opened( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'opened' );
+      } else {
+        this.setAttribute( 'opened', '' );
+      }
+    } else {
+      this.removeAttribute( 'opened' );
+    }
+  }  
 
   get selectedIndex() {
     if( this.hasAttribute( 'selected-index' ) ) {

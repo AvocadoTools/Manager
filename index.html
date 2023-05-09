@@ -35,11 +35,22 @@
     <script src="./remote/manager.js" type="module"></script>  
 
     <script>
-      const button = document.querySelector( '#export' );
-      button.addEventListener( 'click', () => {
-        const manager = document.querySelector( 'arm-manager' );
+      const manager = document.querySelector( 'arm-manager' );
+
+      const menu = document.querySelector( 'adc-icon-button[slot=prefix]' );
+      menu.addEventListener( 'click', () => {
+        menu.name = menu.name === 'menu' ? 'close' : 'menu';
+        manager.menu();
+      } );
+
+      const backup = document.querySelector( '#export' );
+      backup.addEventListener( 'click', () => {
         manager.backup();
       } );
+
+      function closed() {
+        menu.name = menu.name === 'menu' ? 'close' : 'menu';
+      }
     </script>
 
   </body>

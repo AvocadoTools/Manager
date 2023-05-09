@@ -75,3 +75,21 @@ body {
   margin: 0;
   padding: 0;
 }
+
+adc-icon-button[slot=prefix] {
+  display: none;
+}
+
+adc-label[slot=prefix] {
+  margin: 0 0 0 16px;
+}
+
+@media ( max-width: 1120px ) {
+  adc-icon-button[slot=prefix] {
+    display: block;
+  }
+
+  adc-label[slot=prefix] {
+    margin: 0 0 0 0;
+  }
+}
