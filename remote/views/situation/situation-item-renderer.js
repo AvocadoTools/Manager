@@ -11,7 +11,7 @@ export default class RemoteSituationItemRenderer extends HTMLElement {
           cursor: pointer;
           display: flex;
           flex-direction: row;
-          height: 56px;
+          height: 48px;
           padding: 0 16px 0 16px;
           position: relative;
         }
