@@ -35,6 +35,7 @@ export default class AvocadoDrawerItem extends HTMLElement {
           padding: 0;
           transition: background-color 150ms ease-in-out;
           width: 100%;
+          -webkit-tap-highlight-color: transparent;          
         }
 
         button:hover {

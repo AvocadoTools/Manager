@@ -35,16 +35,18 @@
     <script src="./remote/manager.js" type="module"></script>  
 
     <script>
+      window.touch = ( 'ontouchstart' in document.documentElement ) ? true : false;
+
       const manager = document.querySelector( 'arm-manager' );
 
       const menu = document.querySelector( 'adc-icon-button[slot=prefix]' );
-      menu.addEventListener( 'click', () => {
+      menu.addEventListener(  window.touch ? 'touchstart' : 'click', () => {
         menu.name = menu.name === 'menu' ? 'close' : 'menu';
         manager.menu();
       } );
 
       const backup = document.querySelector( '#export' );
-      backup.addEventListener( 'click', () => {
+      backup.addEventListener( window.touch ? 'touchstart' : 'click', () => {
         manager.backup();
       } );
 

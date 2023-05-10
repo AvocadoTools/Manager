@@ -45,6 +45,7 @@ export default class AvocadoIconButton extends HTMLElement {
           white-space: nowrap;
           width: var( --icon-button-size, 48px );
           word-wrap: normal;
+          -webkit-tap-highlight-color: transparent;
         }
 
         button:hover {

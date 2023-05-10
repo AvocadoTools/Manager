@@ -36,6 +36,7 @@ export default class AvocadoButton extends HTMLElement {
           outline-offset: -3px;
           padding: 0 65px 0 15px;
           position: relative;
+          -webkit-tap-highlight-color: transparent;          
         }
 
         button:hover {

@@ -27,6 +27,7 @@ export default class AvocadoDrawer extends HTMLElement {
 
     // Private
     this._data = null;
+    this._touch = ( 'ontouchstart' in document.documentElement ) ? 'touchstart' : 'click';    
 
     // Events
     this.doItemClick = this.doItemClick.bind( this );
@@ -43,8 +44,8 @@ export default class AvocadoDrawer extends HTMLElement {
       for( let c = 0; c < this.children.length; c++ ) {
         if( this.children[c].tagName === 'ADC-DRAWER-ITEM' ) {
           this.children[c].setAttribute( 'data-index', index );
-          this.children[c].removeEventListener( 'click', this.doItemClick );
-          this.children[c].addEventListener( 'click', this.doItemClick );
+          this.children[c].removeEventListener( this._touch, this.doItemClick );
+          this.children[c].addEventListener( this._touch, this.doItemClick );
           index = index + 1;
         }        
       }
