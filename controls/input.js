@@ -81,6 +81,7 @@ export default class AvocadoInput extends HTMLElement {
           padding: 0 16px 0 16px;
           text-rendering: optimizeLegibility;
           width: 0;
+          -webkit-tap-highlight-color: transparent;
         }
 
         input::placeholder {
@@ -106,6 +107,7 @@ export default class AvocadoInput extends HTMLElement {
           outline-offset: -2px;
           padding: 0;
           transition: background-color 150ms ease-in-out;
+          -webkit-tap-highlight-color: transparent;
         }
 
         label:focus-within {

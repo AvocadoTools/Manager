@@ -43,6 +43,7 @@ export default class AvocadoControls extends HTMLElement {
 
     // Private
     this._data = null;    
+    this._touch = ( 'ontouchstart' in document.documentElement ) ? 'touchstart' : 'click';            
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -50,15 +51,15 @@ export default class AvocadoControls extends HTMLElement {
 
     // Elements
     this.$add = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 1 )' );
-    this.$add.addEventListener( 'click', () => { this.dispatchEvent( new CustomEvent( 'add' ) ) } );
+    this.$add.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'add' ) ) } );
     this.$cancel = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 3 )' );    
-    this.$cancel.addEventListener( 'click', () => { this.dispatchEvent( new CustomEvent( 'cancel' ) ) } );    
+    this.$cancel.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'cancel' ) ) } );    
     this.$delete = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 2 )' );        
-    this.$delete.addEventListener( 'click', () => { this.dispatchEvent( new CustomEvent( 'delete' ) ) } );    
+    this.$delete.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'delete' ) ) } );    
     this.$edit = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 5 )' );    
-    this.$edit.addEventListener( 'click', () => { this.dispatchEvent( new CustomEvent( 'edit' ) ) } );    
+    this.$edit.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'edit' ) ) } );    
     this.$save = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 4 )' );        
-    this.$save.addEventListener( 'click', () => { this.dispatchEvent( new CustomEvent( 'save' ) ) } );        
+    this.$save.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'save' ) ) } );        
   }
 
   // When attributes change

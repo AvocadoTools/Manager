@@ -107,6 +107,7 @@ export default class AvocadoDatePicker extends HTMLElement {
           text-rendering: optimizeLegibility;
           width: 0;
           -webkit-appearance: none;          
+          -webkit-tap-highlight-color: transparent;
         }
 
         input::placeholder {
@@ -133,6 +134,7 @@ export default class AvocadoDatePicker extends HTMLElement {
           padding: 0;
           transition: background-color 150ms ease-in-out;
           width: 100%;
+          -webkit-tap-highlight-color: transparent;
         }
 
         label:focus-within {
@@ -305,6 +307,7 @@ export default class AvocadoDatePicker extends HTMLElement {
     this._calendar = null;
     this._data = null;
     this._format = null;
+    this._touch = ( 'ontouchstart' in document.documentElement ) ? 'touchstart' : 'click';        
     this._value = null;
 
     // Removable events
@@ -316,11 +319,11 @@ export default class AvocadoDatePicker extends HTMLElement {
 
     // Elements
     this.$calendar = this.shadowRoot.querySelector( 'button[part=button]' );
-    this.$calendar.addEventListener( 'click', () => this.doCalendarClick() );    
+    this.$calendar.addEventListener( this._touch, () => this.doCalendarClick() );    
     this.$error = this.shadowRoot.querySelector( 'p[part=error]' );
     this.$helper = this.shadowRoot.querySelector( 'p[part=helper]' );
     this.$input = this.shadowRoot.querySelector( 'input[part=input]' );
-    this.$input.addEventListener( 'click', () => this.doInputClick() );
+    this.$input.addEventListener( this._touch, () => this.doInputClick() );
     this.$label = this.shadowRoot.querySelector( 'p[part=label]' );
   }
 

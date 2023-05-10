@@ -119,6 +119,7 @@ export default class AvocadoNotes extends HTMLElement {
 
     // Private
     this._data = null;
+    this._touch = ( 'ontouchstart' in document.documentElement ) ? 'touchstart' : 'click';        
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -128,7 +129,7 @@ export default class AvocadoNotes extends HTMLElement {
     this.$description = this.shadowRoot.querySelector( '#description' );    
     this.$label = this.shadowRoot.querySelector( '#label' );
     this.$link = this.shadowRoot.querySelector( 'adc-link' );
-    this.$link.addEventListener( 'click', () => this.doPreviewClick() );
+    this.$link.addEventListener( this._touch, () => this.doPreviewClick() );
     this.$markdown = this.shadowRoot.querySelector( 'div' );    
     this.$notes = this.shadowRoot.querySelector( 'adc-textarea' );
     this.$notes.addEventListener( 'input', () => this.doNotesChange() );

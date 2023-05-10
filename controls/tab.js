@@ -35,6 +35,7 @@ export default class AvocadoTab extends HTMLElement {
           outline: none;
           padding: 0 16px 0 16px;
           transition: background-color 150ms ease-in-out;
+          -webkit-tap-highlight-color: transparent;
         }
 
         button:hover {
@@ -56,6 +57,7 @@ export default class AvocadoTab extends HTMLElement {
           min-height: var( --tab-icon-size, 20px );
           min-width: var( --tab-icon-size, 20px );
           padding: 0 12px 0 0;
+          text-rendering: optimizeLegibility;
           text-transform: none;
           white-space: nowrap;
           width: var( --tab-icon-size, 20px );

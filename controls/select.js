@@ -106,7 +106,8 @@ export default class AvocadoSelect extends HTMLElement {
           text-align: left;
           text-rendering: optimizeLegibility;
           width: 0;
-          -webkit-appearance: none;          
+          -webkit-appearance: none;      
+          -webkit-tap-highlight-color: transparent;    
 
           min-width: 0;
           overflow: hidden;
@@ -138,6 +139,7 @@ export default class AvocadoSelect extends HTMLElement {
           padding: 0;
           transition: background-color 150ms ease-in-out;
           width: 100%;
+          -webkit-tap-highlight-color: transparent;
         }
 
         label:focus-within {
@@ -313,6 +315,7 @@ export default class AvocadoSelect extends HTMLElement {
     this._menu = null;
     this._data = null;
     this._provider = [];
+    this._touch = ( 'ontouchstart' in document.documentElement ) ? 'touchstart' : 'click';            
 
     // Removable events
     this.doMenuChange = this.doMenuChange.bind( this );
@@ -323,11 +326,11 @@ export default class AvocadoSelect extends HTMLElement {
 
     // Elements
     this.$menu = this.shadowRoot.querySelector( 'button[part=button]' );
-    this.$menu.addEventListener( 'click', () => this.doMenuClick() );    
+    this.$menu.addEventListener( this._touch, () => this.doMenuClick() );    
     this.$error = this.shadowRoot.querySelector( 'p[part=error]' );
     this.$helper = this.shadowRoot.querySelector( 'p[part=helper]' );
     this.$input = this.shadowRoot.querySelector( 'input[part=input]' );
-    this.$input.addEventListener( 'click', () => this.doInputClick() );
+    this.$input.addEventListener( this._touch, () => this.doInputClick() );
     this.$label = this.shadowRoot.querySelector( 'p[part=label]' );
 
     this.$menu = document.createElement( 'adc-menu' );

@@ -49,6 +49,7 @@ export default class AvocadoTextarea extends HTMLElement {
           outline-offset: -2px;
           padding: 0;
           position: relative;
+          -webkit-tap-highlight-color: transparent;
         }
 
         label:focus-within {
@@ -128,6 +129,7 @@ export default class AvocadoTextarea extends HTMLElement {
           padding: 11px 40px 11px 16px;
           resize: none;
           text-rendering: optimizeLegibility;
+          -webkit-tap-highlight-color: transparent;
         }
 
         textarea::placeholder {

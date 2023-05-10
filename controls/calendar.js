@@ -49,6 +49,7 @@ export default class AvocadoCalendar extends HTMLElement {
           position: relative;
           text-rendering: optimizeLegibility;
           width: 40px;
+          -webkit-tap-highlight-color: transparent;
         }
 
         button:not( .selected ):hover {
@@ -119,6 +120,7 @@ export default class AvocadoCalendar extends HTMLElement {
           width: 4em;
           -moz-appearance: textfield;
           -webkit-appearance: textfield;
+          -webkit-tap-highlight-color: transparent;
         }
 
         input:hover {
@@ -139,6 +141,7 @@ export default class AvocadoCalendar extends HTMLElement {
           font-size: 14px;
           margin: 0;
           padding: 0;
+          text-rendering: optimizeLegibility;          
         }
 
         p.square {
@@ -215,6 +218,7 @@ export default class AvocadoCalendar extends HTMLElement {
     this._data = null;
     this._displayed = null;
     this._selected = null;
+    this._touch = ( 'ontouchstart' in document.documentElement ) ? 'touchstart' : 'click';        
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -223,10 +227,10 @@ export default class AvocadoCalendar extends HTMLElement {
     // Elements
     this.$calendar = this.shadowRoot.querySelector( 'div[part=calendar]' );
     this.$left = this.shadowRoot.querySelector( 'button[part=left]' );
-    this.$left.addEventListener( 'click', () => this.doLeftClick() );
+    this.$left.addEventListener( this._touch, () => this.doLeftClick() );
     this.$month = this.shadowRoot.querySelector( 'p[part=month]' );
     this.$right = this.shadowRoot.querySelector( 'button[part=right]' );
-    this.$right.addEventListener( 'click', () => this.doRightClick() );
+    this.$right.addEventListener( this._touch, () => this.doRightClick() );
     this.$year = this.shadowRoot.querySelector( 'input' );
     this.$year.addEventListener( 'change', () => {
       this._displayed.setFullYear( this.$year.value );

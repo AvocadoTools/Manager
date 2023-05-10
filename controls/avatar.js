@@ -36,6 +36,7 @@ export default class AvocadoAvatar extends HTMLElement {
           justify-content: center;
           outline: none;
           width: var( --avatar-size, 61px );
+          -webkit-tap-highlight-color: transparent;
         }
 
         /*
@@ -62,6 +63,7 @@ export default class AvocadoAvatar extends HTMLElement {
 
         input {
           display: none;
+          -webkit-tap-highlight-color: transparent;
         }
 
         p {
