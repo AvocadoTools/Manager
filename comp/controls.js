@@ -51,15 +51,30 @@ export default class AvocadoControls extends HTMLElement {
 
     // Elements
     this.$add = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 1 )' );
-    this.$add.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'add' ) ) } );
+    this.$add.addEventListener( this._touch, ( evt ) => { 
+      evt.preventDefault();
+      this.dispatchEvent( new CustomEvent( 'add' ) ); 
+    } );
     this.$cancel = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 3 )' );    
-    this.$cancel.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'cancel' ) ) } );    
+    this.$cancel.addEventListener( this._touch, ( evt ) => { 
+      evt.preventDefault();
+      this.dispatchEvent( new CustomEvent( 'cancel' ) ); 
+    } );    
     this.$delete = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 2 )' );        
-    this.$delete.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'delete' ) ) } );    
+    this.$delete.addEventListener( this._touch, ( evt ) => { 
+      evt.preventDefault();
+      this.dispatchEvent( new CustomEvent( 'delete' ) ); 
+    } );    
     this.$edit = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 5 )' );    
-    this.$edit.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'edit' ) ) } );    
+    this.$edit.addEventListener( this._touch, (evt ) => { 
+      evt.preventDefault();
+      this.dispatchEvent( new CustomEvent( 'edit' ) ); 
+    } );    
     this.$save = this.shadowRoot.querySelector( 'adc-button:nth-of-type( 4 )' );        
-    this.$save.addEventListener( this._touch, () => { this.dispatchEvent( new CustomEvent( 'save' ) ) } );        
+    this.$save.addEventListener( this._touch, ( evt ) => { 
+      evt.preventDefault();
+      this.dispatchEvent( new CustomEvent( 'save' ) );
+    } );        
   }
 
   // When attributes change
