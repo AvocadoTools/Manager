@@ -10,6 +10,7 @@ import AvocadoSelect from "../../../controls/select.js";
 import AvocadoTable from "../../../controls/table.js";
 import AvocadoTabs from "../../../containers/tabs.js";
 
+import AvocadoAttachments from "../../../comp/attachments.js";
 import AvocadoControls from "../../../comp/controls.js";
 import AvocadoNotes from "../../../comp/notes.js";
 
@@ -168,10 +169,10 @@ export default class RemoteMeeting extends HTMLElement {
         </adc-hbox>
         <adc-tabs>
           <adc-notes label="Agenda" light monospace></adc-notes>
-          <arm-meeting-attendees disabled label="Attendees (0)"></arm-meeting-attendees>
+          <arm-meeting-attendees label="Attendees (0)"></arm-meeting-attendees>
           <adc-notes label="Discussion" light monospace></adc-notes>
-          <arm-meeting-actions disabled label="Action Items (0)"></arm-meeting-actions>
-          <!-- <arm-attachments disabled label="Attachments (0)"></arm-attachments> -->
+          <arm-meeting-actions label="Action Items (0)"></arm-meeting-actions>
+          <adc-attachments label="Attachments (0)"></adc-attachments>
         </adc-tabs>
         <adc-controls></adc-controls>
       </adc-vbox>

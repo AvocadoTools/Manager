@@ -11,6 +11,7 @@ import AvocadoLink from "../../../controls/link.js";
 import AvocadoSpacer from "../../../controls/spacer.js";
 import AvocadoTable from "../../../controls/table.js";
 
+import AvocadoAttachments from "../../../comp/attachments.js";
 import AvocadoControls from "../../../comp/controls.js";
 
 import RemotePersonItemRenderer from "./person-item-renderer.js";
@@ -147,8 +148,8 @@ export default class RemotePerson extends HTMLElement {
           </adc-input>
         </adc-hbox>
         <adc-tabs>
-          <arm-person-profile label="Profile"></arm-profile>
-          <arm-attachments disabled></arm-attachments>
+          <arm-person-profile label="Profile"></arm-person-profile>
+          <adc-attachments label="Attachments"></adc-attachments>
         </adc-tabs>
         <adc-controls></adc-controls>
       </adc-vbox>
@@ -164,7 +165,7 @@ export default class RemotePerson extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$attach = this.shadowRoot.querySelector( 'arm-attachments' );
+    this.$attach = this.shadowRoot.querySelector( 'adc-attachments' );
     this.$avatar = this.shadowRoot.querySelector( 'adc-avatar' );
     this.$column = this.shadowRoot.querySelector( 'adc-column' );
     this.$column.sortCompareFunction = ( a, b ) => {
@@ -483,7 +484,9 @@ export default class RemotePerson extends HTMLElement {
       
       this.$weather.concealed = this._value.location === null ? true : false;
     }
+
     console.log( this._value );
+    
     this.$name.value = this._value === null ? null : this._value.fullName;
     this.$email.value = this._value === null ? null : this._value.email;        
     this.$title.value = this._value === null ? null : this._value.jobTitle;    

@@ -182,7 +182,7 @@ export default class AvocadoButton extends HTMLElement {
           color: #8d8d8d;
         }
       </style>
-      <button type="button">
+      <button part="button" type="button">
         <slot name="prefix"></slot>
         <p>
           <slot></slot>

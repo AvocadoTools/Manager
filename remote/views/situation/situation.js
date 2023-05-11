@@ -142,7 +142,6 @@ export default class RemoteSituation extends HTMLElement {
           <adc-notes description="What has happened since your last report?" id="progress" label="Progress" light monospace></adc-notes>
           <adc-notes description="What are you planning between now and your next report?" id="priorities" label="Priorities" light monospace></adc-notes>        
           <adc-notes description="Are you encountering any problems that might need attention?" id="problems" label="Problems" light monospace></adc-notes>        
-          <adc-notes description="What does your calendar look like for the immediate future?" id="plan" label="Plan" light monospace></adc-notes>                
         </adc-tabs>
         <adc-controls></adc-controls>
       </adc-vbox>
@@ -179,7 +178,6 @@ export default class RemoteSituation extends HTMLElement {
       this.$avatar.src = avatar.src;
     } );
     this.$date = this.shadowRoot.querySelector( 'adc-date-picker' );
-    this.$plan = this.shadowRoot.querySelector( '#plan' );    
     this.$priorities = this.shadowRoot.querySelector( '#priorities' );    
     this.$problems = this.shadowRoot.querySelector( '#problems' );    
     this.$progress = this.shadowRoot.querySelector( '#progress' );
@@ -234,7 +232,6 @@ export default class RemoteSituation extends HTMLElement {
     this.$progress.value = null;
     this.$priorities.value = null;
     this.$problems.value = null;    
-    this.$plan.value = null;    
   }  
 
   doAdd() {
@@ -325,7 +322,6 @@ export default class RemoteSituation extends HTMLElement {
       progress: this.$progress.value,
       priorities: this.$priorities.value,
       problems: this.$problems.value,
-      plan: this.$plan.value,
       subject: this.$contributor.value.fullName
     };  
 
@@ -409,7 +405,6 @@ export default class RemoteSituation extends HTMLElement {
     this.$progress.readOnly = this.readOnly;
     this.$priorities.readOnly = this.readOnly;
     this.$problems.readOnly = this.readOnly;
-    this.$plan.readOnly = this.readOnly;
 
     if( this.value === null ) {
       this.$avatar.src = null;      
@@ -430,7 +425,6 @@ export default class RemoteSituation extends HTMLElement {
     this.$progress.value = this._value === null ? null : this._value.progress;
     this.$priorities.value = this._value === null ? null : this._value.priorities;
     this.$problems.value = this._value === null ? null : this._value.problems;
-    this.$plan.value = this._value === null ? null : this._value.plan;            
   }
 
   // Promote properties

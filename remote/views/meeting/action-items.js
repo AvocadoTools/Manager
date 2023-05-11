@@ -57,6 +57,7 @@ export default class RemoteMeetingActions extends HTMLElement {
 
         adc-vbox[slot=empty] {
           align-items: center;
+          background-color: #ffffff;
           flex-basis: 0;
           flex-grow: 1;
           justify-content: center;
@@ -71,61 +72,23 @@ export default class RemoteMeetingActions extends HTMLElement {
           label="Description"
           light
           placeholder="Description">
-        </adc-input>            
-      </adc-hbox>
-      <!--
-      <adc-hbox>
-        <adc-input
-          label="Priority"
-          light
-          placeholder="Priority"
-          style="max-width: 165px;"          
-          value="High">
-        </adc-input>               
-        <adc-input
-          label="Status"
-          light
-          placeholder="Status"
-          style="max-width: 250px;"          
-          value="Complete">
-        </adc-input>     
-        <adc-input
-          label="Next steps"
-          light
-          placeholder="Next steps"
-          value="Do this next">
-        </adc-input>                                         
-      </adc-hbox>
-      -->
-      <adc-hbox>
-        <adc-select
-          label="Priority"
-          label-field="name"
-          light
-          name="priority"
-          placeholder="Priority"
-          style="min-width: 200px;">
-        </adc-select>                           
+        </adc-input>        
         <adc-select
           label="Owner"
           label-field="fullName"
           light
           name="owner"
           placeholder="Owner"
-          style="flex-basis: 0; flex-grow: 1;">
+          style="flex-grow: 0; min-width: 250px;">
         </adc-select>                                   
         <adc-date-picker
           label="Due date"
           light
           placeholder="Due date"
           style="min-width: 165px;">
-        </adc-date-picker>
-        <adc-button 
-          kind="secondary" 
-          size="md">
-          Add item
-        </adc-button>
+        </adc-date-picker>            
       </adc-hbox>
+      <adc-controls></adc-controls>
       <adc-table light>
         <adc-column sortable>Description</adc-column>
         <adc-column sortable width="266">Owner</adc-column>        
