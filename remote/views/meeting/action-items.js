@@ -107,26 +107,20 @@ export default class RemoteMeetingActions extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Element
-    this.$add = this.shadowRoot.querySelector( 'adc-button' );    
     this.$description = this.shadowRoot.querySelector( 'adc-input' );
     this.$due = this.shadowRoot.querySelector( 'adc-date-picker' );      
     this.$owner = this.shadowRoot.querySelector( 'adc-select[name=owner]' );
-    this.$priority = this.shadowRoot.querySelector( 'adc-select[name=priority]' );  
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
 
     // State
     store.person.subscribe( ( data ) => this.$owner.provider = data );    
-    store.priority.subscribe( ( data ) => this.$priority.provider = data );        
   }
 
    // When attributes change
   _render() {
     this.$description.readOnly = this.readOnly;
-    this.$priority.readOnly = this.readOnly;
     this.$owner.readOnly = this.readOnly;
     this.$due.readOnly = this.readOnly;
-    this.$add.disabled = this.readOnly;
-    // this.$attendee.readOnly = this.readOnly;
   }
 
   // Promote properties

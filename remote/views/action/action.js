@@ -163,7 +163,7 @@ export default class RemoteAction extends HTMLElement {
       <adc-table sortable selectable>
         <adc-column header-text="Priority" sortable width="150"></adc-column>      
         <adc-column header-text="Description" label-field="description" sortable></adc-column>
-        <adc-column header-text="Owner" label-field="owner" sortable width="200"></adc-column>        
+        <adc-column header-text="Owner" label-field="owner" sortable width="250"></adc-column>        
         <adc-column header-text="Due date" label-field="dueAt" sortable width="165"></adc-column>                
         <adc-column header-text="Status" label-field="status" sortable width="165"></adc-column>                        
         <adc-vbox slot="empty">
@@ -255,31 +255,13 @@ export default class RemoteAction extends HTMLElement {
     this.$search = this.shadowRoot.querySelector( '#search' );       
     this.$due = this.shadowRoot.querySelector( 'adc-date-picker' );
 
-    // State
-    store.milestone.subscribe( ( data ) => this.$milestone.provider = data );    
-    store.person.subscribe( ( data ) => this.$owner.provider = data );    
-    store.priority.subscribe( ( data ) => this.$priority.provider = data );    
-    store.project.subscribe( ( data ) => this.$project.provider = data );        
-    store.status.subscribe( ( data ) => this.$status.provider = data );    
-    store.action.subscribe( ( data ) => this.$table.provider = data );    
-    
+    // State    
     const action_index = window.localStorage.getItem( 'remote_action_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_action_index' ) );
 
     // Read
     // TODO: What happens when reference table changes?
     // TODO: Invalidate table to re-render?
-    db.Priority.toArray().then( ( data ) => {
-      this._priorities = [... data];
-      return db.Person.toArray();
-    } )
-    .then( ( people ) => {
-      this._people = [... people];
-      return db.Status.toArray();
-    } )
-    .then( ( status ) => {
-      this._status = [... status];
-      return db.Action.orderBy( 'description' ).toArray();
-    } )
+    db.Action.orderBy( 'dueAt' ).toArray()
     .then( ( results ) => {
       this.$table.provider = results;      
       this.$table.selectedIndex = action_index === null ? null : action_index;      
@@ -290,19 +272,26 @@ export default class RemoteAction extends HTMLElement {
       
       store.action.set( results );
     } );        
+
+    store.milestone.subscribe( ( data ) => this.$milestone.provider = data );
+    store.person.subscribe( ( data ) => {
+      this.$owner.provider = data;
+      this._people = data; 
+    } );    
+    store.priority.subscribe( ( data ) => {
+      this.$priority.provider = data;
+      this._priorities = data;
+    } );    
+    store.project.subscribe( ( data ) => this.$project.provider = data );
+    store.status.subscribe( ( data ) => {
+      this.$status.provider = data;
+      this._status = data;
+    } );    
+    store.action.subscribe( ( data ) => this.$table.provider = data );     
   }
 
   clear() {
-    this.$description.error = null;
-    this.$description.invalid = false;
-    this.$description.value = null;
-
-    /*
-    this.$url.error = null;
-    this.$url.invalid = false;
-    this.$url.value = null;
-    this.$tags.value = null;        
-    */
+    this.value = null;
   }
 
   doActionAdd() {
