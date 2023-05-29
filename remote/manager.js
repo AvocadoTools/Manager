@@ -144,6 +144,7 @@ export default class RemoteManager extends HTMLElement {
         <adc-drawer-item>Priorities</adc-drawer-item>                
         <adc-drawer-item>Projects</adc-drawer-item>                                
         <adc-drawer-item>Rooms</adc-drawer-item>        
+        <adc-drawer-item>Skills</adc-drawer-item>                                
         <adc-drawer-item>Status</adc-drawer-item>                        
         <adc-drawer-item>Tags</adc-drawer-item>                                
         <adc-drawer-item>Types</adc-drawer-item>                                
@@ -189,7 +190,15 @@ export default class RemoteManager extends HTMLElement {
           name="rooms"
           read-only>
           No rooms added yet.
-        </arm-resource>                                    
+        </arm-resource>                   
+        <arm-resource 
+          data-type="Skill"
+          helper="Branches of knowledge dealing with engineering" 
+          label="Skills"
+          name="skills"
+          read-only>
+          No skills added yet.          
+        </arm-resource>                                                                  
         <arm-resource 
           data-type="Status"
           helper="Status used for action items." 
@@ -211,8 +220,8 @@ export default class RemoteManager extends HTMLElement {
           label="Types"
           name="types"
           read-only>
+          No types added yet.
         </arm-resource>                                          
-        <arm-resource label="Types"></arm-resource>                  
       </adc-stack>
     `;
 
@@ -254,6 +263,10 @@ export default class RemoteManager extends HTMLElement {
     this.$types = this.shadowRoot.querySelector( 'arm-resource[name=types]' );
 
     // State
+    if( window.localStorage.getItem( 'avocado_id' ) === null ) {
+      window.localStorage.setItem( 'avocado_id', uuidv4() );
+    }
+
     const drawer_index = window.localStorage.getItem( 'remote_drawer_index' ) === null ? 0 : parseInt( window.localStorage.getItem( 'remote_drawer_index' ) )
     this.$stack.selectedIndex = this.$drawer.selectedIndex = drawer_index;
 

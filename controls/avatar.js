@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "../lib/uuid-9.0.0.js";
+
 export default class AvocadoAvatar extends HTMLElement {
   constructor() {
     super();
@@ -82,8 +84,12 @@ export default class AvocadoAvatar extends HTMLElement {
         }
 
         :host( [label] ) ::slotted( adc-icon ),
-        :host( [src] ) ::slotted( adc-icon ) {
+        button[data-format] ::slotted( adc-icon ) {
           display: none;
+        }
+
+        :host( [light] ) button {
+          background-color: #ffffff;
         }
 
         :host( [read-only] ) button {
@@ -102,6 +108,7 @@ export default class AvocadoAvatar extends HTMLElement {
     // Properties
     this._data = null;
     this._label = null;
+    this._source = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -141,22 +148,15 @@ export default class AvocadoAvatar extends HTMLElement {
           this.$canvas.height = height;
           const context = this.$canvas.getContext( '2d' );
           context.drawImage( img, 0, 0, width, height );
-      
-          const photo = {
-            format: format,
-            name: img.getAttribute( 'data-name' ),
-            data: this.$canvas.toDataURL( format, compression ),
-            width: img.width,
-            height: img.height
-          };
-          
+
+          this.$button.setAttribute( 'data-id', uuidv4() );          
+          this.$button.setAttribute( 'data-format', format );          
+          this.$button.setAttribute( 'data-name', img.getAttribute( 'data-name' ) );
+          this.$button.setAttribute( 'data-modified', Date.now() );          
+          this.$button.setAttribute( 'data-width', img.width );
+          this.$button.setAttribute( 'data-height', img.height );
+          this.src = this.$canvas.toDataURL( format, compression );          
           this.label = null;
-          this.src = photo.data;
-          // this.$button.style.backgroundImage = `url( ${photo.data} )`;
-          // this._value = [... this._value, photo];
-      
-          // evt.currentTarget.removeEventListener( 'load', this.doImageLoad );
-          // evt.currentTarget.remove();
         } );        
         img.src = URL.createObjectURL( this.$input.files[0] );        
         this.$input.value = '';        
@@ -274,9 +274,11 @@ export default class AvocadoAvatar extends HTMLElement {
     this._upgrade( 'format' );    
     this._upgrade( 'label' );
     this._upgrade( 'labelFunction' );    
+    this._upgrade( 'light' );    
     this._upgrade( 'readOnly' );
     this._upgrade( 'shorten' );
     this._upgrade( 'src' );
+    this._upgrade( 'value' );
     this._render();
   }
 
@@ -290,9 +292,9 @@ export default class AvocadoAvatar extends HTMLElement {
       'hidden',
       'format',
       'label',
+      'light',
       'read-only',
-      'shorten',
-      'src'
+      'shorten'
     ];
   }
 
@@ -320,6 +322,51 @@ export default class AvocadoAvatar extends HTMLElement {
   set labelFunction( value ) {
     this._label = value;
   }  
+
+  get src() {
+    return this._source;
+  }
+
+  set src( data ) {
+    this._source = data;
+    this._render();
+  }
+
+  get value() {
+    if( this.$button.hasAttribute( 'data-format' ) ) {
+      return {
+        id: this.$button.getAttribute( 'data-id' ),        
+        format: this.$button.getAttribute( 'data-format' ),
+        name: this.$button.getAttribute( 'data-name' ),
+        modified: parseInt( this.$button.getAttribute( 'data-modified' ) ),        
+        width: parseInt( this.$button.getAttribute( 'data-width' ) ),
+        height: parseInt( this.$button.getAttribute( 'data-height' ) ),
+        data: this.src
+      };
+    }
+
+    return null;
+  }
+
+  set value( photo ) {
+    if( photo === null ) {
+      this.$button.removeAttribute( 'data-id' );      
+      this.$button.removeAttribute( 'data-format' );
+      this.$button.removeAttribute( 'data-name' );
+      this.$button.removeAttribute( 'data-modified' );      
+      this.$button.removeAttribute( 'data-width' );
+      this.$button.removeAttribute( 'data-height' );
+      this.src = null;
+    } else {
+      this.$button.setAttribute( 'data-id', photo.id );
+      this.$button.setAttribute( 'data-format', photo.format );
+      this.$button.setAttribute( 'data-name', photo.name );
+      this.$button.setAttribute( 'data-modified', photo.modified );      
+      this.$button.setAttribute( 'data-width', photo.width );
+      this.$button.setAttribute( 'data-height', photo.height );
+      this.src = photo.data;
+    }
+  }
 
   // Reflect attributes
   // Return typed value (Number, Boolean, String, null)
@@ -447,6 +494,26 @@ export default class AvocadoAvatar extends HTMLElement {
     }
   }
 
+  get light() {
+    return this.hasAttribute( 'light' );
+  }
+
+  set light( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'light' );
+      } else {
+        this.setAttribute( 'light', '' );
+      }
+    } else {
+      this.removeAttribute( 'light' );
+    }
+  }
+
   get readOnly() {
     return this.hasAttribute( 'read-only' );
   }
@@ -486,22 +553,6 @@ export default class AvocadoAvatar extends HTMLElement {
       this.removeAttribute( 'shorten' );
     }
   }
-
-  get src() {
-    if( this.hasAttribute( 'src' ) ) {
-      return this.getAttribute( 'src' );
-    }
-
-    return null;
-  }
-
-  set src( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'src', value );
-    } else {
-      this.removeAttribute( 'src' );
-    }
-  } 
 }
 
 window.customElements.define( 'adc-avatar', AvocadoAvatar );

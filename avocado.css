@@ -76,6 +76,10 @@ body {
   padding: 0;
 }
 
+a.download {
+  display: none;
+}
+
 adc-icon-button[slot=prefix] {
   display: none;
 }

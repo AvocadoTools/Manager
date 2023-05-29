@@ -24,7 +24,7 @@ export default class RemoteMeetingActions extends HTMLElement {
           flex-basis: 0;
           flex-direction: column;
           flex-grow: 1;
-          padding: 16px 16px 26px 16px;
+          padding: 16px 16px 16px 16px;
           position: relative;
         }
 
@@ -38,6 +38,10 @@ export default class RemoteMeetingActions extends HTMLElement {
 
         adc-button {
           margin: 0 0 20px 0;
+        }
+
+        adc-controls {
+          padding-bottom: 16px;
         }
 
         adc-hbox {
@@ -90,9 +94,9 @@ export default class RemoteMeetingActions extends HTMLElement {
       </adc-hbox>
       <adc-controls></adc-controls>
       <adc-table light>
-        <adc-column sortable>Description</adc-column>
-        <adc-column sortable width="266">Owner</adc-column>        
-        <adc-column sortable width="165">Due date</adc-column>     
+        <adc-column header-text="Description" sortable></adc-column>
+        <adc-column header-text="Owner" sortable width="266"></adc-column>        
+        <adc-column header-text="Due date" sortable width="165"></adc-column>     
         <adc-vbox slot="empty">
           <adc-label>No action items added yet.</adc-label>
         </adc-vbox>                                        

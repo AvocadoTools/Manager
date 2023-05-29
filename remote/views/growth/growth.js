@@ -63,12 +63,7 @@ export default class RemoteGrowth extends HTMLElement {
           flex-grow: 1;
         }         
 
-        adc-vbox:nth-of-type( 1 ) {
-          background-color: #f4f4f4;
-          min-width: 300px;
-        }
-
-        adc-vbox:nth-of-type( 2 ) {
+        adc-vbox {
           flex-basis: 0;
           flex-grow: 1;
           padding: 16px 0 0 0;
@@ -102,43 +97,34 @@ export default class RemoteGrowth extends HTMLElement {
         }
       </style>
       <adc-vbox>
-        <adc-input 
-          placeholder="Search plans" 
-          size="lg" 
-          type="search">
-          <adc-icon name="search" slot="prefix"></adc-icon>
-        </adc-input>
-        <adc-table selectable sortable>
-          <adc-column 
-            header-text="Plans"
-            item-renderer="arm-person-item-renderer" 
-            sortable>
-          </adc-column>
-          <adc-vbox slot="empty">
-            <adc-label>No plans added yet.</adc-label>
-          </adc-vbox>
-        </adc-table>
-      </adc-vbox>
-      <adc-vbox>
         <adc-hbox>
           <adc-avatar read-only shorten>
             <adc-icon name="person" filled slot="icon"></adc-icon>
           </adc-avatar>
           <adc-select
+            id="person"
             label="Person"
+            label-field="fullName"
             placeholder="Person"
-            style="flex-basis: 0; flex-grow: 1;">
+            style="flex-basis: 0; flex-grow: 0; min-width: 300px;">
           </adc-select>
           <adc-input
+            id="scope"
+            label="Job scope"
+            placeholder="Job scope">
+          </adc-input>          
+          <adc-input
+            id="level"
             label="Job level"
             placeholder="Job level"
             style="flex-grow: 0; min-width: 165px;"
             value="4">
           </adc-input>
           <adc-date-picker
+            id="promotion"
             label="Last promotion date"
-            placeholder="Last promotion date"
-            style="flex-grow: 0; min-width: 200px;">
+            placeholder="Promotion date"
+            style="flex-grow: 0; min-width: 165px;">
           </adc-date-picker>                           
         </adc-hbox>
         <adc-tabs>
@@ -148,14 +134,12 @@ export default class RemoteGrowth extends HTMLElement {
           <arm-growth-potential label="Potential"></arm-growth-potential>          
           <arm-growth-conversations label="Conversations"></arm-growth-conversations>
         </adc-tabs>
-        <adc-controls></adc-controls>
       </adc-vbox>
     `;
 
     // Private
-    this._changed = false;
     this._data = null;
-    this._value = null;
+    this._id = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -171,25 +155,31 @@ export default class RemoteGrowth extends HTMLElement {
     this.$controls.addEventListener( 'edit', () => this.doPersonEdit() );
     this.$controls.addEventListener( 'save', () => this.doPersonSave() );
     this.$level = this.shadowRoot.querySelector( 'adc-input' );    
+    this.$objectives = this.shadowRoot.querySelector( 'arm-growth-objectives' );
     this.$person = this.shadowRoot.querySelector( 'adc-select' );    
+    this.$person.addEventListener( 'change', ( evt ) => {
+      console.log( evt.detail );
+    } );
+    this.$promotion = this.shadowRoot.querySelector( 'adc-date-picker' );
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
     this.$table.addEventListener( 'change', ( evt ) => this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem );
-    // this.$name.addEventListener( 'input', () => this._changed = true );
 
     // State
-    store.person.subscribe( ( data ) => {
-      this.$column.headerText = `Plans (${data.length})`;
-      this.$table.provider = data.sort( ( a, b ) => {
-        if( a.fullName.toLowerCase() > b.fullName.toLowerCase() ) return 1;
-        if( a.fullName.toLowerCase() < b.fullName.toLowerCase() ) return -1;
-        return 0;
-      } );
+    const growth_index = window.localStorage.getItem( 'remote_growth_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_growth_index' ) );
+
+    // Read
+    db.Person.orderBy( 'fullName' ).toArray()
+    .then( ( results ) => {
+      this.$person.provider = results;
+      this.$person.selectedIndex = growth_index === null ? null : growth_index;
+      this.readOnly = true;
+      this.value = growth_index === null ? null : results[growth_index];      
+      this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;      
     } );
   }
 
   clear() {
-    this.$person.error = null;
-    this.$person.invalid = false;
+    this.value = null;
   }
 
   doNameChange() {
@@ -231,7 +221,7 @@ export default class RemoteGrowth extends HTMLElement {
   }
 
   doPersonDelete() {
-    const response = confirm( `Delete ${this._value.fullName}?` );
+    const response = confirm( `Delete plan for ${this._value.fullName}?` );
 
     if( response ) {
       this.value = null;
@@ -315,6 +305,7 @@ export default class RemoteGrowth extends HTMLElement {
 
   // Setup
   connectedCallback() {
+    this._upgrade( 'changed' );
     this._upgrade( 'concealed' );
     this._upgrade( 'data' );
     this._upgrade( 'hidden' );
@@ -326,6 +317,7 @@ export default class RemoteGrowth extends HTMLElement {
   // Watched attributes
   static get observedAttributes() {
     return [
+      'changed',
       'concealed',
       'hidden',
       'read-only'
@@ -350,17 +342,43 @@ export default class RemoteGrowth extends HTMLElement {
   }
 
   get value() {
-    return this._value;
+    return {
+      person: this.$person.selectedItem.id,
+      level: this.$level.value,
+      promotionAt: this.$promotion.value.getTime()
+    };
   }
 
   set value( data ) {
-    this._value = data === null ? null : Object.assign( {}, data );
-    this._render();
+    this.$person.selectedItem = {id: data.person};
+    this.$level.value = data.level;
+    this.$promotionAt.value = data.promotionAt === null ? null : new Date( data.promotionAt );
+    this.$objectives.value = data.objectives;
   }
 
   // Attributes
   // Reflected
   // Boolean, Number, String, null
+  get changed() {
+    return this.hasAttribute( 'changed' );
+  }
+
+  set changed( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'changed' );
+      } else {
+        this.setAttribute( 'changed', '' );
+      }
+    } else {
+      this.removeAttribute( 'changed' );
+    }
+  }
+
   get concealed() {
     return this.hasAttribute( 'concealed' );
   }

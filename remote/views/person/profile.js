@@ -96,13 +96,7 @@ export default class RemotePersonProfile extends HTMLElement {
     `;
 
     // Private
-    this._anniversary = null;
-    this._astrology = null;
-    this._birth = null;
     this._data = null;
-    this._notes = null;
-    this._pto = null;
-    this._start = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -112,12 +106,13 @@ export default class RemotePersonProfile extends HTMLElement {
     this.$anniversary = this.shadowRoot.querySelector( '#anniversary' );
     this.$anniversary.formatFunction = this.format;
     this.$anniversary.addEventListener( 'change', ( evt ) => {
-      this.$union.text = formatDistanceToNow( evt.detail, {unit: 'year'} );
+      this.$union.concealed = false;
+      this.$union.text = this.distance( evt.detail );
     } );    
     this.$birth = this.shadowRoot.querySelector( '#birth' );
     this.$birth.formatFunction = this.format;
     this.$birth.addEventListener( 'change', ( evt ) => {
-      // this.$zodiac.href = `https://www.horoscope.com/us/horoscopes/general/horoscope-general-daily-today.aspx?sign=${link}`;
+      this.$zodiac.concealed = false;
       this.$zodiac.label = this.zodiac( evt.detail );
     } );
     this.$family = this.shadowRoot.querySelector( '#family' );        
@@ -127,31 +122,19 @@ export default class RemotePersonProfile extends HTMLElement {
     this.$pto = this.shadowRoot.querySelector( '#pto' );    
     this.$pto.formatFunction = this.format;
     this.$pto.addEventListener( 'change', ( evt ) => {
-      this.$last.text = formatDistanceToNow( evt.detail );
+      this.$last.concealed = false;
+      this.$last.text = this.distance( evt.detail );
     } );
     this.$spouse = this.shadowRoot.querySelector( '#spouse' );    
     this.$start = this.shadowRoot.querySelector( '#start' );
     this.$start.formatFunction = this.format;
     this.$start.addEventListener( 'change', ( evt ) => {
-      console.log( evt );
-      const formatter = new Intl.RelativeTimeFormat( navigator.language, {
-        style: 'short'
-      } );
-      
-      this.$employed.text = formatter.format( 1, 'month' );
+      this.$employed.concealed = false;
+      this.$employed.text = this.distance( evt.detail );
     } );
     this.$spouse = this.shadowRoot.querySelector( '#spouse' );
     this.$union = this.shadowRoot.querySelector( '#anniversary adc-label' );    
     this.$zodiac = this.shadowRoot.querySelector( '#birth adc-link' );
-  }
-
-  clear() {
-    this.start = null;
-    this.pto = null;
-    this.birth = null;
-    this.spouse = null;
-    this.anniversary = null;
-    this.family = null;
   }
 
   distance( value ) {
@@ -226,19 +209,15 @@ export default class RemotePersonProfile extends HTMLElement {
     return formatter.format( distance, unit ) + ', ' + sign;    
   }
 
-  doNotesChange() {
-    this.$preview.concealed = this.$notes.value === null ? true : false;
-  }
-
    // When attributes change
   _render() {
-    this.$anniversary.readOnly = this.readOnly;
+    this.$start.readOnly = this.readOnly;
+    this.$pto.readOnly = this.readOnly;        
     this.$birth.readOnly = this.readOnly;
+    this.$spouse.readOnly = this.readOnly;    
+    this.$anniversary.readOnly = this.readOnly;
     this.$family.readOnly = this.readOnly;
     this.$notes.readOnly = this.readOnly;
-    this.$pto.readOnly = this.readOnly;    
-    this.$spouse.readOnly = this.readOnly;
-    this.$start.readOnly = this.readOnly;
   }
 
   // Promote properties
@@ -253,20 +232,15 @@ export default class RemotePersonProfile extends HTMLElement {
 
   // Setup
   connectedCallback() {
-    this._upgrade( 'anniversary' );
-    this._upgrade( 'birth' );
+    this._upgrade( 'concealed' );    
     this._upgrade( 'data' );
     this._upgrade( 'disabled' );
-    this._upgrade( 'family' );    
     this._upgrade( 'helper' );
     this._upgrade( 'hidden' );
     this._upgrade( 'icon' );
     this._upgrade( 'label' );
-    this._upgrade( 'notes' );    
-    this._upgrade( 'pto' );    
     this._upgrade( 'readOnly' );
-    this._upgrade( 'spouse' );
-    this._upgrade( 'start' );
+    this._upgrade( 'value' );    
     this._render();
   }
 
@@ -292,26 +266,6 @@ export default class RemotePersonProfile extends HTMLElement {
   // Properties
   // Not reflected
   // Array, Date, Object, null
-  get anniversary() {
-    return this.$anniversary.value;
-  }
-
-  set anniversary( value ) {
-    this.$anniversary.value = value;
-    this.$union.concealed = value === null ? true : false;
-    this.$union.text = this.distance( value );
-  }
-
-  get birth() {
-    return this.$birth.value;
-  }
-
-  set birth( value ) {
-    this.$birth.value = value;
-    this.$zodiac.concealed = value === null ? true : false;
-    this.$zodiac.label = value === null ? '' : this.zodiac( new Date( value ) );                
-  }
-
   get data() {
     return this._data;
   }
@@ -320,48 +274,48 @@ export default class RemotePersonProfile extends HTMLElement {
     this._data = value;
   }
 
-  get family() {
-    return this.$family.value;
+  get value() {
+    return {
+      startAt: this.$start.value === null ? null : this.$start.value.getTime(),
+      ptoAt: this.$pto.value === null ? null : this.$pto.value.getTime(),
+      bornAt: this.$birth.value === null ? null : this.$birth.value.getTime(),
+      spouse: this.$spouse.value,
+      anniversaryAt: this.$anniversary.value === null ? null : this.$anniversary.value.getTime(),
+      family: this.$family.value,
+      notes: this.$notes.value
+    };
   }
 
-  set family( value ) {
-    this.$family.value = value;
-  }  
-
-  get notes() {
-    return this.$notes.value;
-  }
-
-  set notes( value ) {
-    this.$notes.value = value;
-  }    
-
-  get pto() {
-    return this.$pto.value;
-  }
-
-  set pto( value ) {
-    this.$pto.value = value;
-    this.$last.concealed = value === null ? true : false;
-    this.$last.text = this.distance( value );
-  }
-
-  get spouse() {
-    return this.$spouse.value;
-  }
-
-  set spouse( value ) {
-    this.$spouse.value = value;
-  }
-
-  get start() {
-    return this.$start.value;
-  }
-
-  set start( value ) {    
-    this.$start.value = value;
-    this.$employed.concealed = value === null ? true : false;
-    this.$employed.text = this.distance( value );    
+  set value( data ) {
+    if( data === null ) {
+      this.$start.value = null;
+      this.$employed.concealed = true;
+      this.$pto.value = null;
+      this.$last.concealed = true;
+      this.$birth.value = null;
+      this.$zodiac.concealed = true;
+      this.$spouse.value = null;
+      this.$anniversary.value = null;
+      this.$union.concealed = true;
+      this.$family.value = null;
+      this.$notes.value = null;
+    } else {
+      this.$start.value = data.startAt === null ? null : new Date( data.startAt );
+      this.$employed.concealed = data.startAt === null ? true : false;
+      this.$employed.text = data.startAt === null ? null : this.distance( new Date( data.startAt ) );
+      this.$pto.value = data.ptoAt === null ? null : new Date( data.ptoAt );
+      this.$last.concealed = data.ptoAt === null ? true : false;      
+      this.$last.text = data.ptoAt === null ? null : this.distance( new Date( data.ptoAt ) );
+      this.$birth.value = data.bornAt === null ? null : new Date( data.bornAt );
+      this.$zodiac.concealed = data.bornAt === null ? true : false;
+      this.$zodiac.label = data.bornAt === null ? null : this.zodiac( new Date( data.bornAt ) );
+      this.$spouse.value = data.spouse;
+      this.$anniversary.value = data.anniversaryAt === null ? null : new Date( data.anniversaryAt );
+      this.$union.concealed = data.anniversaryAt === null ? true : false;
+      this.$union.text = data.anniversaryAt === null ? null : this.distance( new Date( data.anniversaryAt ) );
+      this.$family.value = data.family;
+      this.$notes.value = data.notes;
+    }
   }
 
   // Attributes

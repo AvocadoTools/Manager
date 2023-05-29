@@ -45,6 +45,7 @@ export default class RemoteGoals extends HTMLElement {
       <adc-hbox>
         <adc-input
           helper="A single point stating long-term interests"
+          id="name"
           label="Description"
           light
           placeholder="Description"
@@ -52,6 +53,7 @@ export default class RemoteGoals extends HTMLElement {
         </adc-input>              
         <adc-date-picker
           helper="Projected completion"
+          id="complete"
           label="Plan date"
           light
           placeholder="Plan date"
@@ -59,6 +61,7 @@ export default class RemoteGoals extends HTMLElement {
         </adc-date-picker>           
         <adc-select
           helper="Degree of completion"
+          id="status"
           label="Status"
           light
           placeholder="Status"
@@ -83,8 +86,15 @@ export default class RemoteGoals extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Element
-    this.$attendee = this.shadowRoot.querySelector( 'adc-input' );
+    this.$name = this.shadowRoot.querySelector( '#name' );
+    this.$complete = this.shadowRoot.querySelector( '#complete' );
+    this.$status = this.shadowRoot.querySelector( '#status' );
+    this.$description = this.shadowRoot.querySelector( '#description' );
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
+  }
+  
+  clear() {
+    this.value = null;
   }
 
    // When attributes change
@@ -112,6 +122,7 @@ export default class RemoteGoals extends HTMLElement {
     this._upgrade( 'icon' );
     this._upgrade( 'label' );
     this._upgrade( 'readOnly' );
+    this._upgrade( 'value' );
     this._render();
   }
 
@@ -143,6 +154,35 @@ export default class RemoteGoals extends HTMLElement {
 
   set data( value ) {
     this._data = value;
+  }
+
+  get value() {
+    return {
+      smart: this.$name.value,
+      completeAt: this.$complete.value,
+      status: this.$status.value.id,
+      description: this.$description.value,
+      complexity: this.$complexity.value.id,
+      impact: this.$impact.value.id
+    };
+  }
+
+  set value( item ) {
+    if( item === null ) {
+      this.$name.value = null;
+      this.$complete.value = null;
+      this.$status.selectedItem = null;
+      this.$description.value = null;
+      this.$complexity.selectedItem = null;
+      this.$impact.selectedItem = null;
+    } else {
+      this.$name.value = item.name;
+      this.$complete.value = item.completeAt;
+      this.$status.selectedItem = {id: item.status};
+      this.$description.value = item.description;
+      this.$complexity.selectedItem = {id: item.complexity};
+      this.$impact.selectedItem = {id: item.impact};
+    }
   }
 
   // Attributes

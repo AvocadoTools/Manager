@@ -20,7 +20,6 @@ import RemotePersonProfile from "./profile.js";
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
 
 import { db } from "../../db.js";
-import { store } from "../../store.js";
 
 export default class RemotePerson extends HTMLElement {
   constructor() {
@@ -156,9 +155,9 @@ export default class RemotePerson extends HTMLElement {
     `;
 
     // Private
-    this._changed = false;
+    this._created = null;
     this._data = null;
-    this._value = null;
+    this._updated = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -174,16 +173,27 @@ export default class RemotePerson extends HTMLElement {
       return 0;
     };
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
-    this.$controls.addEventListener( 'add', () => this.doPersonAdd() );
-    this.$controls.addEventListener( 'cancel', () => this.doPersonCancel() );
-    this.$controls.addEventListener( 'delete', () => this.doPersonDelete() );
-    this.$controls.addEventListener( 'edit', () => this.doPersonEdit() );
-    this.$controls.addEventListener( 'save', () => this.doPersonSave() );
+    this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
+    this.$controls.addEventListener( 'cancel', () => this.doControlsCancel() );
+    this.$controls.addEventListener( 'delete', () => this.doControlsDelete() );
+    this.$controls.addEventListener( 'edit', () => this.doControlsEdit() );
+    this.$controls.addEventListener( 'save', () => this.doControlsSave() );
     this.$email = this.shadowRoot.querySelector( 'adc-hbox:nth-of-type( 1 ) adc-input:nth-of-type( 2 )' );
+    this.$email.addEventListener( 'clear', () => {
+      this.$send.concealed = true;
+      this.$send.href = null;
+    } );
+    this.$email.addEventListener( 'input', () => {
+      this.$send.concealed = this.$email.value === null ? true : false;
+      this.$send.href = this.$email.value === null ? null : `mailto:${this.$email.value}`;
+    } );
     this.$location = this.shadowRoot.querySelector( 'adc-hbox:nth-of-type( 2 ) adc-input:nth-of-type( 2 )' );
     this.$name = this.shadowRoot.querySelector( 'adc-hbox:nth-of-type( 1 ) adc-input:nth-of-type( 1 )' );
-    this.$name.addEventListener( 'blur', () => this.doNameChange() );    
-    this.$name.addEventListener( 'input', () => this._changed = true );
+    this.$name.addEventListener( 'input', () => {
+      if( this.$avatar.src === null ) {
+        this.$avatar.label = this.$name.value;
+      }
+    } );
     this.$profile = this.shadowRoot.querySelector( 'arm-person-profile' );
     this.$search = this.shadowRoot.querySelector( '#search' );
     this.$search.addEventListener( 'input', ( evt ) => this.doSearchInput( evt ) );
@@ -193,109 +203,67 @@ export default class RemotePerson extends HTMLElement {
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );    
     this.$table.selectedItemsCompareFunction = ( provider, item ) => { return provider.id === item.id; };
     this.$title = this.shadowRoot.querySelector( 'adc-hbox:nth-of-type( 2 ) adc-input:nth-of-type( 1 )' );
-    this.$weather = this.shadowRoot.querySelector( 'adc-link[name=weather]' );
+    this.$weather = this.shadowRoot.querySelector( 'adc-link[name=weather]' );   
 
-    // State
-    const person_index = window.localStorage.getItem( 'remote_person_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_person_index' ) );
-
-    // Read
-    db.Person.orderBy( 'fullName' ).toArray()
-    .then( ( results ) => {
-      this.$column.headerText = `People (${results.length})`;      
-      this.$table.provider = results;      
-      this.$table.selectedIndex = person_index === null ? null : person_index;      
-
-      this.readOnly = true;
-      this.value = person_index === null ? null : results[person_index];      
-      this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;      
-      
-      store.person.set( results );
-    } );
+    this.doPersonLoad();
   }
 
-  clear() {
-    this.$avatar.clear();
-    this.$name.error = null;
-    this.$name.invalid = false;
-    this.$name.value = null;
-    this.$email.value = null;
-    this.$send.concealed = true;
-    this.$title.value = null;
-    this.$location.value = null;
-    this.$weather.label = null;
-    this.$profile.clear();
-  }
+  doControlsAdd() {
+    window.localStorage.removeItem( 'remote_person_id' );
 
-  doNameChange() {
-    if( this.$avatar.src === null ) {
-      this.$avatar.label = this.$name.value;
-    }
-  }
-
-  doPersonAdd() {
-    this.$table.selectedIndex = null;
-    this.$controls.mode = AvocadoControls.CANCEL_SAVE;
+    this.$table.selectedItems = null;
     this.value = null;
-    this.clear();
-    this._changed = false;
     this.readOnly = false;
-    this.$name.focus();
+    this.$name.focus();    
+    this.$controls.mode = AvocadoControls.CANCEL_SAVE;    
   }
 
-  doPersonCancel() {
-    if( this._changed ) {
-      const response = confirm( 'Do you want to save changes?' );
-      
-      if( response ) {
-        this.doPersonSave();
-        this._changed = false;
-        return;
-      }
-    }
+  doControlsCancel() {
+    const id = window.localStorage.getItem( 'remote_person_id' );
+    
+    this.readOnly = true;    
 
-    if( this._value === null ) {
-      this.clear();
+    if( id === null ) {
+      this.value = null;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
     } else {
-      this.value = this._value;
-      this.$controls.mode = AvocadoControls.ADD_EDIT;
+      db.Person.where( {id: id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        this.$controls.mode = AvocadoControls.ADD_EDIT;        
+      } );
     }
-
-    this._changed = false;
-    this.readOnly = true;    
   }
 
-  doPersonDelete() {
-    const id = this._value.id;    
-    const response = confirm( `Delete ${this._value.fullName}?` );
+  doControlsDelete() {
+    const response = confirm( `Delete ${this.value.fullName}?` );
 
     if( response ) {
-      this.clear();
-      this.value = null;
-      this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'remote_person_index' );
-      this._changed = false;
-      this.readOnly = true;
-      this.$controls.mode = AvocadoControls.ADD_ONLY;
+      const id = window.localStorage.getItem( 'remote_person_id' );
+      
+      window.localStorage.removeItem( 'remote_person_index' );      
 
       db.Person.delete( id )
       .then( () => db.Person.orderBy( 'fullName' ).toArray() )
       .then( ( results ) => {
         this.$column.headerText = `People (${results.length})`;      
+        this.$table.selectedItems = null;        
         this.$table.provider = results;        
-        store.person.set( results );
       } );          
+
+      this.value = null;
+      this.readOnly = true;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;            
     }
   }
   
-  doPersonEdit() {
-    this._changed = false;
-    this.readOnly = false;
-    this.$controls.mode = this._value === null ? AvocadoControls.ADD_EDIT : AvocadoControls.DELETE_CANCEL_SAVE;
+  doControlsEdit() {
+    this.readOnly = false;    
     this.$name.focus();
+    this.$controls.mode = AvocadoControls.DELETE_CANCEL_SAVE;    
   }
 
-  doPersonSave() {
+  doControlsSave() {
     if( this.$name.value === null ) {
       this.$name.error = 'A full name is the only required field.';
       this.$name.invalid = true;
@@ -305,72 +273,65 @@ export default class RemotePerson extends HTMLElement {
       this.$name.invalid = false;
     }
 
-    const record = {
-      avatar: this.$avatar.src,
-      fullName: this.$name.value,
-      email: this.$email.value,
-      jobTitle: this.$title.value,
-      location: this.$location.value,
-      startAt: this.$profile.start === null ? null : this.$profile.start.getTime(),
-      ptoAt: this.$profile.pto === null ? null : this.$profile.pto.getTime(),
-      bornAt: this.$profile.birth === null ? null : this.$profile.birth.getTime(),
-      spouse: this.$profile.spouse,
-      anniversaryAt: this.$profile.anniversary === null ? null : this.$profile.anniversary.getTime(),
-      family: this.$profile.family,
-      notes: this.$profile.notes
-    };  
+    const record = Object.assign( {}, this.value );
 
     if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
-      record.id = this.value.id;
-      record.createdAt = this.value.createdAt;
-      record.updatedAt = Date.now();
-      this.value = record;                
+      record.id = window.localStorage.getItem( 'remote_person_id' );
+      record.createdAt = this._created;
+      record.updatedAt = this._updated = Date.now();
 
       db.Person.put( record )
       .then( () => db.Person.orderBy( 'fullName' ).toArray() )
       .then( ( results ) => {
         this.$column.headerText = `People (${results.length})`;      
         this.$table.provider = results;
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_person_index', r );
-            break;
-          }
-        }
-
-        store.person.set( results );
+        this.$table.selectedItems = [{id: record.id}];
       } );
     } else {
       const at = Date.now();
+      const id = uuidv4();
 
-      record.id = uuidv4();
-      record.createdAt = at;
-      record.updatedAt = at;
-      this.value = record;
+      window.localStorage.setItem( 'remote_person_id', id );
+
+      record.id = id;
+      record.createdAt = this._created = at;
+      record.updatedAt = this._updated = at;
 
       db.Person.put( record )
       .then( () => db.Person.orderBy( 'fullName' ).toArray() )
       .then( ( results ) => {
         this.$column.hederText = `People (${results.length})`;              
         this.$table.provider = results;     
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_person_index', r );
-            break;
-          }
-        }
-
-        store.person.set( results );
+        this.$table.selectedItems = [{id: record.id}];
       } );            
     }
 
-    this._changed = false;
     this.readOnly = true;
     this.$controls.mode = AvocadoControls.ADD_EDIT;
+  }
+
+  doPersonLoad() {
+    this.readOnly = true;
+
+    db.Person.orderBy( 'fullName' ).toArray()
+    .then( ( results ) => {
+      this.$column.headerText = `People (${results.length})`;      
+      this.$table.provider = results;      
+
+      const id = window.localStorage.getItem( 'remote_person_id' );
+
+      if( id === null ) {
+        this.value = null;
+        this.$controls.mode = AvocadoControls.ADD_ONLY;        
+      } else {
+        this.$table.selectedItems = [{id: id}];      
+        db.Person.where( {id: id} ).first()
+        .then( ( item ) => {
+          this.value = item;
+          this.$controls.mode = item === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
+        } );
+      }
+    } );     
   }
   
   doSearchClear() {
@@ -379,26 +340,28 @@ export default class RemotePerson extends HTMLElement {
       this.$column.headerText = `People (${results.length})`;      
       this.$table.provider = results;    
 
-      if( this.value !== null ) {
-        this.$table.selectedItem = this.value;          
-        window.localStorage.setItem( 'remote_person_index', this.$table.selectedIndex );
+      const id = window.localStorage.getItem( 'remote_person_id' );
+
+      if( id !== null ) {
+        this.$table.selectedItems = [{id: id}];
       } else {
-        window.localStorage.removeItem( 'remote_person_index' );
+        this.$table.selectedItems = null;
       }
     } );          
   }
 
   doSearchInput() {
-    if( this._changed && !this.readOnly ) {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
       const response = confirm( 'Do you want to save changes?' );
     
       if( response ) {
         this.$search.value = null;
-        this.doPersonSave();
+        this.doControlsSave();
       }
     }
 
-    this.$table.selectedIndex = null;
+    this.$table.selectedItems = null;
+    window.localStorage.removeItem( 'remote_meeting_id' );    
 
     db.Person.orderBy( 'fullName' ).toArray()
     .then( ( results ) => {
@@ -407,97 +370,73 @@ export default class RemotePerson extends HTMLElement {
         return;
       }
 
-      this.$table.provider = results.filter( ( value ) => {
-        const term = this.$search.value.toLowerCase();          
+      if( results !== null ) {
+        this.$table.provider = results.filter( ( value ) => {
+          const term = this.$search.value.toLowerCase();          
 
-        let name = false;
-        let notes = false;
-        let title = false;
+          let name = false;
+          let notes = false;
+          let title = false;
 
-        if( value.fullName.toLowerCase().indexOf( term ) >= 0 )
-          name = true;
+          if( value.fullName.toLowerCase().indexOf( term ) >= 0 )
+            name = true;
 
-        if( value.jobTitle !== null )
-          if( value.jobTitle.toLowerCase().indexOf( term ) >= 0 )
-            title = true;
+          if( value.jobTitle !== null )
+            if( value.jobTitle.toLowerCase().indexOf( term ) >= 0 )
+              title = true;
 
-        if( value.notes !== null )
-          if( value.notes.toLowerCase().indexOf( term ) >= 0 )
-            notes = true;              
+          if( value.profile !== null ) {
+            if( value.profile.notes !== null )
+              if( value.profile.notes.toLowerCase().indexOf( term ) >= 0 )
+                notes = true;             
+          }
+ 
+          if( name || title || notes )
+            return true;
+          
+          return false;
+        } );
+      }
 
-        if( name || title || notes )
-          return true;
-        
-        return false;
-      } );
-
-      this.$column.headerText = `People (${this.$table.provider.length})`;
+      this.$column.headerText = `People (${this.$table.provider === null ? 0 : this.$table.provider.length})`;
     } );    
   }  
 
   doTableChange( evt ) {
-    if( this._changed && !this.readOnly ) {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
       const response = confirm( 'Do you want to save changes?' );
     
       if( response ) {
-        this.doPersonSave();
+        this.doControlsSave();
       }
     }
 
     this.readOnly = true;
-    this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem;      
-    this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'remote_person_index' );
+      window.localStorage.removeItem( 'remote_person_id' );
+      this.value = null;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;      
     } else {
-      window.localStorage.setItem( 'remote_person_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_person_id', evt.detail.selectedItem.id );
+      db.Person.where( {id: evt.detail.selectedItem.id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        console.log( item );
+      } );
+      this.$controls.mode = AvocadoControls.ADD_EDIT;      
     }
   }
 
    // When attributes change
   _render() {
-    this.$attach.readOnly = this.readOnly;
-    this.$attach.label = 'Attachments (0)';
-    this.$avatar.readOnly = this.readOnly;
+    this.$avatar.readOnly = this.readOnly;    
+    this.$name.readOnly = this.readOnly;    
     this.$email.readOnly = this.readOnly;
-    this.$location.readOnly = this.readOnly;
-    this.$name.readOnly = this.readOnly;
-    this.$profile.readOnly = this.readOnly;
     this.$title.readOnly = this.readOnly;
-
-    if( this._value === null ) {
-      this.$avatar.clear();
-      this.$send.concealed = true;
-      this.$weather.concealed = true;
-    } else {
-      if( this._value.avatar === null ) {
-        this.$avatar.label = this._value.fullName;
-        this.$avatar.src = null;        
-      } else {
-        this.$avatar.label = null;
-        this.$avatar.src = this._value.avatar;
-      }
-
-      this.$send.concealed = this._value.email === null ? true : false;
-      this.$send.href = this._value.email === null ? null : `mailto:${this._value.email}`;
-      
-      this.$weather.concealed = this._value.location === null ? true : false;
-    }
-
-    console.log( this._value );
-    
-    this.$name.value = this._value === null ? null : this._value.fullName;
-    this.$email.value = this._value === null ? null : this._value.email;        
-    this.$title.value = this._value === null ? null : this._value.jobTitle;    
-    this.$location.value = this._value === null ? null : this._value.location;    
-    this.$profile.start = this._value === null ? null : this._value.startAt;
-    this.$profile.pto = this._value === null ? null : this._value.ptoAt;    
-    this.$profile.birth = this._value === null ? null : this._value.bornAt;    
-    this.$profile.spouse = this._value === null ? null : this._value.spouse;    
-    this.$profile.anniversary = this._value === null ? null : this._value.anniversaryAt;    
-    this.$profile.family = this._value === null ? null : this._value.family;
-    this.$profile.notes = this._value === null ? null : this._value.notes;        
+    this.$location.readOnly = this.readOnly;
+    this.$profile.readOnly = this.readOnly;
+    this.$attach.readOnly = this.readOnly;
   }
 
   // Promote properties
@@ -547,12 +486,47 @@ export default class RemotePerson extends HTMLElement {
   }
 
   get value() {
-    return this._value;
+    return {
+      createdAt: this._created,
+      updatedAt: this._updated,
+      avatar: this.$avatar.value,
+      fullName: this.$name.value,
+      email: this.$email.value,
+      jobTitle: this.$title.value,
+      location: this.$location.value,
+      profile: this.$profile.value,
+      attachments: this.$attach.value
+    };
   }
 
   set value( data ) {
-    this._value = data === null ? null : Object.assign( {}, data );
-    this._render();
+    if( data === null ) {
+      this._created = null;
+      this._updated = null;
+      this.$avatar.value = null;
+      this.$avatar.label = null;
+      this.$name.value = null;
+      this.$email.value = null;
+      this.$send.concealed = true;
+      this.$send.href = null;
+      this.$title.value = null;
+      this.$location.value = null;
+      this.$profile.value = null;
+      this.$attach.value = null;
+    } else {
+      this._created = data.createdAt;
+      this._updated = data.updatedAt;
+      this.$avatar.value = data.avatar;
+      this.$avatar.label = data.avatar === null ? data.fullName : null;
+      this.$name.value = data.fullName;
+      this.$email.value = data.email;
+      this.$send.concealed = data.email === null ? true : false;
+      this.$send.href = data.email === null ? null : `mailto:${data.email}`;    
+      this.$title.value = data.jobTitle;
+      this.$location.value = data.location;
+      this.$profile.value = data.profile;
+      this.$attach.value = data.attachments;
+    }
   }
 
   // Attributes

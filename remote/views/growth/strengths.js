@@ -21,7 +21,7 @@ export default class RemoteGrowthStrengths extends HTMLElement {
           flex-basis: 0;
           flex-direction: column;
           flex-grow: 1;
-          padding: 16px 16px 26px 16px;
+          padding: 16px 16px 16px 16px;
           position: relative;
         }
 
@@ -35,6 +35,10 @@ export default class RemoteGrowthStrengths extends HTMLElement {
 
         adc-button {
           margin: 0 0 24px 0;
+        }
+
+        adc-controls {
+          padding: 0 0 20px 0;
         }
 
         adc-hbox {
@@ -51,13 +55,24 @@ export default class RemoteGrowthStrengths extends HTMLElement {
           flex-basis: 0;
           flex-grow: 1;
         }        
+
+        adc-vbox[slot=empty] {
+          align-items: center;
+          background-color: #ffffff;
+          flex-basis: 0;
+          flex-grow: 1;
+          justify-content: center;
+        }
+
+        adc-vbox[slot=empty] adc-label {
+          --label-color: #525252;
+        }                
       </style>
       <adc-hbox>
         <adc-input
           label="Growth area or super power"
           light
-          placeholder="Leadership principle"
-          value="Success and Scale Bring Broad Responsibility">
+          placeholder="Growth area or super power">
         </adc-input>          
         <adc-select
           label="Status"
@@ -73,19 +88,27 @@ export default class RemoteGrowthStrengths extends HTMLElement {
         </adc-date-picker>                  
       </adc-hbox>
       <adc-hbox>
-        <adc-textarea
-          label="Description"
+        <adc-input
+          helper="Steps taken (future or past) to achieve specific growth area"
+          label="Activity"
           light
-          placeholder="Description"
-          style="height: 125px; width: 100%;">
-        </adc-textarea>                   
+          placeholder="Activity">
+        </adc-input>          
+        <adc-input
+          helper="Reflections and observations around the path to growth"
+          label="Progress"
+          light
+          placeholder="Progress">
+        </adc-input>                           
       </adc-hbox>
-      <adc-hbox>
-        <adc-button kind="secondary" size="md">Add strength</adc-button>      
-      </adc-hbox>
+      <adc-controls></adc-controls>
       <adc-table light>
-        <adc-column sortable>Leadership principle</adc-column>
-        <adc-column sortable>Description</adc-column>        
+        <adc-column header-text="Growth area" sortable></adc-column>      
+        <adc-column header-text="Completion date" sortable width="200"></adc-column>                
+        <adc-column header-text="Status" sortable width="200"></adc-column>
+        <adc-vbox slot="empty">
+          <adc-label>No strengths or growth areas added yet.</adc-label>
+        </adc-vbox>                
       </adc-table>
     `;
 

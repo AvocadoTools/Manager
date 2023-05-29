@@ -8,6 +8,8 @@ import AvocadoInput from "../controls/input.js";
 import AvocadoLabel from "../controls/label.js";
 import AvocadoTable from "../controls/table.js";
 
+import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
+
 export default class AvocadoAttachments extends HTMLElement {
   constructor() {
     super();
@@ -45,6 +47,10 @@ export default class AvocadoAttachments extends HTMLElement {
           background-color: #ffffff;
           height: 15px;
           width: 1px;
+        }
+
+        adc-button[disabled] adc-icon {
+          --icon-color: #8d8d8d;
         }
 
         adc-hbox {
@@ -115,6 +121,11 @@ export default class AvocadoAttachments extends HTMLElement {
           transform: translateY( -48px );
         }        
 
+        input {
+          display: none;
+          -webkit-tap-highlight-color: transparent;
+        }        
+
         #cancel::part( button ) {
           padding: 0 15px 0 15px;
         }
@@ -147,17 +158,19 @@ export default class AvocadoAttachments extends HTMLElement {
       </adc-vbox>
       <adc-table light selectable sortable>
         <adc-column 
-          header-text="Name"
+          header-text="File Name"
           label-field="name"
           sortable>
         </adc-column>
         <adc-column 
-          header-text="Date Modified"
+          header-text="Last Modified"
+          label-field="modified"
           sortable
           width="250">
         </adc-column>
         <adc-column
           header-text="Size" 
+          label-field="size"
           sortable
           width="150">
         </adc-column>   
@@ -165,13 +178,12 @@ export default class AvocadoAttachments extends HTMLElement {
           <adc-label>No attachments added yet.</adc-label>
         </adc-vbox>                     
       </adc-table>
+      <input type="file" />
     `;
 
     // Private
     this._data = null;
-    this._files = [
-      {name: 'Abc 123', size: 1234567, modified: '2023-05-11'}
-    ];
+    this._files = [];
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -183,12 +195,51 @@ export default class AvocadoAttachments extends HTMLElement {
       this.$table.selectedIndices = null;
       this.$header.classList.remove( 'selected' );
     } );
+    this.$delete = this.shadowRoot.querySelector( '#delete' );
+    this.$delete.addEventListener( 'click', () => {
+      this.$header.classList.remove( 'selected' );
+      this._files.splice( this._index, 1 );
+      this.label = `Attachments (${this._files.length})`;    
+      this._index = null;
+      this.$header.classList.remove( 'selected' );  
+      this.$table.selectedItems = null;
+      this.$table.provider = this._files;
+    } );
     this.$download = this.shadowRoot.querySelector( '#download' );
     this.$download.addEventListener( 'click', () => {
-      // TODO: Download contents
+      const a = document.createElement( 'a' );
+      a.classList.add( 'download' );
+      a.setAttribute( 'href', url );
+      a.setAttribute( 'download', this.$table.selectedItems[0].name );
+      document.body.appendChild( a );
+      a.click();
+      document.body.removeChild( a );
     } );
     this.$file = this.shadowRoot.querySelector( 'adc-button' );
     this.$header = this.shadowRoot.querySelector( '#header' );    
+    this.$input = this.shadowRoot.querySelector( 'input' );
+    this.$input.addEventListener( 'change', async () => {
+      for( let f  = 0; f < this.$input.files.length; f++ ) {
+        const data = await this.read( this.$input.files[f] );
+        this._files.push( {
+          id: uuidv4(),
+          data: data,
+          name: this.$input.files[f].name,
+          modified: this.$input.files[f].lastModified,
+          size: this.$input.files[f].size,
+          format: this.$input.files[f].type          
+        } );
+      }
+
+      this.label = `Attachments (${this._files.length})`;    
+      this.$table.provider = this._files;              
+    } );    
+    this.$name = this.shadowRoot.querySelector( 'adc-column:nth-of-type( 1 )' );
+    this.$name.sortCompareFunction = ( a, b ) => {
+      if( a.name > b.name ) return 1;
+      if( a.name < b.name ) return -1;
+      return 0;
+    };            
     this.$modified = this.shadowRoot.querySelector( 'adc-column:nth-of-type( 2 )' );
     this.$modified.labelFunction = ( value ) => {
       const modified = new Date( value.modified );
@@ -205,14 +256,19 @@ export default class AvocadoAttachments extends HTMLElement {
 
       return `${date} @ ${time}`;
     };
+    this.$modified.sortCompareFunction = ( a, b ) => {
+      if( a.modified > b.modified ) return 1;
+      if( a.modified < b.mondified ) return -1;
+      return 0;
+    };        
     this.$search = this.shadowRoot.querySelector( 'adc-input' );
     this.$search.addEventListener( 'clear', () => {
-      this.$table.provider = this._value;
+      this.$table.provider = this._files;
     } );
     this.$search.addEventListener( 'input', ( evt ) => {
       if( evt.currentTarget.value === null ) return;
 
-      this.$table.provider = this._value.filter( ( item ) => {
+      this.$table.provider = this._files.filter( ( item ) => {
         return item.name.toLowerCase().indexOf( evt.currentTarget.value.toLowerCase() ) >= 0 ? true : false;
       } );
     } );
@@ -227,8 +283,15 @@ export default class AvocadoAttachments extends HTMLElement {
       
       return `${( value.size / ( 1024 ** i ) ).toFixed( 1 )} ${sizes[i]}`;      
     };
+    this.$size.sortCompareFunction = ( a, b ) => {
+      if( a.size > b.size ) return 1;
+      if( a.size < b.size ) return -1;
+      return 0;
+    };            
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
-    this.$table.addEventListener( 'change', () => {
+    this.$table.addEventListener( 'change', ( evt ) => {
+      this._index = evt.detail.selectedIndex;
+
       if( this.$table.selectedIndices.length > 0 ) {
         this.$header.classList.add( 'selected' );
       } else {
@@ -238,13 +301,25 @@ export default class AvocadoAttachments extends HTMLElement {
     this.$table.provider = this._files;
     this.$upload = this.shadowRoot.querySelector( '#upload' );
     this.$upload.addEventListener( 'click', () => {
-      // TODO: Fire input
+      this.$input.click();
+    } );
+  }
+
+  read( file ) {
+    return new Promise( ( resolve, reject ) => {
+      const reader = new FileReader();
+      reader.addEventListener( 'load', ( evt ) => {
+        resolve( evt.target.result );
+      } );
+      reader.readAsDataURL( file );
     } );
   }
 
    // When attributes change
   _render() {
-    // this.$file.disabled = this.readOnly;
+    this.$upload.disabled = this.readOnly;
+    this.$delete.hidden = this.readOnly;
+    this.$download.hidden = !this.readOnly;
   }
 
   // Promote properties
@@ -302,11 +377,21 @@ export default class AvocadoAttachments extends HTMLElement {
   }
 
   get value() {
-    return this.$table.provider;
+    return this._files.length === 0 ? null : this._files;
   }
 
-  set value( items ) {
-    this.$table.provider = items;
+  set value( data ) {
+    if( data === null ) {
+      this._files = [];
+    } else {
+      this._files = [... data];
+    }
+
+    this.$search.value = null;
+    this.$header.classList.remove( 'selected' );
+    this.$table.selectedItems = null;
+    this.$table.provider = this._files;
+    this.label = `Attachments (${this._files.length})`;
   }
 
   // Attributes

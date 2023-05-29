@@ -1,0 +1,8 @@
+services:
+  avocado:
+    build: .
+    container_name: avocado-server
+    ports:
+      - 8000:80
+    volumes:
+      - .:/usr/local/apache2/htdocs/
