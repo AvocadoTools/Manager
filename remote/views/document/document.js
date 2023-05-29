@@ -5,6 +5,7 @@ import AvocadoColumn from "../../../controls/column.js";
 import AvocadoIcon from "../../../controls/icon.js";
 import AvocadoInput from "../../../controls/input.js";
 import AvocadoLabel from "../../../controls/label.js";
+import AvocadoTable from "../../../controls/table.js";
 
 import AvocadoControls from "../../../comp/controls.js";
 import AvocadoNotes from "../../../comp/notes.js";
@@ -12,9 +13,7 @@ import AvocadoNotes from "../../../comp/notes.js";
 import RemoteDocumentItemRenderer from "./document-item-renderer.js";
 
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
-
 import { db } from "../../db.js";
-import { store } from "../../store.js";
 
 export default class RemoteDocument extends HTMLElement {
   constructor() {
@@ -98,6 +97,7 @@ export default class RemoteDocument extends HTMLElement {
       </style>
       <adc-vbox>
         <adc-input 
+          id="search"
           placeholder="Search people" 
           type="search">
           <adc-icon name="search" slot="prefix"></adc-icon>
@@ -133,9 +133,9 @@ export default class RemoteDocument extends HTMLElement {
     `;
 
     // Private
-    this._changed = false;
+    this._created = false;
     this._data = null;
-    this._value = null;
+    this._updated = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -149,110 +149,82 @@ export default class RemoteDocument extends HTMLElement {
       return 0;
     };    
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
-    this.$controls.addEventListener( 'add', () => this.doDocumentAdd() );
-    this.$controls.addEventListener( 'cancel', () => this.doDocumentCancel() );
-    this.$controls.addEventListener( 'delete', () => this.doDocumentDelete() );
-    this.$controls.addEventListener( 'edit', () => this.doDocumentEdit() );
-    this.$controls.addEventListener( 'save', () => this.doDocumentSave() );    
+    this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
+    this.$controls.addEventListener( 'cancel', () => this.doControlsCancel() );
+    this.$controls.addEventListener( 'delete', () => this.doControlsDelete() );
+    this.$controls.addEventListener( 'edit', () => this.doControlsEdit() );
+    this.$controls.addEventListener( 'save', () => this.doControlsSave() );    
     this.$name = this.shadowRoot.querySelector( '#name' );    
     this.$name.addEventListener( 'input', () => this._changed = true );    
-    this.$notes = this.shadowRoot.querySelector( 'adc-notes' );
+    this.$content = this.shadowRoot.querySelector( 'adc-notes' );
+    this.$search = this.shadowRoot.querySelector( '#search' );
+    this.$search.addEventListener( 'input', ( evt ) => this.doSearchInput( evt ) );
+    this.$search.addEventListener( 'clear', ( evt ) => this.doSearchClear( evt ) );       
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) ); 
     this.$tags = this.shadowRoot.querySelector( '#tags' );                   
     
-    // State
-    const document_index = window.localStorage.getItem( 'remote_document_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_document_index' ) );
-
-    // Read
-    db.Document.orderBy( 'updatedAt' ).reverse().toArray()
-    .then( ( results ) => {
-      this.$column.headerText = `Documents (${results.length})`;            
-      this.$table.provider = results;      
-      this.$table.selectedIndex = document_index === null ? null : document_index;      
-
-      this.readOnly = true;
-      this.value = document_index === null ? null : results[document_index];      
-      this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;      
-      
-      store.document.set( results );
-    } );    
+    this.doDocumentLoad();
   }
 
-  clear() {
-    this.$name.error = null;
-    this.$name.invalid = false;
-    this.$name.value = null;
-    this.$tags.value = null;
-    this.$notes.value = null;        
-  }
+  doControlsAdd() {
+    window.localStorage.removeItem( 'remote_document_id' );
 
-  doDocumentAdd() {
-    this.$table.selectedIndex = null;
-    this.$controls.mode = AvocadoControls.CANCEL_SAVE;
+    this.$table.selectedItems = null;
     this.value = null;
-    this.clear();
-    this._changed = false;
     this.readOnly = false;
-    this.$name.focus();
-  }  
+    this.$name.focus();    
+    this.$controls.mode = AvocadoControls.CANCEL_SAVE;    
+  }
 
-  doDocumentCancel() {
-    if( this._changed ) {
-      const response = confirm( 'Do you want to save changes?' );
-      
-      if( response ) {
-        this.doDocumentSave();
-        this._changed = false;
-        return;
-      }
-    }
+  doControlsCancel() {
+    const id = window.localStorage.getItem( 'remote_document_id' );
+    
+    this.readOnly = true;    
 
-    if( this._value === null ) {
-      this.clear();
+    if( id === null ) {
+      this.value = null;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
     } else {
-      this.value = this._value;
-      this.$controls.mode = AvocadoControls.ADD_EDIT;
+      db.Document.where( {id: id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        this.$controls.mode = AvocadoControls.ADD_EDIT;        
+      } );
     }
-
-    this._changed = false;
-    this.readOnly = true;    
   }  
 
-  doDocumentDelete() {
-    const id = this._value.id;    
-    const response = confirm( `Delete ${this._value.name}?` );
+  doControlsDelete() {
+    const response = confirm( `Delete ${this.value.subject}?` );
 
     if( response ) {
-      this.clear();
-      this.value = null;
-      this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'remote_document_index' );
-      this._changed = false;
-      this.readOnly = true;
-      this.$controls.mode = AvocadoControls.ADD_ONLY;
+      const id = window.localStorage.getItem( 'remote_document_id' );
+      
+      window.localStorage.removeItem( 'remote_document_index' );      
 
       db.Document.delete( id )
-      .then( () => db.Document.orderBy( 'updatedAt' ).reverse().toArray() )
+      .then( () => db.Meeting.orderBy( 'name' ).toArray() )
       .then( ( results ) => {
-        this.$column.innerText = `Documents (${results.length})`;              
+        this.$column.headerText = `Documents (${results.length})`;      
+        this.$table.selectedItems = null;        
         this.$table.provider = results;        
-        store.document.set( results );
       } );          
+
+      this.value = null;
+      this.readOnly = true;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;            
     }
   }
 
-  doDocumentEdit() {
-    this._changed = false;
-    this.readOnly = false;
-    this.$controls.mode = this._value === null ? AvocadoControls.ADD_EDIT : AvocadoControls.DELETE_CANCEL_SAVE;
+  doControlsEdit() {
+    this.readOnly = false;    
     this.$name.focus();
-  }  
+    this.$controls.mode = AvocadoControls.DELETE_CANCEL_SAVE;    
+  }
 
-  doDocumentSave() {
+  doControlsSave() {
     if( this.$name.value === null ) {
-      this.$name.error = 'A name is the only required field.';
+      this.$name.error = 'Document name is a required field.';
       this.$name.invalid = true;
       return;
     } else {
@@ -260,93 +232,157 @@ export default class RemoteDocument extends HTMLElement {
       this.$name.invalid = false;
     }
 
-    const record = {
-      name: this.$name.value,
-      tags: this.$tags.value,
-      notes: this.$notes.value
-    };  
+    const record = Object.assign( {}, this.value );
 
     if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
-      record.id = this.value.id;
-      record.createdAt = this.value.createdAt;
-      record.updatedAt = Date.now();
-      this.value = record;                
+      record.id = window.localStorage.getItem( 'remote_document_id' );
+      record.createdAt = this._created;
+      record.updatedAt = this._updated = Date.now();
 
       db.Document.put( record )
-      .then( () => db.Document.orderBy( 'updatedAt' ).reverse().toArray() )
-      .then( ( results ) => {   
+      .then( () => db.Document.orderBy( 'name' ).toArray() )
+      .then( ( results ) => {
+        this.$column.headerText = `Documents (${results.length})`;      
         this.$table.provider = results;
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$column.innerText = `Documents (${results.length})`;                          
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_document_index', r );
-            break;
-          }
-        }
-
-        store.document.set( results );
+        this.$table.selectedItems = [{id: record.id}];
       } );
     } else {
       const at = Date.now();
+      const id = uuidv4();
 
-      record.id = uuidv4();
-      record.createdAt = at;
-      record.updatedAt = at;
-      this.value = record;
+      window.localStorage.setItem( 'remote_document_id', id );
+
+      record.id = id;
+      record.createdAt = this._created = at;
+      record.updatedAt = this._updated = at;
 
       db.Document.put( record )
-      .then( () => db.Document.orderBy( 'updatedAt' ).reverse().toArray() )
+      .then( () => db.Document.orderBy( 'name' ).toArray() )
       .then( ( results ) => {
+        this.$column.hederText = `Document (${results.length})`;              
         this.$table.provider = results;     
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$column.innerText = `Documents (${results.length})`;                          
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_document_index', r );
-            break;
-          }
-        }
-
-        store.document.set( results );
+        this.$table.selectedItems = [{id: record.id}];
       } );            
     }
 
-    this._changed = false;
     this.readOnly = true;
     this.$controls.mode = AvocadoControls.ADD_EDIT;
   }  
 
-  doTableChange( evt ) {
-    if( this._changed && !this.readOnly ) {
+  doDocumentLoad() {
+    this.readOnly = true;
+
+    db.Document.orderBy( 'name' ).toArray()
+    .then( ( docs ) => {
+      this.$column.headerText = `Documents (${docs.length})`;      
+      this.$table.provider = docs;  
+
+      const id = window.localStorage.getItem( 'remote_document_id' );
+
+      if( id === null ) {
+        this.value = null;
+        this.$controls.mode = AvocadoControls.ADD_ONLY;        
+      } else {
+        this.$table.selectedItems = [{id: id}];      
+        db.Document.where( {id: id} ).first()
+        .then( ( item ) => {
+          this.value = item;
+          this.$controls.mode = item === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
+        } );
+      }
+    } );    
+  }  
+
+  doSearchClear() {
+    db.Document.orderBy( 'name' ).toArray()
+    .then( ( results ) => {
+      this.$column.headerText = `Meetings (${results.length})`;      
+      this.$table.provider = results;    
+
+      const id = window.localStorage.getItem( 'remote_meeting_id' );
+
+      if( id !== null ) {
+        this.$table.selectedItems = [{id: id}];
+      } else {
+        this.$table.selectedItems = null;
+      }
+    } );          
+  }  
+
+  doSearchInput() {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
       const response = confirm( 'Do you want to save changes?' );
     
       if( response ) {
-        this.doDocumentSave();
+        this.$search.value = null;
+        this.doControlsSave();
+      }
+    }
+
+    this.$table.selectedItems = null;
+    window.localStorage.removeItem( 'remote_document_id' );
+
+    db.Document.orderBy( 'name' ).toArray()
+    .then( ( results ) => {
+      if( this.$search.value === null ) {
+        this.doSearchClear();
+        return;
+      }
+
+      if( results !== null ) {
+        this.$table.provider = results.filter( ( value ) => {
+          const term = this.$search.value.toLowerCase();          
+  
+          let name = false;
+          let content = false;
+  
+          if( value.name.toLowerCase().indexOf( term ) >= 0 )
+            name = true;
+  
+          if( value.content !== null )
+            if( value.content.toLowerCase().indexOf( term ) >= 0 )
+              content = true;
+    
+          if( name || content )
+            return true;
+          
+          return false;
+        } );
+      }
+
+      this.$column.headerText = `Documents (${this.$table.provider === null ? 0 : this.$table.provider.length})`;              
+    } );    
+  }  
+
+  doTableChange( evt ) {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
+      const response = confirm( 'Do you want to save changes?' );
+    
+      if( response ) {
+        this.doControlsSave();
       }
     }
 
     this.readOnly = true;
-    this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem;      
-    this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'remote_document_index' );
+      window.localStorage.removeItem( 'remote_document_id' );
+      this.value = null;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;      
     } else {
-      window.localStorage.setItem( 'remote_document_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_document_id', evt.detail.selectedItem.id );
+      db.Document.where( {id: evt.detail.selectedItem.id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        console.log( item );
+      } );
+      this.$controls.mode = AvocadoControls.ADD_EDIT;      
     }
-  }  
+  }
 
-   // When attributes change
   _render() {
     this.$name.readOnly = this.readOnly;
-    // this.$tags.readOnly = this.readOnly;    
-    this.$notes.readOnly = this.readOnly;
-
-    this.$name.value = this._value === null ? null : this._value.name;
-    this.$notes.value = this._value === null ? null : this._value.notes;
+    this.$content.readOnly = this.readOnly;
   }
 
   // Promote properties
@@ -396,12 +432,26 @@ export default class RemoteDocument extends HTMLElement {
   }
 
   get value() {
-    return this._value;
+    return {
+      createdAt: this._created,
+      updatedAt: this._updated,
+      name: this.$name.value,
+      content: this.$content.value
+    };
   }
 
   set value( data ) {
-    this._value = data === null ? null : Object.assign( {}, data );
-    this._render();
+    if( data === null ) {
+      this._created = null;
+      this._updated = null;
+      this.$name.value = null;
+      this.$content.value = null;
+    } else {
+      this._created = data.createdAt;
+      this._updated = data.updatedAt;
+      this.$name.value = data.name;
+      this.$content.value = data.content;
+    }
   }  
 
   // Attributes

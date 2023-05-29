@@ -592,8 +592,8 @@ export default class RemoteMeeting extends HTMLElement {
 
   set value( data ) {
     if( data === null ) {
-      this.createdAt = null;
-      this.updatedAt = null;
+      this._created = null;
+      this._updated = null;
       this.$subject.value = null;
       this.$date.value = null;
       this.$time.value = null;
@@ -606,8 +606,8 @@ export default class RemoteMeeting extends HTMLElement {
       this.$actions.value = null;
       this.$attachments.value = null;
     } else {
-      this.createdAt = data.createdAt;
-      this.updatedAt = data.updatedAt;
+      this._created = data.createdAt;
+      this._updated = data.updatedAt;
       this.$subject.value = data.subject;
       this.$date.value = data.startAt === null ? null : new Date( data.startAt );
       this.$time.value = data.startAt === null ? null : this.formatTime( new Date( data.startAt ) );

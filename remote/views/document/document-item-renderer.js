@@ -72,13 +72,13 @@ export default class RemoteDocumentItemRenderer extends HTMLElement {
         month: 'short',
         day: 'numeric',
         year: 'numeric'
-      } ).format( this._data.startAt );    
+      } ).format( this._data.createdAt );    
       this.$date.innerText = date;
 
       const time = new Intl.DateTimeFormat( navigator.language, {
         hour: 'numeric',
         minute: '2-digit'
-      } ).format( this._data.startAt );          
+      } ).format( this._data.createdAt );          
       this.$time.innerText = time;
 
       this.$subject.innerText = this._data.name;
