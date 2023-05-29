@@ -162,6 +162,7 @@ export default class RemoteDocument extends HTMLElement {
     this.$search.addEventListener( 'clear', ( evt ) => this.doSearchClear( evt ) );       
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) ); 
+    this.$table.selectedItemsCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
     this.$tags = this.shadowRoot.querySelector( '#tags' );                   
     
     this.doDocumentLoad();
@@ -203,7 +204,7 @@ export default class RemoteDocument extends HTMLElement {
       window.localStorage.removeItem( 'remote_document_index' );      
 
       db.Document.delete( id )
-      .then( () => db.Meeting.orderBy( 'name' ).toArray() )
+      .then( () => db.Document.orderBy( 'name' ).toArray() )
       .then( ( results ) => {
         this.$column.headerText = `Documents (${results.length})`;      
         this.$table.selectedItems = null;        
@@ -259,7 +260,7 @@ export default class RemoteDocument extends HTMLElement {
       db.Document.put( record )
       .then( () => db.Document.orderBy( 'name' ).toArray() )
       .then( ( results ) => {
-        this.$column.hederText = `Document (${results.length})`;              
+        this.$column.hederText = `Documents (${results.length})`;              
         this.$table.provider = results;     
         this.$table.selectedItems = [{id: record.id}];
       } );            
@@ -296,10 +297,10 @@ export default class RemoteDocument extends HTMLElement {
   doSearchClear() {
     db.Document.orderBy( 'name' ).toArray()
     .then( ( results ) => {
-      this.$column.headerText = `Meetings (${results.length})`;      
+      this.$column.headerText = `Documents (${results.length})`;      
       this.$table.provider = results;    
 
-      const id = window.localStorage.getItem( 'remote_meeting_id' );
+      const id = window.localStorage.getItem( 'remote_document_id' );
 
       if( id !== null ) {
         this.$table.selectedItems = [{id: id}];
