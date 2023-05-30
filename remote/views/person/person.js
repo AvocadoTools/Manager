@@ -506,6 +506,8 @@ export default class RemotePerson extends HTMLElement {
       this.$avatar.value = null;
       this.$avatar.label = null;
       this.$name.value = null;
+      this.$name.error = null;
+      this.$name.invalid = false;
       this.$email.value = null;
       this.$send.concealed = true;
       this.$send.href = null;
@@ -519,6 +521,8 @@ export default class RemotePerson extends HTMLElement {
       this.$avatar.value = data.avatar;
       this.$avatar.label = data.avatar === null ? data.fullName : null;
       this.$name.value = data.fullName;
+      this.$name.error = null;
+      this.$name.invalid = false;
       this.$email.value = data.email;
       this.$send.concealed = data.email === null ? true : false;
       this.$send.href = data.email === null ? null : `mailto:${data.email}`;    

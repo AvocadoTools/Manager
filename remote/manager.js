@@ -11,7 +11,7 @@ import RemoteDocument from "./views/document/document.js";
 import RemoteGrowth from "./views/growth/growth.js";
 import RemoteLink from "./views/link/link.js";
 import RemoteMeeting from "./views/meeting/meeting.js";
-import RemoteOneOnOne from "./views/one-on-one/one-on-one.js";
+import RemoteConversation from "./views/conversation/conversation.js";
 import RemotePerson from "./views/person/person.js";
 import RemoteResource from "./resource.js";
 import RemoteSituation from "./views/situation/situation.js";
@@ -152,7 +152,7 @@ export default class RemoteManager extends HTMLElement {
       <adc-stack>
         <arm-person read-only></arm-person>
         <arm-meeting read-only></arm-meeting>
-        <arm-one-on-one read-only></arm-one-on-one>
+        <arm-conversation read-only></arm-conversation>
         <arm-situation read-only></arm-situation>        
         <arm-growth></arm-growth>
         <arm-action read-only></arm-action>      
