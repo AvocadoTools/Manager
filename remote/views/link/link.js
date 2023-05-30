@@ -1,4 +1,5 @@
 import AvocadoHBox from "../../../containers/hbox.js";
+import AvocadoVBox from "../../../containers/vbox.js";
 
 import AvocadoColumn from "../../../controls/column.js";
 import AvocadoInput from "../../../controls/input.js";
@@ -10,9 +11,7 @@ import AvocadoTable from "../../../controls/table.js";
 import AvocadoControls from "../../../comp/controls.js";
 
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
-
 import { db } from "../../db.js";
-import { store } from "../../store.js";
 
 export default class RemoteLink extends HTMLElement {
   constructor() {
@@ -91,7 +90,7 @@ export default class RemoteLink extends HTMLElement {
             id="location" 
             label="Location" 
             label-field="name" 
-            style="min-width: 200px"">
+            style="min-width: 200px;">
           </adc-select>
         </adc-hbox>
         <adc-input 
@@ -116,6 +115,7 @@ export default class RemoteLink extends HTMLElement {
       </adc-hbox>
       <adc-controls></adc-controls>
       <adc-input 
+        id="search"
         placeholder="Search links" 
         type="search">
         <adc-icon name="search" slot="prefix"></adc-icon>
@@ -143,18 +143,41 @@ export default class RemoteLink extends HTMLElement {
     `;
 
     // Private
-    this._changed = false;
+    this._created = false;
     this._data = null;
-    this._value = null;
+    this._updated = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$column = this.shadowRoot.querySelector( 'adc-table adc-column:nth-of-type( 2 )' );
-    this.$column.labelFunction = ( data ) => {
-      const update = new Date( data.updatedAt );
+    this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
+    this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
+    this.$controls.addEventListener( 'cancel', () => this.doControlsCancel() );
+    this.$controls.addEventListener( 'delete', () => this.doControlsDelete() );
+    this.$controls.addEventListener( 'edit', () => this.doControlsEdit() );
+    this.$controls.addEventListener( 'save', () => this.doControlsSave() );    
+    this.$description = this.shadowRoot.querySelector( '#description' );            
+    this.$location = this.shadowRoot.querySelector( 'adc-select' );
+    this.$location.provider = [
+      {id: 'Internal', name: 'Internal/protected'},
+      {id: 'External', name: 'External/public'}
+    ];
+    this.$location.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
+    this.$name = this.shadowRoot.querySelector( '#name' );    
+    this.$name.addEventListener( 'input', () => this._changed = true );    
+    this.$open = this.shadowRoot.querySelector( 'adc-link' );
+    this.$search = this.shadowRoot.querySelector( '#search' );
+    this.$search.addEventListener( 'input', ( evt ) => this.doSearchInput( evt ) );
+    this.$search.addEventListener( 'clear', ( evt ) => this.doSearchClear( evt ) );         
+    this.$table = this.shadowRoot.querySelector( 'adc-table' );
+    this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) ); 
+    this.$table.selectedItemsCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
+    this.$tags = this.shadowRoot.querySelector( '#tags' );                   
+    this.$updated = this.shadowRoot.querySelector( 'adc-column:nth-of-type( 2 )' )
+    this.$updated.labelFunction = ( item ) => {
+      const update = new Date( item.updatedAt );
       const date = new Intl.DateTimeFormat( navigator.language, {
         month: 'short',
         day: 'numeric',
@@ -164,124 +187,74 @@ export default class RemoteLink extends HTMLElement {
         hour: 'numeric',
         minute: 'numeric'
       } ).format( update );          
-      return `${date} @ ${time}`;
+      return `${date} @ ${time}`;      
     };
-    this.$column.sortCompareFunction = ( a, b ) => {
+    this.$updated.sortCompareFunction = ( a, b ) => {
       if( a.updatedAt > b.updatedAt ) return 1;
       if( a.updatedAt < b.updatedAt ) return -1;
       return 0;
     };    
-    this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
-    this.$controls.addEventListener( 'add', () => this.doLinkAdd() );
-    this.$controls.addEventListener( 'cancel', () => this.doLinkCancel() );
-    this.$controls.addEventListener( 'delete', () => this.doLinkDelete() );
-    this.$controls.addEventListener( 'edit', () => this.doLinkEdit() );
-    this.$controls.addEventListener( 'save', () => this.doLinkSave() );    
-    this.$description = this.shadowRoot.querySelector( '#description' );            
-    this.$location = this.shadowRoot.querySelector( '#location' );
-    this.$location.provider = [
-      {id: 1, name: 'Internal/protected'},
-      {id: 0, name: 'External/public'}
-    ];
-    this.$name = this.shadowRoot.querySelector( '#name' );    
-    this.$name.addEventListener( 'input', () => this._changed = true );    
-    this.$open = this.shadowRoot.querySelector( 'adc-link' );
-    this.$table = this.shadowRoot.querySelector( 'adc-table' );
-    this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) ); 
-    this.$tags = this.shadowRoot.querySelector( '#tags' );                   
     this.$url = this.shadowRoot.querySelector( '#url' );   
     this.$url.addEventListener( 'input', () => this._changed = true );  
-    
-    // State
-    const link_index = window.localStorage.getItem( 'remote_link_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_link_index' ) );
 
-    // Read
-    db.Link.orderBy( 'name' ).toArray()
-    .then( ( results ) => {
-      this.$table.provider = results;      
-      this.$table.selectedIndex = link_index === null ? null : link_index;      
-
-      this.readOnly = true;
-      this.value = link_index === null ? null : results[link_index];      
-      this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;      
-      
-      store.link.set( results );
-    } );    
+    this.doLinkLoad();
   }
 
-  clear() {
-    this.$name.error = null;
-    this.$name.invalid = false;
-    this.$name.value = null;
-    this.$url.error = null;
-    this.$url.invalid = false;
-    this.$url.value = null;
-    this.$tags.value = null;        
-  }
+  doControlsAdd() {
+    window.localStorage.removeItem( 'remote_link_id' );
 
-  doLinkAdd() {
-    this.$table.selectedIndex = null;
-    this.$controls.mode = AvocadoControls.CANCEL_SAVE;
+    this.$table.selectedItems = null;
     this.value = null;
-    this.clear();
-    this._changed = false;
     this.readOnly = false;
-    this.$name.focus();
+    this.$name.focus();    
+    this.$controls.mode = AvocadoControls.CANCEL_SAVE;    
   }  
 
-  doLinkCancel() {
-    if( this._changed ) {
-      const response = confirm( 'Do you want to save changes?' );
-      
-      if( response ) {
-        this.doLinkSave();
-        this._changed = false;
-        return;
-      }
-    }
+  doControlsCancel() {
+    const id = window.localStorage.getItem( 'remote_link_id' );
+    
+    this.readOnly = true;    
 
-    if( this._value === null ) {
-      this.clear();
+    if( id === null ) {
+      this.value = null;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
     } else {
-      this.value = this._value;
-      this.$controls.mode = AvocadoControls.ADD_EDIT;
+      db.Link.where( {id: id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        this.$controls.mode = AvocadoControls.ADD_EDIT;        
+      } );
     }
+  }    
 
-    this._changed = false;
-    this.readOnly = true;    
-  }  
-
-  doLinkDelete() {
-    const id = this._value.id;    
-    const response = confirm( `Delete ${this._value.name}?` );
+  doControlsDelete() {
+    const response = confirm( `Delete ${this.value.name}?` );
 
     if( response ) {
-      this.clear();
-      this.value = null;
-      this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'remote_link_index' );
-      this._changed = false;
-      this.readOnly = true;
-      this.$controls.mode = AvocadoControls.ADD_ONLY;
+      const id = window.localStorage.getItem( 'remote_link_id' );
+      
+      window.localStorage.removeItem( 'remote_link_index' );      
 
       db.Link.delete( id )
       .then( () => db.Link.orderBy( 'name' ).toArray() )
       .then( ( results ) => {
+        this.$table.selectedItems = null;        
         this.$table.provider = results;        
-        store.link.set( results );
       } );          
+
+      this.value = null;
+      this.readOnly = true;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;            
     }
+  }    
+
+  doControlsEdit() {
+    this.readOnly = false;    
+    this.$name.focus();
+    this.$controls.mode = AvocadoControls.DELETE_CANCEL_SAVE;    
   }
 
-  doLinkEdit() {
-    this._changed = false;
-    this.readOnly = false;
-    this.$controls.mode = this._value === null ? AvocadoControls.ADD_EDIT : AvocadoControls.DELETE_CANCEL_SAVE;
-    this.$name.focus();
-  }  
-
-  doLinkSave() {
+  doControlsSave() {
     if( this.$name.value === null ) {
       this.$name.error = 'Link name is a required field.';
       this.$name.invalid = true;
@@ -298,86 +271,151 @@ export default class RemoteLink extends HTMLElement {
     } else {
       this.$url.error = null;
       this.$url.invalid = false;
-    }    
+    }
 
-    const record = {
-      name: this.$name.value,
-      description: this.$description.value,
-      internal: this.$location.value.id,
-      url: this.$url.value,
-      tags: this.$tags.value
-    };  
+    const record = Object.assign( {}, this.value );
 
     if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
-      record.id = this.value.id;
-      record.createdAt = this.value.createdAt;
-      record.updatedAt = Date.now();
-      this.value = record;                
+      record.id = window.localStorage.getItem( 'remote_link_id' );
+      record.createdAt = this._created;
+      record.updatedAt = this._updated = Date.now();
 
       db.Link.put( record )
       .then( () => db.Link.orderBy( 'name' ).toArray() )
-      .then( ( results ) => {   
+      .then( ( results ) => {
         this.$table.provider = results;
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_link_index', r );
-            break;
-          }
-        }
-
-        store.link.set( results );
+        this.$table.selectedItems = [{id: record.id}];
       } );
     } else {
       const at = Date.now();
+      const id = uuidv4();
 
-      record.id = uuidv4();
-      record.createdAt = at;
-      record.updatedAt = at;
-      this.value = record;
+      window.localStorage.setItem( 'remote_link_id', id );
+
+      record.id = id;
+      record.createdAt = this._created = at;
+      record.updatedAt = this._updated = at;
 
       db.Link.put( record )
       .then( () => db.Link.orderBy( 'name' ).toArray() )
       .then( ( results ) => {
         this.$table.provider = results;     
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_link_index', r );
-            break;
-          }
-        }
-
-        store.link.set( results );
+        this.$table.selectedItems = [{id: record.id}];
       } );            
     }
 
-    this._changed = false;
     this.readOnly = true;
     this.$controls.mode = AvocadoControls.ADD_EDIT;
   }  
 
-  doTableChange( evt ) {
-    if( this._changed && !this.readOnly ) {
+  doLinkLoad() {
+    this.readOnly = true;
+
+    db.Link.orderBy( 'name' ).toArray()
+    .then( ( links ) => {
+      this.$table.provider = links;  
+
+      const id = window.localStorage.getItem( 'remote_link_id' );
+
+      if( id === null ) {
+        this.value = null;
+        this.$controls.mode = AvocadoControls.ADD_ONLY;        
+      } else {
+        this.$table.selectedItems = [{id: id}];      
+        db.Link.where( {id: id} ).first()
+        .then( ( item ) => {
+          this.value = item;
+          this.$controls.mode = item === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
+        } );
+      }
+    } );    
+  }  
+
+  doSearchClear() {
+    db.Link.orderBy( 'name' ).toArray()
+    .then( ( results ) => {
+      this.$table.provider = results;    
+
+      const id = window.localStorage.getItem( 'remote_link_id' );
+
+      if( id !== null ) {
+        this.$table.selectedItems = [{id: id}];
+      } else {
+        this.$table.selectedItems = null;
+      }
+    } );          
+  }    
+
+  doSearchInput() {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
       const response = confirm( 'Do you want to save changes?' );
     
       if( response ) {
-        this.doLinkSave();
+        this.$search.value = null;
+        this.doControlsSave();
       }
     }
 
-    console.log( evt );
+    this.$table.selectedItems = null;
+    window.localStorage.removeItem( 'remote_link_id' );
+
+    db.Link.orderBy( 'name' ).toArray()
+    .then( ( results ) => {
+      if( this.$search.value === null ) {
+        this.doSearchClear();
+        return;
+      }
+
+      if( results !== null ) {
+        this.$table.provider = results.filter( ( value ) => {
+          const term = this.$search.value.toLowerCase();          
+  
+          let name = false;
+          let description = false;
+          let url = false;
+  
+          if( value.name.toLowerCase().indexOf( term ) >= 0 )
+            name = true;
+  
+          if( value.description !== null )
+            if( value.description.toLowerCase().indexOf( term ) >= 0 )
+              description = true;
+  
+          if( value.url.toLowerCase().indexOf( term ) >= 0 )
+            url = true;              
+
+          if( name || description || url )
+            return true;
+          
+          return false;
+        } );
+      }
+    } );    
+  }  
+
+  doTableChange( evt ) {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
+      const response = confirm( 'Do you want to save changes?' );
+    
+      if( response ) {
+        this.doControlsSave();
+      }
+    }
 
     this.readOnly = true;
-    this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem;      
-    this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'remote_link_index' );
+      window.localStorage.removeItem( 'remote_link_id' );
+      this.value = null;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;      
     } else {
-      window.localStorage.setItem( 'remote_link_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_link_id', evt.detail.selectedItem.id );
+      db.Link.where( {id: evt.detail.selectedItem.id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        console.log( item );
+      } );
+      this.$controls.mode = AvocadoControls.ADD_EDIT;      
     }
   }  
 
@@ -386,15 +424,8 @@ export default class RemoteLink extends HTMLElement {
     this.$name.readOnly = this.readOnly;
     this.$location.readOnly = this.readOnly;
     this.$description.readOnly = this.readOnly;
-    this.$open.concealed = this.value === null ? true : false;        
     this.$url.readOnly = this.readOnly;
     // this.$tags.readOnly = this.readOnly;
-
-    this.$name.value = this._value === null ? null : this._value.name;    
-    this.$description.value = this._value === null ? null : this._value.description;     
-    this.$location.selectedIndex = this._value === null ? 0 : this._value.internal;         
-    this.$url.value = this._value === null ? null : this._value.url;   
-    this.$open.href = this._value === null ? null : this._value.url;     
   }
 
   // Promote properties
@@ -413,6 +444,7 @@ export default class RemoteLink extends HTMLElement {
     this._upgrade( 'data' );                
     this._upgrade( 'hidden' );    
     this._upgrade( 'readOnly' );    
+    this._upgrade( 'value' );        
     this._render();
   }
 
@@ -443,12 +475,35 @@ export default class RemoteLink extends HTMLElement {
   }
 
   get value() {
-    return this._value;
+    return {
+      createdAt: this._created,
+      updatedAt: this._updated,
+      name: this.$name.value,
+      location: this.$location.selectedItem === null ? null : this.$location.selectedItem.id,
+      description: this.$description.value,
+      url: this.$url.value
+    };
   }
 
   set value( data ) {
-    this._value = data === null ? null : Object.assign( {}, data );
-    this._render();
+    if( data === null ) {
+      this._created = null;
+      this._updated = null;
+      this.$name.value = null;
+      this.$location.selectedItem = null;
+      this.$description.value = null;
+      this.$url.value = null;
+      this.$open.concealed = true;      
+    } else {
+      this._created = data.createdAt;
+      this._updated = data.updatedAt;
+      this.$name.value = data.name;
+      this.$location.selectedItem = data.location === null ? null : {id: data.location};
+      this.$description.value = data.description;
+      this.$url.value = data.url;
+      this.$open.concealed = data.url === null ? true : false;
+      this.$open.href = data.url;
+    }
   }  
 
   // Attributes
