@@ -17,9 +17,7 @@ import AvocadoNotes from "../../../comp/notes.js";
 import RemoteSituationItemRender from "./situation-item-renderer.js";
 
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
-
 import { db } from "../../db.js";
-import { store } from "../../store.js";
 
 export default class RemoteSituation extends HTMLElement {
   constructor() {
@@ -87,7 +85,7 @@ export default class RemoteSituation extends HTMLElement {
         }
 
         adc-tabs {
-          margin: 0 16px 16px 16px;
+          margin: 6px 16px 16px 16px;
         }
 
         adc-vbox[slot=empty] {
@@ -105,19 +103,20 @@ export default class RemoteSituation extends HTMLElement {
       </style>
       <adc-vbox>
         <adc-input 
-          placeholder="Search situations" 
+          id="search"
+          placeholder="Search reports" 
           size="lg" 
           type="search">
           <adc-icon name="search" slot="prefix"></adc-icon>
         </adc-input>
         <adc-table selectable sortable>
           <adc-column 
-            header-text="Situations"
+            header-text="Reports"
             item-renderer="arm-situation-item-renderer" 
             sortable>
           </adc-column>
           <adc-vbox slot="empty">
-            <adc-label>No situations added yet.</adc-label>
+            <adc-label>No report added yet.</adc-label>
           </adc-vbox>
         </adc-table>
       </adc-vbox>
@@ -148,9 +147,9 @@ export default class RemoteSituation extends HTMLElement {
     `;
 
     // Private
-    this._changed = false;
+    this._created = false;
     this._data = null;
-    this._value = null;
+    this._updated = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -165,141 +164,89 @@ export default class RemoteSituation extends HTMLElement {
       return 0;
     };    
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
-    this.$controls.addEventListener( 'add', () => this.doAdd() );
-    this.$controls.addEventListener( 'cancel', () => this.doCancel() );
-    this.$controls.addEventListener( 'delete', () => this.doDelete() );
-    this.$controls.addEventListener( 'edit', () => this.doEdit() );
-    this.$controls.addEventListener( 'save', () => this.doSave() );    
+    this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
+    this.$controls.addEventListener( 'cancel', () => this.doControlsCancel() );
+    this.$controls.addEventListener( 'delete', () => this.doControlsDelete() );
+    this.$controls.addEventListener( 'edit', () => this.doControlsEdit() );
+    this.$controls.addEventListener( 'save', () => this.doControlsSave() );    
     this.$contributor = this.shadowRoot.querySelector( 'adc-select' );
     this.$contributor.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;    
     this.$contributor.addEventListener( 'change', ( evt ) => {
-      const avatar = this.avatar( evt.detail.selectedItem.id );
-      this.$avatar.label = avatar.label;      
-      this.$avatar.src = avatar.src;
+      this.$avatar.label = evt.detail.selectedItem.fullName;      
+      this.$avatar.value = evt.detail.selectedItem.avatar;
     } );
     this.$date = this.shadowRoot.querySelector( 'adc-date-picker' );
     this.$priorities = this.shadowRoot.querySelector( '#priorities' );    
     this.$problems = this.shadowRoot.querySelector( '#problems' );    
     this.$progress = this.shadowRoot.querySelector( '#progress' );
+    this.$search = this.shadowRoot.querySelector( '#search' );
+    this.$search.addEventListener( 'input', ( evt ) => this.doSearchInput( evt ) );
+    this.$search.addEventListener( 'clear', ( evt ) => this.doSearchClear( evt ) );    
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );  
+    this.$table.selectedItemsCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
 
-    // State
-    const index = window.localStorage.getItem( 'remote_situation_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_situation_index' ) );
-
-    store.person.subscribe( ( data ) => {
-      this.$contributor.provider = data      
-    } );    
-
-    // Read
-    db.Situation.orderBy( 'startAt' ).reverse().toArray()
-    .then( ( results ) => {
-      this.$column.headerText = `Situations (${results.length})`;      
-      this.$table.provider = results;      
-      this.$table.selectedIndex = index === null ? null : index;      
-
-      this.readOnly = true;
-      this.value = index === null ? null : results[index];      
-      this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;      
-      
-      store.situation.set( results );
-    } );
+    this.doSituationLoad();
   }
 
-  avatar( id ) {
-    const matches = store.person.value.filter( ( item ) => item.id === id ? true : false );  
-    console.log( 'STORE_PERSON' );
-    console.log( store.person.value );
+  doControlsAdd() {
+    window.localStorage.removeItem( 'remote_situation_id' );
 
-    const result = {
-      src: matches.length === 0 ? null : matches[0].avatar,
-      label: null
-    };
-
-    if( matches.length > 0 ) {
-      if( matches[0].hasOwnProperty( 'avatar' ) ) {
-        result.label = matches[0].avatar === null ? matches[0].fullName : null;
-      }
-    }
-
-    return result;
-  }  
-
-  clear() {
-    this.$avatar.clear();
-    this.$contributor.value = null;
-    this.$date.value = null;
-    this.$progress.value = null;
-    this.$priorities.value = null;
-    this.$problems.value = null;    
-  }  
-
-  doAdd() {
-    this.$table.selectedIndex = null;
-    this.$controls.mode = AvocadoControls.CANCEL_SAVE;
+    this.$table.selectedItems = null;
     this.value = null;
-    this.clear();
-    this._changed = false;
     this.readOnly = false;
-    this.$contributor.focus();
-  }
+    this.$contributor.focus();    
+    this.$controls.mode = AvocadoControls.CANCEL_SAVE;    
+  }   
 
-  doCancel() {
-    if( this._changed ) {
-      const response = confirm( 'Do you want to save changes?' );
-      
-      if( response ) {
-        this.doSave();
-        this._changed = false;
-        return;
-      }
-    }
+  doControlsCancel() {
+    const id = window.localStorage.getItem( 'remote_situation_id' );
+    
+    this.readOnly = true;    
 
-    if( this._value === null ) {
-      this.clear();
+    if( id === null ) {
+      this.value = null;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
     } else {
-      this.value = this._value;
-      this.$controls.mode = AvocadoControls.ADD_EDIT;
+      db.Situation.where( {id: id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        this.$controls.mode = AvocadoControls.ADD_EDIT;        
+      } );
     }
+  }    
 
-    this._changed = false;
-    this.readOnly = true;    
-  }
-
-  doDelete() {
-    const id = this._value.id;    
-    const response = confirm( `Delete this situation?` );
+  doControlsDelete() {
+    const response = confirm( `Delete report?` );
 
     if( response ) {
-      this.clear();
-      this.value = null;
-      this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'remote_situation_index' );
-      this._changed = false;
-      this.readOnly = true;
-      this.$controls.mode = AvocadoControls.ADD_ONLY;
+      const id = window.localStorage.getItem( 'remote_situation_id' );
+      
+      window.localStorage.removeItem( 'remote_situation_index' );      
 
       db.Situation.delete( id )
-      .then( () => db.Situation.orderBy( 'startAt' ).reverse().toArray() )
+      .then( () => db.Situation.orderBy( 'startAt' ).toArray() )
       .then( ( results ) => {
-        this.$column.headerText = `Situations (${results.length})`;      
+        this.$column.headerText = `Reports (${results.length})`;      
+        this.$table.selectedItems = null;        
         this.$table.provider = results;        
-        store.conversation.set( results );
       } );          
+
+      this.value = null;
+      this.readOnly = true;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;            
     }
+  }    
+
+  doControlsEdit() {
+    this.readOnly = false;    
+    this.$contributor.focus();
+    this.$controls.mode = AvocadoControls.DELETE_CANCEL_SAVE;    
   }  
 
-  doEdit() {
-    this._changed = false;
-    this.readOnly = false;
-    this.$controls.mode = this._value === null ? AvocadoControls.ADD_EDIT : AvocadoControls.DELETE_CANCEL_SAVE;
-    this.$contributor.focus();
-  }
-
-  doSave() {
-    if( this.$contributor.value === null ) {
-      this.$contributor.error = 'Situations must have an contributor.';
+  doControlsSave() {
+    if( this.$contributor.selectedItem === null ) {
+      this.$contributor.error = 'Contributor is a required field.';
       this.$contributor.invalid = true;
       return;
     } else {
@@ -308,95 +255,171 @@ export default class RemoteSituation extends HTMLElement {
     }
 
     if( this.$date.value === null ) {
-      this.$date.error = 'Situation date is a required field.';
+      this.$date.error = 'Date is a required field.';
       this.$date.invalid = true;
       return;
     } else {
       this.$date.error = null;
       this.$date.invalid = false;
-    }        
+    }
 
-    const record = {
-      contributor: this.$contributor.value.id,
-      startAt: this.$date.value.getTime(),
-      progress: this.$progress.value,
-      priorities: this.$priorities.value,
-      problems: this.$problems.value,
-      subject: this.$contributor.value.fullName
-    };  
+    const record = Object.assign( {}, this.value );
 
     if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
-      record.id = this.value.id;
-      record.createdAt = this.value.createdAt;
-      record.updatedAt = Date.now();
-      this.value = record;                
+      record.id = window.localStorage.getItem( 'remote_situation_id' );
+      record.createdAt = this._created;
+      record.updatedAt = this._updated = Date.now();
 
       db.Situation.put( record )
-      .then( () => db.Situation.orderBy( 'startAt' ).reverse().toArray() )
+      .then( () => db.Situation.orderBy( 'startAt' ).toArray() )
       .then( ( results ) => {
-        this.$column.headerText = `Situations (${results.length})`;      
+        this.$column.headerText = `Reports (${results.length})`;      
         this.$table.provider = results;
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_situation_index', r );
-            break;
-          }
-        }
-
-        store.situation.set( results );
+        this.$table.selectedItems = [{id: record.id}];
       } );
     } else {
       const at = Date.now();
+      const id = uuidv4();
 
-      record.id = uuidv4();
-      record.createdAt = at;
-      record.updatedAt = at;
-      this.value = record;
+      window.localStorage.setItem( 'remote_situation_id', id );
+
+      record.id = id;
+      record.createdAt = this._created = at;
+      record.updatedAt = this._updated = at;
 
       db.Situation.put( record )
-      .then( () => db.Situation.orderBy( 'startAt' ).reverse().toArray() )
+      .then( () => db.Situation.orderBy( 'startAt' ).toArray() )
       .then( ( results ) => {
-        this.$column.headerText = `Situations (${results.length})`;              
+        this.$column.hederText = `Reports (${results.length})`;              
         this.$table.provider = results;     
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_situation_index', r );
-            break;
-          }
-        }
-
-        store.situation.set( results );
+        this.$table.selectedItems = [{id: record.id}];
       } );            
     }
 
-    this._changed = false;
     this.readOnly = true;
     this.$controls.mode = AvocadoControls.ADD_EDIT;
+  } 
+
+  doSituationLoad() {
+    this.readOnly = true;
+
+    db.Person.orderBy( 'fullName' ).toArray()
+    .then( ( people ) => {
+      this.$contributor.provider = people;
+      return db.Situation.orderBy( 'startAt' ).toArray();
+    } )
+    .then( ( reports ) => {
+      this.$column.headerText = `Reports (${reports.length})`;      
+      this.$table.provider = reports;  
+
+      const id = window.localStorage.getItem( 'remote_situation_id' );
+
+      if( id === null ) {
+        this.value = null;
+        this.$controls.mode = AvocadoControls.ADD_ONLY;        
+      } else {
+        this.$table.selectedItems = [{id: id}];      
+        db.Situation.where( {id: id} ).first()
+        .then( ( item ) => {
+          this.value = item;
+          this.$controls.mode = item === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
+        } );
+      }
+    } );    
   }
 
-  doTableChange( evt ) {
-    if( this._changed && !this.readOnly ) {
+  doSearchClear() {
+    db.Situation.orderBy( 'startAt' ).toArray()
+    .then( ( results ) => {
+      this.$column.headerText = `Reports (${results.length})`;      
+      this.$table.provider = results;    
+
+      const id = window.localStorage.getItem( 'remote_situation_id' );
+
+      if( id !== null ) {
+        this.$table.selectedItems = [{id: id}];
+      } else {
+        this.$table.selectedItems = null;
+      }
+    } );          
+  }  
+
+  doSearchInput() {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
       const response = confirm( 'Do you want to save changes?' );
     
       if( response ) {
-        this.doSave();
+        this.$search.value = null;
+        this.doControlsSave();
+      }
+    }
+
+    this.$table.selectedItems = null;
+    window.localStorage.removeItem( 'remote_situation_id' );
+
+    db.Situation.orderBy( 'startAt' ).toArray()
+    .then( ( results ) => {
+      if( this.$search.value === null ) {
+        this.doSearchClear();
+        return;
+      }
+
+      if( results !== null ) {
+        this.$table.provider = results.filter( ( value ) => {
+          const term = this.$search.value.toLowerCase();          
+  
+          let progress = false;
+          let priorities = false;
+          let problems = false;
+  
+          if( value.progress !== null )
+            if( value.progress.toLowerCase().indexOf( term ) >= 0 )
+              progress = true;
+  
+          if( value.priorities !== null )
+            if( value.priorities.toLowerCase().indexOf( term ) >= 0 )
+              priorities = true;              
+
+          if( value.problems !== null )
+            if( value.problems.toLowerCase().indexOf( term ) >= 0 )
+                problems = true;                            
+  
+          if( progress || priorities || problems )
+            return true;
+          
+          return false;
+        } );
+      }
+
+      this.$column.headerText = `Reports (${this.$table.provider === null ? 0 : this.$table.provider.length})`;              
+    } );    
+  } 
+
+  doTableChange( evt ) {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
+      const response = confirm( 'Do you want to save changes?' );
+    
+      if( response ) {
+        this.doControlsSave();
       }
     }
 
     this.readOnly = true;
-    this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem;      
-    this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'remote_situation_index' );
+      window.localStorage.removeItem( 'remote_situation_id' );
+      this.value = null;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;      
     } else {
-      window.localStorage.setItem( 'remote_situation_index', evt.detail.selectedIndex );      
+      window.localStorage.setItem( 'remote_situation_id', evt.detail.selectedItem.id );
+      db.Situation.where( {id: evt.detail.selectedItem.id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        console.log( item );
+      } );
+      this.$controls.mode = AvocadoControls.ADD_EDIT;      
     }
-  }    
+  }
 
    // When attributes change
   _render() {
@@ -405,26 +428,6 @@ export default class RemoteSituation extends HTMLElement {
     this.$progress.readOnly = this.readOnly;
     this.$priorities.readOnly = this.readOnly;
     this.$problems.readOnly = this.readOnly;
-
-    if( this.value === null ) {
-      this.$avatar.src = null;      
-      this.$avatar.label = null;            
-
-      this.$date.value = null;   
-    } else {
-      console.log( 'AVATAR_CONTRIBUTOR' );
-      console.log( this.value );
-      let avatar = this.avatar( this.value.contributor );
-      this.$avatar.label = avatar.label;
-      this.$avatar.src = avatar.src;
-
-      this.$date.value = this.value.startAt === null ? null : this.value.startAt;
-    }    
-
-    this.$contributor.selectedItem = this._value === null ? null : {id: this._value.contributor};            
-    this.$progress.value = this._value === null ? null : this._value.progress;
-    this.$priorities.value = this._value === null ? null : this._value.priorities;
-    this.$problems.value = this._value === null ? null : this._value.problems;
   }
 
   // Promote properties
@@ -474,12 +477,52 @@ export default class RemoteSituation extends HTMLElement {
   }
 
   get value() {
-    return this._value;
+    return {
+      createdAt: this._created,
+      updatedAt: this._updated,
+      startAt: this.$date.value === null ? null : this.$date.value.getTime(),
+      contributor: this.$contributor.selectedItem === null ? null : this.$contributor.selectedItem.id,      
+      subject: this.$contributor.selectedItem === null ? null : this.$contributor.selectedItem.fullName,
+      progress: this.$progress.value,
+      priorities: this.$priorities.value,
+      problems: this.$problems.value
+    };
   }
 
   set value( data ) {
-    this._value = data === null ? null : Object.assign( {}, data );
-    this._render();
+    if( data === null ) {
+      this._created = null;
+      this._updated = null;
+      this.$avatar.value = null;
+      this.$avatar.label = null;      
+      this.$contributor.selectedItem = null;
+      this.$contributor.error = null;
+      this.$contributor.invalid = false;
+      this.$date.value = null;
+      this.$date.error = null;
+      this.$date.invalid = false;
+      this.$progress.value = null;
+      this.$priorities.value = null;
+      this.$problems.value = null;
+    } else {
+      db.Person.where( {id: data.contributor} ).first()
+      .then( ( person ) => {
+        this.$avatar.value = person.avatar;
+        this.$avatar.label = person.fullName;
+      } );
+
+      this._created = data.createdAt;
+      this._updated = data.updatedAt;
+      this.$contributor.selectedItem = data.contributor === null ? null : {id: data.contributor};
+      this.$contributor.error = null;
+      this.$contributor.invalid = false;      
+      this.$date.value = data.startAt === null ? null : new Date( data.startAt );
+      this.$date.error = null;
+      this.$date.invalid = false;      
+      this.$progress.value = data.progress;
+      this.$priorities.value = data.priorities;
+      this.$problems.value = data.problems;      
+    }
   }      
 
   // Attributes
