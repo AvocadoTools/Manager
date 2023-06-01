@@ -69,13 +69,6 @@ export default class RemoteMeetingAttendees extends HTMLElement {
         adc-hbox {
           align-items: flex-end;
           gap: 16px;
-        }
-
-        adc-vbox adc-hbox {
-          height: 48px;
-          justify-content: flex-end;
-          min-height: 48px;
-          transition: transform 150ms ease-in-out;
         }        
 
         adc-input {
@@ -287,11 +280,13 @@ export default class RemoteMeetingAttendees extends HTMLElement {
       this.$table.provider = this._people;
     } );
     this.$search.addEventListener( 'input', ( evt ) => {
-      if( evt.currentTarget.value === null ) return;
-
-      this.$table.provider = this._people.filter( ( item ) => {
-        return item.fullName.toLowerCase().indexOf( evt.currentTarget.value.toLowerCase() ) >= 0 ? true : false;
-      } );
+      if( evt.currentTarget.value === null ) {
+        this.$table.provider = this._people;
+      } else {
+        this.$table.provider = this._people.filter( ( item ) => {
+          return item.fullName.toLowerCase().indexOf( evt.currentTarget.value.toLowerCase() ) >= 0 ? true : false;
+        } );
+      }
     } );    
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
     this.$table.addEventListener( 'change', ( evt ) => {
