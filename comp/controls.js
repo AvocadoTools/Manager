@@ -105,6 +105,14 @@ export default class AvocadoControls extends HTMLElement {
         this.$edit.hidden = false;
         this.$save.hidden = true;      
         break;
+
+      case AvocadoControls.EDIT_ONLY: 
+        this.$add.hidden = true;
+        this.$cancel.hidden = true;
+        this.$delete.hidden = true;
+        this.$edit.hidden = false;
+        this.$save.hidden = true;      
+        break;        
         
       case AvocadoControls.DELETE_CANCEL_SAVE: 
         this.$add.hidden = true;
@@ -234,5 +242,6 @@ AvocadoControls.CANCEL_SAVE = 1;
 AvocadoControls.ADD_EDIT = 2;
 AvocadoControls.DELETE_CANCEL_SAVE = 3;
 AvocadoControls.NONE = 4;
+AvocadoControls.EDIT_ONLY = 5;
 
 window.customElements.define( 'adc-controls', AvocadoControls );

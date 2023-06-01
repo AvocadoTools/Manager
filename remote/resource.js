@@ -8,9 +8,7 @@ import AvocadoTable from "../controls/table.js";
 import AvocadoControls from "../comp/controls.js";
 
 import { v4 as uuidv4 } from "../lib/uuid-9.0.0.js";
-
 import { db } from "./db.js";
-import { store } from "./store.js";
 
 export default class RemoteResource extends HTMLElement {
   constructor() {
@@ -104,9 +102,9 @@ export default class RemoteResource extends HTMLElement {
     `;
 
     // Private
-    this._changed = false;
+    this._created = false;
     this._data = null;
-    this._value = null;
+    this._updated = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -114,18 +112,19 @@ export default class RemoteResource extends HTMLElement {
 
     // Elements
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
-    this.$controls.addEventListener( 'add', () => this.doResourceAdd() );
-    this.$controls.addEventListener( 'cancel', () => this.doResourceCancel() );    
-    this.$controls.addEventListener( 'delete', () => this.doResourceDelete() );        
-    this.$controls.addEventListener( 'edit', () => this.doResourceEdit() );        
-    this.$controls.addEventListener( 'save', () => this.doResourceSave() );        
+    this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
+    this.$controls.addEventListener( 'cancel', () => this.doControlsCancel() );    
+    this.$controls.addEventListener( 'delete', () => this.doControlsDelete() );        
+    this.$controls.addEventListener( 'edit', () => this.doControlsEdit() );        
+    this.$controls.addEventListener( 'save', () => this.doControlsSave() );        
     this.$helper = this.shadowRoot.querySelector( 'adc-label:last-of-type' );    
     this.$label = this.shadowRoot.querySelector( 'adc-label:first-of-type' );
     this.$name = this.shadowRoot.querySelector( 'adc-input' );
-    this.$name.addEventListener( 'input', () => this._changed = true );    
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );  
+    this.$table.selectedItemsCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
 
+    /*
     // Read
     if( this.dataType !== null ) {
       const index = 'remote_' + this.dataType.toLocaleLowerCase() + '_index';
@@ -144,82 +143,69 @@ export default class RemoteResource extends HTMLElement {
         }
       );
     }
+    */
+
+    this.doResourceLoad();
   }
 
-  clear() {
-    this.$name.error = null;
-    this.$name.invalid = false;
-    this.$name.value = null;
+  doControlsAdd() {
+    window.localStorage.removeItem( `remote_${this.dataType.toLowerCase()}_id` );
+
+    this.$table.selectedItems = null;
+    this.value = null;
+    this.readOnly = false;
+    this.$name.focus();    
+    this.$controls.mode = AvocadoControls.CANCEL_SAVE;    
   }  
 
-  doResourceAdd() {
-    this.$table.selectedIndex = null;
-    this.$controls.mode = AvocadoControls.CANCEL_SAVE;
-    this.value = null;
-    this.clear();
-    this._changed = false;
-    this.readOnly = false;
-    this.$name.focus();
-  }
+  doControlsCancel() {
+    const id = window.localStorage.getItem( `remote_${this.dataType.toLowerCase()}_id` );
+    
+    this.readOnly = true;    
 
-  doResourceCancel() {
-    if( this._changed ) {
-      const response = confirm( 'Do you want to save changes?' );
-      
-      if( response ) {
-        this.doResourceSave();
-        this._changed = false;
-        return;
-      }
-    }
-
-    if( this._value === null ) {
-      this.clear();
+    if( id === null ) {
+      this.value = null;
       this.$controls.mode = AvocadoControls.ADD_ONLY;
     } else {
-      this.value = this._value;
-      this.$controls.mode = AvocadoControls.ADD_EDIT;
+      db[this.dataType].where( {id: id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        this.$controls.mode = AvocadoControls.ADD_EDIT;        
+      } );
     }
+  }    
 
-    this._changed = false;
-    this.readOnly = true;    
-  }
-
-  doResourceDelete() {
-    const id = this._value.id;    
-    const response = confirm( `Delete ${this._value.name}?` );
+  doControlsDelete() {
+    const response = confirm( `Delete ${this.value.name}?` );
 
     if( response ) {
-      const index = 'remote_' + this.dataType.toLowerCase() + '_index';
-
-      this.clear();
-      this.value = null;
-      this.$table.selectedIndex = null;
-      window.localStorage.removeItem( index );      
-      this._changed = false;
-      this.readOnly = true;
-      this.$controls.mode = AvocadoControls.ADD_ONLY;
+      const id = window.localStorage.getItem( `remote_${this.dataType.toLowerCase()}_id` );
+      
+      window.localStorage.removeItem( `remote_${this.dataType.toLowerCase()}_id` );      
 
       db[this.dataType].delete( id )
       .then( () => db[this.dataType].orderBy( 'name' ).toArray() )
       .then( ( results ) => {
-        store[this.dataType.toLowerCase()].set( results );
-        this.$table.provider = results;
-        store[this.dataType.toLowerCase()].set( results );        
-      } );    
+        this.$label.text = `${this.label} (${results.length})`;      
+        this.$table.selectedItems = null;        
+        this.$table.provider = results;        
+      } );          
+
+      this.value = null;
+      this.readOnly = true;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;            
     }
   }
-  
-  doResourceEdit() {
-    this._changed = false;
-    this.readOnly = false;
+
+  doControlsEdit() {
+    this.readOnly = false;    
     this.$name.focus();
-    this.$controls.mode = this._value === null ? AvocadoControls.ADD_EDIT : AvocadoControls.DELETE_CANCEL_SAVE;    
+    this.$controls.mode = AvocadoControls.DELETE_CANCEL_SAVE;    
   }
 
-  doResourceSave() {
+  doControlsSave() {
     if( this.$name.value === null ) {
-      this.$name.error = 'A name is the only required field.';
+      this.$name.error = 'Name is a required field.';
       this.$name.invalid = true;
       return;
     } else {
@@ -227,95 +213,99 @@ export default class RemoteResource extends HTMLElement {
       this.$name.invalid = false;
     }
 
-    const record = {
-      name: this.$name.value
-    };  
+    const record = Object.assign( {}, this.value );
 
     if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
-      record.id = this.value.id;
-      record.createdAt = this.value.createdAt;
-      record.updatedAt = Date.now();
-      this.value = record;                
+      record.id = window.localStorage.getItem( `remote_${this.dataType.toLowerCase()}_id` );
+      record.createdAt = this._created;
+      record.updatedAt = this._updated = Date.now();
 
       db[this.dataType].put( record )
       .then( () => db[this.dataType].orderBy( 'name' ).toArray() )
       .then( ( results ) => {
-        const index = 'remote_' + this.dataType.toLowerCase() + '_index';
-
+        this.$label.text = `${this.label} (${results.length})`;      
         this.$table.provider = results;
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( index, r );
-            break;
-          }
-        }  
-        
-        store[this.dataType.toLowerCase()].set( results );        
+        this.$table.selectedItems = [{id: record.id}];
       } );
     } else {
       const at = Date.now();
+      const id = uuidv4();
 
-      record.id = uuidv4();
-      record.createdAt = at;
-      record.updatedAt = at;
-      this.value = record;
+      window.localStorage.setItem( `remote_${this.dataType.toLowerCase()}_id`, id );
+
+      record.id = id;
+      record.createdAt = this._created = at;
+      record.updatedAt = this._updated = at;
 
       db[this.dataType].put( record )
       .then( () => db[this.dataType].orderBy( 'name' ).toArray() )
       .then( ( results ) => {
-        const index = 'remote_' + this.dataType.toLowerCase() + '_index';
-
-        this.$table.provider = results;
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( index, r );
-            break;
-          }
-        }
-
-        store[this.dataType.toLowerCase()].set( results );
-      } );      
+        this.$label.text = `${this.label} (${results.length})`;              
+        this.$table.provider = results;     
+        this.$table.selectedItems = [{id: record.id}];
+      } );            
     }
 
-    this._changed = false;
     this.readOnly = true;
     this.$controls.mode = AvocadoControls.ADD_EDIT;
   }  
 
+  doResourceLoad() {
+    // Database not ready
+    if( db[this.dataType] === undefined ) return;
+
+    this.readOnly = true;
+
+    db[this.dataType].orderBy( 'name' ).toArray()
+    .then( ( resources ) => {
+      this.$label.text = `${this.label} (${resources.length})`;      
+      this.$table.provider = resources;  
+
+      const id = window.localStorage.getItem( `remote_${this.dataType.toLowerCase()}_id` );
+
+      if( id === null ) {
+        this.value = null;
+        this.$controls.mode = AvocadoControls.ADD_ONLY;        
+      } else {
+        this.$table.selectedItems = [{id: id}];      
+        db[this.dataType].where( {id: id} ).first()
+        .then( ( item ) => {
+          this.value = item;
+          this.$controls.mode = item === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
+        } );
+      }
+    } );    
+  }
+
   doTableChange( evt ) {
-    if( this._changed ) {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
       const response = confirm( 'Do you want to save changes?' );
     
       if( response ) {
-        this.doResourceSave();
+        this.doControlsSave();
       }
     }
 
     this.readOnly = true;
-    this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem;      
-    this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
-
-    const index = 'remote_' + this.dataType.toLowerCase() + '_index';
 
     if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( index );
+      window.localStorage.removeItem( `remote_${this.dataType.toLowerCase()}_id` );
+      this.value = null;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;      
     } else {
-      window.localStorage.setItem( index, evt.detail.selectedIndex );      
-    }    
+      window.localStorage.setItem( `remote_${this.dataType.toLowerCase()}_id`, evt.detail.selectedItem.id );
+      db[this.dataType].where( {id: evt.detail.selectedItem.id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        console.log( item );
+      } );
+      this.$controls.mode = AvocadoControls.ADD_EDIT;      
+    }
   }  
 
-   // When attributes change
+  // When attributes change
   _render() {
-    const records = this.$table.provider === null ? 0 : this.$table.provider.length;
-    this.$label.text = `${this.label === null ? 'Resource' : this.label} (${records})`;
-    this.$helper.text = this.helper;    
-
     this.$name.readOnly = this.readOnly;    
-    this.$name.value = this._value === null ? null : this._value.name;
   }
 
   // Promote properties
@@ -337,7 +327,6 @@ export default class RemoteResource extends HTMLElement {
     this._upgrade( 'hidden' );    
     this._upgrade( 'hideHeader' );
     this._upgrade( 'label' );        
-    this._upgrade( 'provider' );                
     this._upgrade( 'readOnly' );                
     this._upgrade( 'value' );     
     this._render();
@@ -373,21 +362,28 @@ export default class RemoteResource extends HTMLElement {
     this._data = value;
   }
 
-  get provider() {
-    return this.$table.provider;
-  }
-
-  set provider( data ) {
-    this.$table.provider = data;
-  }
-
   get value() {
-    return this._value;
+    return {
+      createdAt: this._created,
+      updatedAt: this._updated,
+      name: this.$name.value
+    };
   }
 
   set value( data ) {
-    this._value = data;
-    this._render();
+    if( data === null ) {
+      this._created = null;
+      this._updated = null;
+      this.$name.value = null;
+      this.$name.error = null;
+      this.$name.invalid = false;
+    } else {
+      this._created = data.createdAt;
+      this._updated = data.updatedAt;
+      this.$name.value = data.name;
+      this.$name.error = null;
+      this.$name.invalid = false;
+    }
   }
 
   // Attributes
