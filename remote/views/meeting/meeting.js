@@ -19,9 +19,7 @@ import RemoteMeetingAttendees from "./attendees.js";
 import RemoteMeetingItemRenderer from "./meeting-item-renderer.js";
 
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
-
 import { db } from "../../db.js";
-import { store } from "../../store.js";
 
 export default class RemoteMeeting extends HTMLElement {
   constructor() {
