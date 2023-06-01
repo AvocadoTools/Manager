@@ -167,7 +167,7 @@ export default class RemoteMeetingActions extends HTMLElement {
       <adc-vbox id="header">
         <adc-hbox>
           <adc-input 
-            placeholder="Filter by attendee name" 
+            placeholder="Filter by action owner and description" 
             size="lg" 
             type="search">
             <adc-icon name="search" slot="prefix"></adc-icon>
