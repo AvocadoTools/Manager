@@ -133,7 +133,7 @@ export default class AvocadoAttachments extends HTMLElement {
       <adc-vbox id="header">
         <adc-hbox>
           <adc-input 
-            placeholder="Filter by file name" 
+            placeholder="Filter by attachment name" 
             size="lg" 
             type="search">
             <adc-icon name="search" slot="prefix"></adc-icon>
@@ -158,7 +158,7 @@ export default class AvocadoAttachments extends HTMLElement {
       </adc-vbox>
       <adc-table light selectable sortable>
         <adc-column 
-          header-text="File Name"
+          header-text="Attachment Name"
           label-field="name"
           sortable>
         </adc-column>
