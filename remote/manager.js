@@ -163,63 +163,56 @@ export default class RemoteManager extends HTMLElement {
           data-type="Milestone"
           helper="Milestones used for project management." 
           label="Milestones"
-          name="milestone"
-          read-only>
+          name="milestone">
           No milestones added yet.
         </arm-resource>                                    
         <arm-resource 
           data-type="Priority"
           helper="Priorities used for action items." 
           label="Priorities"
-          name="priorities"
-          read-only>
+          name="priorities">
           No priorities added yet.
         </arm-resource>    
         <arm-resource 
           data-type="Project"
           helper="Projects for organizing or assigning work." 
           label="Projects"
-          name="project"
-          read-only>
+          name="project">
           No projects added yet.
         </arm-resource>                             
         <arm-resource 
           data-type="Room"        
           helper="Meeting rooms wether physical or virtual." 
           label="Rooms"
-          name="rooms"
-          read-only>
+          name="rooms">
           No rooms added yet.
         </arm-resource>                   
         <arm-resource 
           data-type="Skill"
           helper="Branches of knowledge dealing with engineering" 
           label="Skills"
-          name="skills"
-          read-only>
+          name="skills">
           No skills added yet.          
         </arm-resource>                                                                  
         <arm-resource 
           data-type="Status"
           helper="Status used for action items." 
           label="Status"
-          name="status"
-          read-only>
+          name="status">
           No status added yet.
         </arm-resource>                                  
         <arm-resource 
           data-type="Tag"
           helper="Generic, ad hoc, categorization." 
           label="Tags"
-          name="tags"
-          read-only>
+          name="tags">
+          No tags added yet.
         </arm-resource>                                                  
         <arm-resource 
           data-type="Type"
           helper="Meeting types defining group size and scope." 
           label="Types"
-          name="types"
-          read-only>
+          name="types">
           No types added yet.
         </arm-resource>                                          
       </adc-stack>
