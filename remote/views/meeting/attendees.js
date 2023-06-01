@@ -58,6 +58,10 @@ export default class RemoteMeetingAttendees extends HTMLElement {
           margin: 0 0 20px 0;
         }
 
+        adc-button[kind="secondary"]::part( button ) {
+          padding: 0 35px 0 15px;
+        }
+
         adc-button[disabled] adc-icon {
           --icon-color: #8d8d8d;
         }
