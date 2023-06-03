@@ -9,6 +9,7 @@ import AvocadoLabel from "../../../controls/label.js";
 import AvocadoSelect from "../../../controls/select.js";
 import AvocadoTable from "../../../controls/table.js";
 
+import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
 import { db } from "../../db.js";
 
 export default class RemoteMeetingActions extends HTMLElement {
@@ -149,11 +150,11 @@ export default class RemoteMeetingActions extends HTMLElement {
       </style>
       <adc-hbox>
         <adc-select
-          label="Action owner"
+          label="Owner"
           label-field="fullName"
           light
           name="owner"
-          placeholder="Action owner"
+          placeholder="Owner"
           style="flex-grow: 0; min-width: 245px;">
         </adc-select>                                   
         <adc-input
@@ -167,7 +168,7 @@ export default class RemoteMeetingActions extends HTMLElement {
       <adc-vbox id="header">
         <adc-hbox>
           <adc-input 
-            placeholder="Filter by action owner and description" 
+            placeholder="Filter by owner and description" 
             size="lg" 
             type="search">
             <adc-icon name="search" slot="prefix"></adc-icon>
@@ -191,7 +192,7 @@ export default class RemoteMeetingActions extends HTMLElement {
         </adc-hbox>      
       </adc-vbox>
       <adc-table light selectable sortable>
-        <adc-column header-text="Action Owner" label-field="fullName" sortable width="266"></adc-column>              
+        <adc-column header-text="Owner" label-field="fullName" sortable width="266"></adc-column>              
         <adc-column header-text="Description" label-field="description"></adc-column>
         <adc-vbox slot="empty">
           <adc-label>No actions added yet.</adc-label>
@@ -232,17 +233,37 @@ export default class RemoteMeetingActions extends HTMLElement {
         this.$description.error = null;
         this.$description.invalid = false;
       }      
-     
-      this._items.push( {
-        id: this.$owner.selectedItem.id,
-        fullName: this.$owner.selectedItem.fullName,
-        description: this.$description.value
+ 
+      db.Action.put( {
+        id: uuidv4(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        owner: this.$owner.selectedItem.id,
+        description: this.$description.value,
+        dueAt: Date.now(),
+        completedAt: null,
+        project: null,
+        milestone: null,
+        status: null,
+        priority: null,
+        effort: null
+      } )
+      .then( ( key ) => {
+        this._items.push( key );
+        return db.Action.bulkGet( this._items );
+      } )
+      .then( async ( items ) => {
+        for( let i = 0; i < items.length; i++ ) {
+          const person = await db.Person.where( {id: items[i].owner} ).first();
+          items[i].fullName = person.fullName;
+        }
+
+        this.label = `Actions (${items.length})`;                    
+        this.$table.provider = items;
       } );
 
       this.$owner.selectedItem = null;
       this.$description.value = null;
-      this.label = `Actions (${this._items.length})`;    
-      this.$table.provider = this._items;                    
     } );
     this.$cancel  = this.shadowRoot.querySelector( '#cancel' );
     this.$cancel.addEventListener( 'click', () => {
@@ -258,12 +279,21 @@ export default class RemoteMeetingActions extends HTMLElement {
     this.$delete = this.shadowRoot.querySelector( '#delete' );
     this.$delete.addEventListener( 'click', () => {
       this.$header.classList.remove( 'selected' );
-      this._items.splice( this._index, 1 );
+      const key = this._items.splice( this._index, 1 );
+      db.Action.delete( key[0] )
+      .then( () => db.Action.bulkGet( this._items ) )
+      .then( async ( items ) => {
+        for( let i = 0; i < items.length; i++ ) {
+          const person = await db.Person.where( {id: items[i].owner} ).first();
+          items[i].fullName = person.fullName;
+        }
+
+        this.$table.provider = items;        
+      } );
       this.label = `Actions (${this._items.length})`;    
       this._index = null;
       this.$header.classList.remove( 'selected' );  
       this.$table.selectedItems = null;
-      this.$table.provider = this._items;
     } );    
     this.$header = this.shadowRoot.querySelector( 'adc-vbox' );
     this.$search = this.shadowRoot.querySelector( 'adc-input[type=search]' );
@@ -371,8 +401,18 @@ export default class RemoteMeetingActions extends HTMLElement {
   set value( data ) {
     if( data === null ) {
       this._items = [];
+      this.$table.provider = null;
     } else {
       this._items = [... data];
+      db.Action.bulkGet( this._items )
+      .then( async ( items ) => {
+        for( let i = 0; i < items.length; i++ ) {
+          const person = await db.Person.where( {id: items[i].owner} ).first();
+          items[i].fullName = person.fullName;
+        }
+
+        this.$table.provider = items;
+      } );
     }
 
     this.$owner.selectedItem = null;
@@ -384,7 +424,6 @@ export default class RemoteMeetingActions extends HTMLElement {
     this.$search.value = null;
     this.$header.classList.remove( 'selected' );
     this.$table.selectedItems = null;
-    this.$table.provider = this._items;
     this.label = `Actions (${this._items.length})`;
   }  
 

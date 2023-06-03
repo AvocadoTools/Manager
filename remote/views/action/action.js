@@ -11,9 +11,7 @@ import AvocadoTable from "../../../controls/table.js";
 import AvocadoControls from "../../../comp/controls.js";
 
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
-
 import { db } from "../../db.js";
-import { store } from "../../store.js";
 
 export default class RemoteAction extends HTMLElement {
   constructor() {
@@ -92,19 +90,20 @@ export default class RemoteAction extends HTMLElement {
         }
       </style>
       <adc-hbox>
-        <adc-input
-          id="description"
-          label="Description"
-          placeholder="Description">
-        </adc-input>            
         <adc-select
           id="owner"
           label="Owner"
           label-field="fullName"
           placeholder="Owner"
           style="min-width: 250px;">
-        </adc-select>
+        </adc-select>      
+        <adc-input
+          id="description"
+          label="Description"
+          placeholder="Description">
+        </adc-input>            
         <adc-date-picker
+          id="due"
           label="Due date"
           placeholder="Due date"
           style="flex-grow: 0; min-width: 165px;">
@@ -122,7 +121,7 @@ export default class RemoteAction extends HTMLElement {
           label="Project"
           label-field="name"
           placeholder="Project"
-          style="flex-basis: 0; flex-grow: 1;">
+          style="min-width: 250px;">
         </adc-select>          
         <adc-select
           id="milestone"
@@ -173,12 +172,9 @@ export default class RemoteAction extends HTMLElement {
     `;
 
     // Private
-    this._changed = false;
+    this._created = null;
     this._data = null;
-    this._people = [];
-    this._priorities = [];
-    this._status = [];    
-    this._value = null;
+    this._updated = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -186,55 +182,13 @@ export default class RemoteAction extends HTMLElement {
 
     // Elements
     this.$columns = this.shadowRoot.querySelectorAll( 'adc-column' );
-    this.$columns[0].labelFunction = ( data ) => {
-      let priority = null;
-      for( let p = 0; p < this._priorities.length; p++ ) {
-        if( this._priorities[p].id === data.priority ) {
-          priority = this._priorities[p].name;          
-          break;
-        }
-      }
-
-      return priority;
-    };
-    this.$columns[2].labelFunction = ( data ) => {
-      let person = null;
-      for( let p = 0; p < this._people.length; p++ ) {
-        if( this._people[p].id === data.owner ) {
-          person = this._people[p].fullName;          
-          break;
-        }
-      }
-
-      return person;
-    };   
-    this.$columns[3].labelFunction = ( data ) => {
-      const update = new Date( data.dueAt );
-      const formatted = new Intl.DateTimeFormat( navigator.language, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      } ).format( update );    
-      return formatted;
-    };   
-    this.$columns[4].labelFunction = ( data ) => {
-      let status = null;
-      for( let s = 0; s < this._status.length; s++ ) {
-        if( this._status[s].id === data.status ) {
-          status = this._status[s].name;          
-          break;
-        }
-      }
-
-      return status;
-    };             
     this.$complete = this.shadowRoot.querySelector( '#complete' );
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
-    this.$controls.addEventListener( 'add', () => this.doActionAdd() );
-    this.$controls.addEventListener( 'cancel', () => this.doActionCancel() );
-    this.$controls.addEventListener( 'delete', () => this.doActionDelete() );
-    this.$controls.addEventListener( 'edit', () => this.doActionEdit() );
-    this.$controls.addEventListener( 'save', () => this.doActionSave() );        
+    this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
+    this.$controls.addEventListener( 'cancel', () => this.doControlsCancel() );
+    this.$controls.addEventListener( 'delete', () => this.doControlsDelete() );
+    this.$controls.addEventListener( 'edit', () => this.doControlsEdit() );
+    this.$controls.addEventListener( 'save', () => this.doControlsSave() );        
     this.$description = this.shadowRoot.querySelector( '#description' );
     this.$effort = this.shadowRoot.querySelector( '#effort' );
     this.$effort.selectedItemCompareFunction = ( provider, item ) => provider === item ? true : false;    
@@ -255,201 +209,52 @@ export default class RemoteAction extends HTMLElement {
     this.$search = this.shadowRoot.querySelector( '#search' );       
     this.$due = this.shadowRoot.querySelector( 'adc-date-picker' );
 
-    // State    
-    const action_index = window.localStorage.getItem( 'remote_action_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_action_index' ) );
-
-    // Read
-    // TODO: What happens when reference table changes?
-    // TODO: Invalidate table to re-render?
-    db.Action.orderBy( 'dueAt' ).toArray()
-    .then( ( results ) => {
-      this.$table.provider = results;      
-      this.$table.selectedIndex = action_index === null ? null : action_index;      
-
-      this.readOnly = true;
-      this.value = action_index === null ? null : results[action_index];      
-      this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;      
-      
-      store.action.set( results );
-    } );        
-
-    store.milestone.subscribe( ( data ) => this.$milestone.provider = data );
-    store.person.subscribe( ( data ) => {
-      this.$owner.provider = data;
-      this._people = data; 
-    } );    
-    store.priority.subscribe( ( data ) => {
-      this.$priority.provider = data;
-      this._priorities = data;
-    } );    
-    store.project.subscribe( ( data ) => this.$project.provider = data );
-    store.status.subscribe( ( data ) => {
-      this.$status.provider = data;
-      this._status = data;
-    } );    
-    store.action.subscribe( ( data ) => this.$table.provider = data );     
+    this.doActionLoad();
   }
 
-  clear() {
-    this.value = null;
-  }
-
-  doActionAdd() {
-    this.$table.selectedIndex = null;
-    this.$controls.mode = AvocadoControls.CANCEL_SAVE;
-    this.value = null;
-    this.clear();
-    this._changed = false;
-    this.readOnly = false;
-    this.$description.focus();
-  }  
-
-  doActionCancel() {
-    if( this._changed ) {
-      const response = confirm( 'Do you want to save changes?' );
-      
-      if( response ) {
-        this.doActionSave();
-        this._changed = false;
-        return;
-      }
-    }
-
-    if( this._value === null ) {
-      this.clear();
-      this.$controls.mode = AvocadoControls.ADD_ONLY;
-    } else {
-      this.value = this._value;
-      this.$controls.mode = AvocadoControls.ADD_EDIT;
-    }
-
-    this._changed = false;
-    this.readOnly = true;    
-  }  
-
-  doActionDelete() {
-    const id = this._value.id;    
-    const response = confirm( `Delete ${this._value.description}?` );
-
-    if( response ) {
-      this.clear();
-      this.value = null;
-      this.$table.selectedIndex = null;
-      window.localStorage.removeItem( 'remote_action_index' );
-      this._changed = false;
-      this.readOnly = true;
-      this.$controls.mode = AvocadoControls.ADD_ONLY;
-
-      db.Action.delete( id )
-      .then( () => db.Action.orderBy( 'description' ).toArray() )
-      .then( ( results ) => {
-        this.$table.provider = results;        
-        store.action.set( results );
-      } );          
-    }
-  }
-
-  doActionEdit() {
-    this._changed = false;
-    this.readOnly = false;
-    this.$controls.mode = this._value === null ? AvocadoControls.ADD_EDIT : AvocadoControls.DELETE_CANCEL_SAVE;
-    this.$description.focus();
-  }  
-
-  doActionSave() {
-    if( this.$description.value === null ) {
-      this.$description.error = 'Action description is a required field.';
-      this.$description.invalid = true;
-      return;
-    } else {
-      this.$description.error = null;
-      this.$description.invalid = false;
-    }
-
-    const record = {
-      completedAt: this.$complete.value === null ? null : this.$complete.value.getTime(),
-      description: this.$description.value,
-      dueAt: this.$due.value === null ? null : this.$due.value.getTime(),      
-      effort: this.$effort.value === null ? null : this.$effort.value,
-      milestone: this.$milestone.value === null ? null : this.$milestone.value.id,      
-      owner: this.$owner.value === null ? null : this.$owner.value.id,
-      priority: this.$priority.value === null ? null : this.$priority.value.id,
-      project: this.$project.value === null ? null : this.$project.value.id,
-      status: this.$status.value === null ? null : this.$status.value.id
-    };  
-
-    if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
-      record.id = this.value.id;
-      record.createdAt = this.value.createdAt;
-      record.updatedAt = Date.now();
-      this.value = record;                
-
-      db.Action.put( record )
-      .then( () => db.Action.orderBy( 'description' ).toArray() )
-      .then( ( results ) => {   
-        this.$table.provider = results;
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_action_index', r );
-            break;
-          }
-        }
-
-        store.action.set( results );
-      } );
-    } else {
-      const at = Date.now();
-
-      record.id = uuidv4();
-      record.createdAt = at;
-      record.updatedAt = at;
-      this.value = record;
-
-      db.Action.put( record )
-      .then( () => db.Action.orderBy( 'description' ).toArray() )
-      .then( ( results ) => {
-        this.$table.provider = results;     
-
-        for( let r = 0; r < results.length; r++ ) {
-          if( results[r].id === record.id ) {
-            this.$table.selectedIndex = r;
-            window.localStorage.setItem( 'remote_action_index', r );
-            break;
-          }
-        }
-
-        store.action.set( results );
-      } );            
-    }
-
-    this._changed = false;
+  doActionLoad() {
     this.readOnly = true;
-    this.$controls.mode = AvocadoControls.ADD_EDIT;
-  }  
 
-  doTableChange( evt ) {
-    if( this._changed && !this.readOnly ) {
-      const response = confirm( 'Do you want to save changes?' );
-    
-      if( response ) {
-        this.doActionSave();
+    db.Person.orderBy( 'fullName' ).toArray()
+    .then( ( people ) => {
+      this.$owner.provider = people;
+      return db.Project.orderBy( 'name' ).toArray();
+    } )
+    .then( ( projects ) => {
+      this.$project.provider = projects;
+      return db.Milestone.orderBy( 'name' ).toArray();
+    } )
+    .then( ( stones ) => {
+      this.$milestone.provider = stones;
+      return db.Status.orderBy( 'name' ).toArray();
+    } )
+    .then( ( status ) => {
+      this.$status.provider = status;
+      return db.Priority.orderBy( 'name' ).toArray();
+    } )
+    .then( ( priorities ) => {
+      this.$priority.provider = priorities;
+      return db.Action.orderBy( 'dueAt' ).toArray();
+    } )
+    .then( ( actions ) => {
+      console.log( actions );
+      this.$table.provider = actions;  
+
+      const id = window.localStorage.getItem( 'remote_action_id' );
+
+      if( id === null ) {
+        this.value = null;
+        this.$controls.mode = AvocadoControls.ADD_ONLY;        
+      } else {
+        this.$table.selectedItems = [{id: id}];      
+        db.Action.where( {id: id} ).first()
+        .then( ( item ) => {
+          this.value = item;
+          this.$controls.mode = item === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
+        } );
       }
-    }
-
-    console.log( evt );
-
-    this.readOnly = true;
-    this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem;      
-    this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;
-
-    if( evt.detail.selectedItem === null ) {
-      window.localStorage.removeItem( 'remote_action_index' );
-    } else {
-      window.localStorage.setItem( 'remote_action_index', evt.detail.selectedIndex );      
-    }
-  }  
+    } );    
+  }
 
    // When attributes change
   _render() {
@@ -462,22 +267,6 @@ export default class RemoteAction extends HTMLElement {
     this.$priority.readOnly = this.readOnly;
     this.$project.readOnly = this.readOnly;
     this.$status.readOnly = this.readOnly;
-
-    if( this.value === null ) {
-      this.$due.value = null; 
-      this.$complete.value = null;  
-    } else {
-      this.$due.value = this.value.dueAt === null ? null : this.value.dueAt;
-      this.$complete.value = this.value.completedAt === null ? null : this.value.completedAt;      
-    }
-
-    this.$description.value = this._value === null ? null : this._value.description;
-    this.$effort.selectedItem = this._value === null ? null : this._value.effort;        
-    this.$milestone.selectedItem = this._value === null ? null : {id: this._value.milestone};             
-    this.$owner.selectedItem = this._value === null ? null : {id: this._value.owner};
-    this.$priority.selectedItem = this._value === null ? null : {id: this._value.priority};    
-    this.$project.selectedItem = this._value === null ? null : {id: this._value.project};        
-    this.$status.selectedItem = this._value === null ? null : {id: this._value.status};
   }
 
   // Promote properties
@@ -496,6 +285,7 @@ export default class RemoteAction extends HTMLElement {
     this._upgrade( 'data' );                
     this._upgrade( 'hidden' );    
     this._upgrade( 'readOnly' );
+    this._upgrade( 'value' );    
     this._render();
   }
 
