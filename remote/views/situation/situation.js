@@ -222,7 +222,7 @@ export default class RemoteSituation extends HTMLElement {
     if( response ) {
       const id = window.localStorage.getItem( 'remote_situation_id' );
       
-      window.localStorage.removeItem( 'remote_situation_index' );      
+      window.localStorage.removeItem( 'remote_situation_id' );      
 
       db.Situation.delete( id )
       .then( () => db.Situation.orderBy( 'startAt' ).toArray() )

@@ -241,7 +241,7 @@ export default class RemotePerson extends HTMLElement {
     if( response ) {
       const id = window.localStorage.getItem( 'remote_person_id' );
       
-      window.localStorage.removeItem( 'remote_person_index' );      
+      window.localStorage.removeItem( 'remote_person_id' );      
 
       db.Person.delete( id )
       .then( () => db.Person.orderBy( 'fullName' ).toArray() )

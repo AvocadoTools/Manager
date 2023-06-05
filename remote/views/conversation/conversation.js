@@ -296,7 +296,7 @@ export default class RemoteConversation extends HTMLElement {
     if( response ) {
       const id = window.localStorage.getItem( 'remote_conversation_id' );
 
-      window.localStorage.removeItem( 'remote_conversation_index' );
+      window.localStorage.removeItem( 'remote_conversation_id' );
 
       db.Conversation.delete( id )
       .then( () => db.Conversation.orderBy( 'startAt' ).toArray() )

@@ -168,7 +168,7 @@ export default class RemoteMeetingActions extends HTMLElement {
       <adc-vbox id="header">
         <adc-hbox>
           <adc-input 
-            placeholder="Filter by owner and description" 
+            placeholder="Filter actions" 
             size="lg" 
             type="search">
             <adc-icon name="search" slot="prefix"></adc-icon>
@@ -210,7 +210,7 @@ export default class RemoteMeetingActions extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Element
-    this.$all = this.shadowRoot.querySelector( '#all' );    
+    this.$all = this.shadowRoot.querySelector( '#all' );
     this.$description = this.shadowRoot.querySelector( 'adc-input' );
     this.$owner = this.shadowRoot.querySelector( 'adc-select[name=owner]' );
     this.$owner.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;    
@@ -240,7 +240,7 @@ export default class RemoteMeetingActions extends HTMLElement {
         updatedAt: Date.now(),
         owner: this.$owner.selectedItem.id,
         description: this.$description.value,
-        dueAt: Date.now(),
+        dueAt: null,
         completedAt: null,
         project: null,
         milestone: null,
@@ -280,6 +280,12 @@ export default class RemoteMeetingActions extends HTMLElement {
     this.$delete.addEventListener( 'click', () => {
       this.$header.classList.remove( 'selected' );
       const key = this._items.splice( this._index, 1 );
+      
+      const id = window.localStorage.getItem( 'remote_action_id' );
+      if( id === key ) {
+        window.localStorage.removeItem( 'remote_action_id' );
+      }
+
       db.Action.delete( key[0] )
       .then( () => db.Action.bulkGet( this._items ) )
       .then( async ( items ) => {
@@ -404,8 +410,10 @@ export default class RemoteMeetingActions extends HTMLElement {
       this.$table.provider = null;
     } else {
       this._items = [... data];
+      console.log( this._items );
       db.Action.bulkGet( this._items )
       .then( async ( items ) => {
+        console.log( items );
         for( let i = 0; i < items.length; i++ ) {
           const person = await db.Person.where( {id: items[i].owner} ).first();
           items[i].fullName = person.fullName;

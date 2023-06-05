@@ -201,7 +201,7 @@ export default class RemoteDocument extends HTMLElement {
     if( response ) {
       const id = window.localStorage.getItem( 'remote_document_id' );
       
-      window.localStorage.removeItem( 'remote_document_index' );      
+      window.localStorage.removeItem( 'remote_document_id' );      
 
       db.Document.delete( id )
       .then( () => db.Document.orderBy( 'name' ).toArray() )

@@ -4,6 +4,7 @@ import AvocadoDatePicker from "../../../controls/date-picker.js";
 import AvocadoInput from "../../../controls/input.js";
 import AvocadoLabel from "../../../controls/label.js";
 import AvocadoLink from "../../../controls/link.js";
+import AvocadoSelect from "../../../controls/select.js";
 
 import AvocadoNotes from "../../../comp/notes.js";
 
@@ -38,6 +39,7 @@ export default class RemotePersonProfile extends HTMLElement {
 
         adc-date-picker,
         adc-input,
+        adc-select,
         adc-textarea {
           flex-basis: 0;
           flex-grow: 1;
@@ -68,6 +70,28 @@ export default class RemotePersonProfile extends HTMLElement {
       </adc-hbox>
       <adc-hbox>
         <adc-input
+          id="level"
+          label="Job level"
+          light
+          placeholder="Job level">
+        </adc-input>
+        <adc-date-picker
+          id="promotion"
+          label="Last promotion"
+          light
+          placeholder="Last promotion">
+          <adc-label></adc-label>
+        </adc-date-picker>
+        <adc-select
+          id="direct"
+          label="Direct report"
+          light
+          placeholder="Direct report">
+        </adc-select>
+      </adc-hbox>
+      <!--
+      <adc-hbox>
+        <adc-input
           id="spouse"
           label="Spouse/Partner"
           light
@@ -87,6 +111,7 @@ export default class RemotePersonProfile extends HTMLElement {
           placeholder="Family">
         </adc-input>        
       </adc-hbox>
+      -->
       <adc-notes 
         label="Notes" 
         light 
@@ -103,36 +128,46 @@ export default class RemotePersonProfile extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
+    /*
     this.$anniversary = this.shadowRoot.querySelector( '#anniversary' );
     this.$anniversary.formatFunction = this.format;
     this.$anniversary.addEventListener( 'change', ( evt ) => {
       this.$union.concealed = false;
       this.$union.text = this.distance( evt.detail );
     } );    
+    */
     this.$birth = this.shadowRoot.querySelector( '#birth' );
     this.$birth.formatFunction = this.format;
     this.$birth.addEventListener( 'change', ( evt ) => {
       this.$zodiac.concealed = false;
       this.$zodiac.label = this.zodiac( evt.detail );
     } );
-    this.$family = this.shadowRoot.querySelector( '#family' );        
+    // this.$family = this.shadowRoot.querySelector( '#family' );        
+    this.$direct = this.shadowRoot.querySelector( '#direct' );
     this.$employed = this.shadowRoot.querySelector( '#start adc-label' );
     this.$last = this.shadowRoot.querySelector( '#pto adc-label' );
     this.$notes = this.shadowRoot.querySelector( 'adc-notes' );
+    this.$promotion = this.shadowRoot.querySelector( '#promotion' );
+    this.$promotion.formatFunction = this.format;
+    this.$promotion.addEventListener( 'change', ( evt ) => {
+      // this.$union.concealed = false;
+      // this.$union.text = this.distance( evt.detail );
+    } );       
     this.$pto = this.shadowRoot.querySelector( '#pto' );    
     this.$pto.formatFunction = this.format;
     this.$pto.addEventListener( 'change', ( evt ) => {
       this.$last.concealed = false;
       this.$last.text = this.distance( evt.detail );
     } );
-    this.$spouse = this.shadowRoot.querySelector( '#spouse' );    
+    // this.$spouse = this.shadowRoot.querySelector( '#spouse' );    
+    this.$level = this.shadowRoot.querySelector( '#level' );        
+    this.$role = this.shadowRoot.querySelector( '#promotion adc-label' );
     this.$start = this.shadowRoot.querySelector( '#start' );
     this.$start.formatFunction = this.format;
     this.$start.addEventListener( 'change', ( evt ) => {
       this.$employed.concealed = false;
       this.$employed.text = this.distance( evt.detail );
     } );
-    this.$spouse = this.shadowRoot.querySelector( '#spouse' );
     this.$union = this.shadowRoot.querySelector( '#anniversary adc-label' );    
     this.$zodiac = this.shadowRoot.querySelector( '#birth adc-link' );
   }
@@ -214,9 +249,12 @@ export default class RemotePersonProfile extends HTMLElement {
     this.$start.readOnly = this.readOnly;
     this.$pto.readOnly = this.readOnly;        
     this.$birth.readOnly = this.readOnly;
-    this.$spouse.readOnly = this.readOnly;    
-    this.$anniversary.readOnly = this.readOnly;
-    this.$family.readOnly = this.readOnly;
+    // this.$spouse.readOnly = this.readOnly;    
+    // this.$anniversary.readOnly = this.readOnly;
+    // this.$family.readOnly = this.readOnly;
+    this.$level.readOnly = this.readOnly;
+    this.$promotion.readOnly = this.readOnly;
+    this.$direct.readOnly = this.readOnly;
     this.$notes.readOnly = this.readOnly;
   }
 
@@ -279,9 +317,9 @@ export default class RemotePersonProfile extends HTMLElement {
       startAt: this.$start.value === null ? null : this.$start.value.getTime(),
       ptoAt: this.$pto.value === null ? null : this.$pto.value.getTime(),
       bornAt: this.$birth.value === null ? null : this.$birth.value.getTime(),
-      spouse: this.$spouse.value,
-      anniversaryAt: this.$anniversary.value === null ? null : this.$anniversary.value.getTime(),
-      family: this.$family.value,
+      level: this.$level.value,
+      promotionAt: this.$promotion.value === null ? null : this.$promotion.value.getTime(),
+      direct: this.$direct.value === null ? false : true,
       notes: this.$notes.value
     };
   }
@@ -294,10 +332,11 @@ export default class RemotePersonProfile extends HTMLElement {
       this.$last.concealed = true;
       this.$birth.value = null;
       this.$zodiac.concealed = true;
-      this.$spouse.value = null;
-      this.$anniversary.value = null;
-      this.$union.concealed = true;
-      this.$family.value = null;
+      this.$level.value = null;
+      this.$promotion.value = null;
+      this.$role.concealed = true;
+      // this.$union.concealed = true;
+      this.$direct.value = null;
       this.$notes.value = null;
     } else {
       this.$start.value = data.startAt === null ? null : new Date( data.startAt );
@@ -309,11 +348,13 @@ export default class RemotePersonProfile extends HTMLElement {
       this.$birth.value = data.bornAt === null ? null : new Date( data.bornAt );
       this.$zodiac.concealed = data.bornAt === null ? true : false;
       this.$zodiac.label = data.bornAt === null ? null : this.zodiac( new Date( data.bornAt ) );
-      this.$spouse.value = data.spouse;
-      this.$anniversary.value = data.anniversaryAt === null ? null : new Date( data.anniversaryAt );
-      this.$union.concealed = data.anniversaryAt === null ? true : false;
-      this.$union.text = data.anniversaryAt === null ? null : this.distance( new Date( data.anniversaryAt ) );
-      this.$family.value = data.family;
+      this.$level.value = data.level;
+      this.$promotion.value = data.promotionAt === null ? null : new Date( data.promotionAt );
+      this.$role.concealed = data.promotionAt === null ? true : false;
+      this.$role.text = data.promotionAt === null ? null : this.distance( new Date( data.promotionAt ) );      
+      // this.$union.concealed = data.anniversaryAt === null ? true : false;
+      // this.$union.text = data.anniversaryAt === null ? null : this.distance( new Date( data.anniversaryAt ) );
+      this.$direct.value = data.direct;
       this.$notes.value = data.notes;
     }
   }

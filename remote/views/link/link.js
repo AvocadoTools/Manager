@@ -233,7 +233,7 @@ export default class RemoteLink extends HTMLElement {
     if( response ) {
       const id = window.localStorage.getItem( 'remote_link_id' );
       
-      window.localStorage.removeItem( 'remote_link_index' );      
+      window.localStorage.removeItem( 'remote_link_id' );      
 
       db.Link.delete( id )
       .then( () => db.Link.orderBy( 'name' ).toArray() )

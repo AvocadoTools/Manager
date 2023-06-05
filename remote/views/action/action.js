@@ -147,6 +147,7 @@ export default class RemoteAction extends HTMLElement {
         <adc-select
           id="effort"
           label="Effort"
+          label-field="name"
           placeholder="Effort"
           style="min-width: 165px;">
         </adc-select>                                                                          
@@ -160,9 +161,9 @@ export default class RemoteAction extends HTMLElement {
         <adc-icon name="search" slot="prefix"></adc-icon>
       </adc-input>
       <adc-table sortable selectable>
-        <adc-column header-text="Priority" sortable width="150"></adc-column>      
+        <adc-column header-text="Owner" label-field="owner" sortable width="225"></adc-column>        
         <adc-column header-text="Description" label-field="description" sortable></adc-column>
-        <adc-column header-text="Owner" label-field="owner" sortable width="250"></adc-column>        
+        <adc-column header-text="Priority" label-field="priority" sortable width="165"></adc-column>              
         <adc-column header-text="Due date" label-field="dueAt" sortable width="165"></adc-column>                
         <adc-column header-text="Status" label-field="status" sortable width="165"></adc-column>                        
         <adc-vbox slot="empty">
@@ -182,6 +183,17 @@ export default class RemoteAction extends HTMLElement {
 
     // Elements
     this.$columns = this.shadowRoot.querySelectorAll( 'adc-column' );
+    this.$columns[3].labelFunction = ( item ) => {
+      if( item.dueAt === null ) {
+        return '';
+      }
+
+      return new Intl.DateTimeFormat( navigator.language, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      } ).format( item.dueAt );    
+    };
     this.$complete = this.shadowRoot.querySelector( '#complete' );
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
     this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
@@ -191,14 +203,24 @@ export default class RemoteAction extends HTMLElement {
     this.$controls.addEventListener( 'save', () => this.doControlsSave() );        
     this.$description = this.shadowRoot.querySelector( '#description' );
     this.$effort = this.shadowRoot.querySelector( '#effort' );
-    this.$effort.selectedItemCompareFunction = ( provider, item ) => provider === item ? true : false;    
-    this.$effort.provider = ['Small', 'Medium', 'Large', 'Extra Large'];
+    this.$effort.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;    
+    this.$effort.provider = [
+      {id: 0, name: 'None'}, 
+      {id: 1, name: 'Small'}, 
+      {id: 2, name: 'Medium'}, 
+      {id: 3, name: 'Large'}, 
+      {id: 4, name: 'Extra Large'},
+      {id: 5, name: 'Huge'},
+      {id: 6, name: 'Gigantic'},
+      {id: 7, name: 'Uknowable'}
+    ];
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
     this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );     
+    this.$table.selectedItemsCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
     this.$milestone = this.shadowRoot.querySelector( '#milestone' ); 
     this.$milestone.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;       
     this.$owner = this.shadowRoot.querySelector( '#owner' );
-    this.$owner.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;    
+    this.$owner.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;
     this.$priority = this.shadowRoot.querySelector( '#priority' );    
     this.$priority.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
     this.$project = this.shadowRoot.querySelector( '#project' );
@@ -234,11 +256,12 @@ export default class RemoteAction extends HTMLElement {
     } )
     .then( ( priorities ) => {
       this.$priority.provider = priorities;
-      return db.Action.orderBy( 'dueAt' ).toArray();
+      // return db.Action.orderBy( 'dueAt' ).toArray();
+      // TODO: Elegant way to handle NULL value for dueAt
+      return db.Action.toArray();
     } )
-    .then( ( actions ) => {
-      console.log( actions );
-      this.$table.provider = actions;  
+    .then( async ( actions ) => {
+      this.$table.provider = await this.expandActions( actions );  
 
       const id = window.localStorage.getItem( 'remote_action_id' );
 
@@ -255,6 +278,176 @@ export default class RemoteAction extends HTMLElement {
       }
     } );    
   }
+
+  async expandActions( actions ) {
+    return new Promise( async ( resolve, reject ) => {
+      for( let a = 0; a < actions.length; a++ ) {
+        const person = await db.Person.where( {id: actions[a].owner} ).first();
+        actions[a].owner = person.fullName;
+  
+        if( actions[a].priority !== null ) {
+          const priority = await db.Priority.where( {id: actions[a].priority} ).first();
+          actions[a].priority = priority.name;
+        }
+  
+        if( actions[a].status !== null ) {
+          const status = await db.Status.where( {id: actions[a].status} ).first();
+          actions[a].status = status.name;
+        }        
+      }  
+
+      resolve( actions );
+    } );
+  }
+
+  doControlsAdd() {
+    window.localStorage.removeItem( 'remote_action_id' );
+
+    this.$table.selectedItems = null;
+    this.value = null;
+    this.readOnly = false;
+    this.$owner.focus();    
+    this.$controls.mode = AvocadoControls.CANCEL_SAVE;    
+  }    
+
+  doControlsCancel() {
+    const id = window.localStorage.getItem( 'remote_action_id' );
+    
+    this.readOnly = true;    
+
+    if( id === null ) {
+      this.value = null;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;
+    } else {
+      db.Action.where( {id: id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        this.$controls.mode = AvocadoControls.ADD_EDIT;        
+      } );
+    }
+  }  
+
+  doControlsDelete() {
+    const response = confirm( `Delete action?` );
+
+    if( response ) {
+      const id = window.localStorage.getItem( 'remote_action_id' );
+      
+      window.localStorage.removeItem( 'remote_action_id' );      
+
+      db.Action.delete( id )
+      .then( () => db.Action.toArray() )
+      .then( async ( results ) => {
+        this.$table.selectedItems = null;     
+        this.$table.provider = await this.expandActions( results );        
+        return db.Meeting.toArray();
+      } )
+      .then( async ( meetings ) => {
+        for( let m = 0; m < meetings.length; m++ ) {
+          if( meetings[m].actions !== null ) {
+            const index = meetings[m].actions.indexOf( id );
+            if( index >= 0 ) {
+              meetings[m].actions.splice( index, 1 );
+              if( meetings[m].actions.length === 0 ) {
+                meetings[m].actions = null;
+              }
+              await db.Meeting.put( meetings[m] );
+            }
+          }
+        }
+      } );          
+
+      this.value = null;
+      this.readOnly = true;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;            
+    }
+  }   
+
+  doControlsEdit() {
+    this.readOnly = false;    
+    this.$owner.focus();
+    this.$controls.mode = AvocadoControls.DELETE_CANCEL_SAVE;    
+  }
+
+  doControlsSave() {
+    if( this.$owner.value === null ) {
+      this.$owner.error = 'Owner is a required field.';
+      this.$owner.invalid = true;
+      return;
+    } else {
+      this.$owner.error = null;
+      this.$owner.invalid = false;
+    }
+
+    if( this.$description.value === null ) {
+      this.$description.error = 'Description is a required field.';
+      this.$description.invalid = true;
+      return;
+    } else {
+      this.$description.error = null;
+      this.$description.invalid = false;
+    }
+
+    const record = Object.assign( {}, this.value );
+
+    if( this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
+      record.id = window.localStorage.getItem( 'remote_action_id' );
+      record.createdAt = this._created;
+      record.updatedAt = this._updated = Date.now();
+
+      db.Action.put( record )
+      .then( () => db.Action.toArray() )
+      .then( async ( results ) => {
+        this.$table.provider = await this.expandActions( results );
+        this.$table.selectedItems = [{id: record.id}];
+      } );
+    } else {
+      const at = Date.now();
+      const id = uuidv4();
+
+      window.localStorage.setItem( 'remote_action_id', id );
+
+      record.id = id;
+      record.createdAt = this._created = at;
+      record.updatedAt = this._updated = at;
+
+      db.Action.put( record )
+      .then( () => db.Meeting.toArray() )
+      .then( async ( results ) => {
+        this.$table.provider = await this.expandActions( results );     
+        this.$table.selectedItems = [{id: record.id}];
+      } );            
+    }
+
+    this.readOnly = true;
+    this.$controls.mode = AvocadoControls.ADD_EDIT;
+  }  
+
+  doTableChange( evt ) {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
+      const response = confirm( 'Do you want to save changes?' );
+    
+      if( response ) {
+        this.doControlsSave();
+      }
+    }
+
+    this.readOnly = true;
+
+    if( evt.detail.selectedItem === null ) {
+      window.localStorage.removeItem( 'remote_action_id' );
+      this.value = null;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;      
+    } else {
+      window.localStorage.setItem( 'remote_action_id', evt.detail.selectedItem.id );
+      db.Action.where( {id: evt.detail.selectedItem.id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        console.log( item );
+      } );
+      this.$controls.mode = AvocadoControls.ADD_EDIT;      
+    }
+  }  
 
    // When attributes change
   _render() {
@@ -316,12 +509,47 @@ export default class RemoteAction extends HTMLElement {
   }
 
   get value() {
-    return this._value;
+    return {
+      createdAt: this._created,
+      updatedAt: this._updated,
+      owner: this.$owner.selectedItem === null ? null : this.$owner.selectedItem.id,
+      description: this.$description.value,
+      dueAt: this.$due.value === null ? null : this.$due.value.getTime(),
+      completedAt: this.$complete.value === null ? null : this.$complete.value.getTime(),
+      project: this.$project.selectedItem === null ? null : this.$project.selectedItem.id,
+      milestone: this.$milestone.selectedItem === null ? null : this.$milestone.selectedItem.id,      
+      status: this.$status.selectedItem === null ? null : this.$status.selectedItem.id,      
+      priority: this.$priority.selectedItem === null ? null : this.$priority.selectedItem.id,   
+      effort: this.$effort.selectedItem === null ? null : this.$effort.selectedItem.id,   
+    };
   }
 
   set value( data ) {
-    this._value = data === null ? null : Object.assign( {}, data );
-    this._render();
+    if( data === null ) {
+      this._created = null;
+      this._updated = null;
+      this.$owner.selectedItem = null;
+      this.$description.value = null;
+      this.$due.value = null;
+      this.$complete.value = null;
+      this.$project.selectedItem = null;
+      this.$milestone.selectedItem = null;
+      this.$status.selectedItem = null;
+      this.$priority.selectedItem = null;
+      this.$effort.selectedItem = null;
+    } else {
+      this._created = null;
+      this._updated = null;
+      this.$owner.selectedItem = data.owner === null ? null : {id: data.owner};
+      this.$description.value = data.description;
+      this.$due.value = data.dueAt === null ? null : new Date( data.dueAt );
+      this.$complete.value = data.completedAt === null ? null : new Date( data.completedAt );
+      this.$project.selectedItem = data.project === null ? null : {id: data.project};
+      this.$milestone.selectedItem = data.milestone === null ? null : {id: data.milestone};
+      this.$status.selectedItem = data.status === null ? null : {id: data.status};
+      this.$priority.selectedItem = data.priority === null ? null : {id: data.priority};
+      this.$effort.selectedItem = data.effort === null ? null : {id: data.effort};
+    }
   }    
 
   // Attributes

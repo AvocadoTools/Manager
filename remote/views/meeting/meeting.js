@@ -266,7 +266,7 @@ export default class RemoteMeeting extends HTMLElement {
     if( response ) {
       const id = window.localStorage.getItem( 'remote_meeting_id' );
       
-      window.localStorage.removeItem( 'remote_meeting_index' );      
+      window.localStorage.removeItem( 'remote_meeting_id' );      
 
       db.Meeting.delete( id )
       .then( () => db.Meeting.orderBy( 'startAt' ).toArray() )
