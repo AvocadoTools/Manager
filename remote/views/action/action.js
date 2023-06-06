@@ -107,6 +107,7 @@ export default class RemoteAction extends HTMLElement {
           label="Due date"
           placeholder="Due date"
           style="flex-grow: 0; min-width: 165px;">
+          <adc-label></adc-label>          
         </adc-date-picker>                  
         <adc-date-picker
           id="complete"
@@ -195,6 +196,14 @@ export default class RemoteAction extends HTMLElement {
       } ).format( item.dueAt );    
     };
     this.$complete = this.shadowRoot.querySelector( '#complete' );
+    this.$complete.addEventListener( 'change', () => {
+      if( this.$complete.value === null ) {
+        this.$remain.concealed = this.$due.value === null ? true : false;
+        this.$remain.text = this.$due.value === null ? null : this.distance( this.$due.value );
+      } else {
+        this.$remain.concealed = true;
+      }
+    } );    
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
     this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
     this.$controls.addEventListener( 'cancel', () => this.doControlsCancel() );
@@ -225,11 +234,20 @@ export default class RemoteAction extends HTMLElement {
     this.$priority.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
     this.$project = this.shadowRoot.querySelector( '#project' );
     this.$project.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;    
+    this.$remain = this.shadowRoot.querySelector( 'adc-date-picker adc-label' );
     this.$status = this.shadowRoot.querySelector( '#status' );
     this.$status.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;
     this.$table = this.shadowRoot.querySelector( 'adc-table' );   
     this.$search = this.shadowRoot.querySelector( '#search' );       
     this.$due = this.shadowRoot.querySelector( 'adc-date-picker' );
+    this.$due.addEventListener( 'change', () => {
+      if( this.$complete.value === null ) {
+        this.$remain.concealed = this.$due.value === null ? true : false;
+        this.$remain.text = this.$due.value === null ? null : this.distance( this.$due.value );
+      } else {
+        this.$remain.concealed = true;
+      }
+    } );
 
     this.doActionLoad();
   }
@@ -277,6 +295,26 @@ export default class RemoteAction extends HTMLElement {
         } );
       }
     } );    
+  }
+
+  distance( value ) {
+    const formatter = new Intl.RelativeTimeFormat( navigator.language, {
+      style: 'short'
+    } );
+    let distance = ( value - Date.now() ) / 31556736000;
+    let unit = 'year'    
+    
+    if( distance > -1 ) {
+      unit = 'month'
+      distance = ( value - Date.now() ) / 2629800000;      
+
+      if( distance > -1 ) {
+        unit = 'day'
+        distance = ( value - Date.now() ) / 86400000;              
+      }
+    }    
+
+    return formatter.format( Math.round( distance ), unit );
   }
 
   async expandActions( actions ) {
@@ -412,7 +450,7 @@ export default class RemoteAction extends HTMLElement {
       record.updatedAt = this._updated = at;
 
       db.Action.put( record )
-      .then( () => db.Meeting.toArray() )
+      .then( () => db.Action.toArray() )
       .then( async ( results ) => {
         this.$table.provider = await this.expandActions( results );     
         this.$table.selectedItems = [{id: record.id}];
@@ -529,8 +567,13 @@ export default class RemoteAction extends HTMLElement {
       this._created = null;
       this._updated = null;
       this.$owner.selectedItem = null;
+      this.$owner.error = null;
+      this.$owner.invalid = false;
       this.$description.value = null;
+      this.$description.error = null;
+      this.$description.invalid = false;
       this.$due.value = null;
+      this.$remain.concealed = true;
       this.$complete.value = null;
       this.$project.selectedItem = null;
       this.$milestone.selectedItem = null;
@@ -541,8 +584,20 @@ export default class RemoteAction extends HTMLElement {
       this._created = null;
       this._updated = null;
       this.$owner.selectedItem = data.owner === null ? null : {id: data.owner};
+      this.$owner.error = null;
+      this.$owner.invalid = false;
       this.$description.value = data.description;
+      this.$description.error = null;
+      this.$description.invalid = false;      
       this.$due.value = data.dueAt === null ? null : new Date( data.dueAt );
+      
+      if( data.completedAt === null ) {
+        this.$remain.concealed = data.dueAt === null ? true : false;      
+        this.$remain.text = data.dueAt === null ? null : this.distance( new Date( data.dueAt ) );      
+      } else {
+        this.$remain.concealed = true;              
+      }
+
       this.$complete.value = data.completedAt === null ? null : new Date( data.completedAt );
       this.$project.selectedItem = data.project === null ? null : {id: data.project};
       this.$milestone.selectedItem = data.milestone === null ? null : {id: data.milestone};

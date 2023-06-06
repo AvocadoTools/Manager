@@ -37,6 +37,10 @@ export default class RemoteGrowthConversations extends HTMLElement {
           margin: 0 0 24px 0;
         }
 
+        adc-controls {
+          margin: 0 0 16px 0;
+        }
+
         adc-hbox {
           align-items: flex-end;
           gap: 16px;
@@ -59,45 +63,90 @@ export default class RemoteGrowthConversations extends HTMLElement {
           placeholder="Date"
           style="flex-grow: 0; min-width: 200px;">
         </adc-date-picker>                 
-        <adc-spacer></adc-spacer>               
-        <adc-select
-          label="Type"
+        <adc-input
+          label="Objective"
           light
-          placeholder="Type"
-          style="flex-grow: 0; min-width: 200px;">
-        </adc-select>                            
+          placeholder="Objective"
+          style="flex-basis: 0; flex-grow: 1;">
+        </adc-input>        
       </adc-hbox>                        
       <adc-hbox>
         <adc-textarea
-          label="Description"
+          label="Notes"
           light
-          placeholder="Description"
+          placeholder="Notes"
           style="height: 125px; width: 100%;">
         </adc-textarea>                  
       </adc-hbox>
-      <adc-hbox>
-        <adc-button kind="secondary" size="md">Add conversation</adc-button>      
-      </adc-hbox>
-      <adc-table light>
-        <adc-column sortable>Description</adc-column>        
+      <adc-controls></adc-controls>
+      <adc-table light selectable sortable>
+        <adc-column header-text="Date" sortable width="216"></adc-column>        
+        <adc-column header-text="Objective"></adc-column>                
       </adc-table>
     `;
 
     // Private
+    this._created = null;
     this._data = null;
+    this._updated = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Element
-    this.$description = this.shadowRoot.querySelector( 'adc-textarea' );
+    this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
+    this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
+    this.$controls.addEventListener( 'add', () => this.doControlsAdd() );
+    this.$controls.addEventListener( 'cancel', () => this.doControlsCancel() );
+    this.$controls.addEventListener( 'delete', () => this.doControlsDelete() );
+    this.$controls.addEventListener( 'edit', () => this.doControlsEdit() );
+    this.$controls.addEventListener( 'save', () => this.doControlsSave() );        
+    this.$date = this.shadowRoot.querySelector( 'adc-date-picker' );
+    this.$notes = this.shadowRoot.querySelector( 'adc-textarea' );    
+    this.$objective = this.shadowRoot.querySelector( 'adc-input' );
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
+    this.$table.addEventListener( 'change', ( evt ) => this.doTableChange( evt ) );    
+
+    this.doConversationsLoad();
+  }
+
+  doControlsAdd() {
+    window.localStorage.removeItem( 'remote_conversations_id' );
+
+    this.$table.selectedItems = null;
+    this.value = null;
+    this.readOnly = false;
+    this.$date.focus();    
+    this.$controls.mode = AvocadoControls.CANCEL_SAVE;    
+  }  
+
+  doControlsCancel() {
+    const id = window.localStorage.getItem( 'remote_conversations_id' );
+    
+    this.readOnly = true;    
+
+    if( id === null ) {
+      this.value = null;
+      this.$controls.mode = AvocadoControls.ADD_ONLY;
+    } else {
+      db.Meeting.where( {id: id} ).first()
+      .then( ( item ) => {
+        this.value = item;
+        this.$controls.mode = AvocadoControls.ADD_EDIT;        
+      } );
+    }
+  }    
+
+  doConversationsLoad() {
+
   }
 
    // When attributes change
   _render() {
-    this.$description.readOnly = this.readOnly;
+    this.$date.readOnly = this.readOnly;    
+    this.$notes.readOnly = this.readOnly;
+    this.$objective.readOnly = this.readOnly;    
   }
 
   // Promote properties

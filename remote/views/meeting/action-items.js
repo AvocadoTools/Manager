@@ -168,7 +168,8 @@ export default class RemoteMeetingActions extends HTMLElement {
       <adc-vbox id="header">
         <adc-hbox>
           <adc-input 
-            placeholder="Filter actions" 
+            id="search"
+            placeholder="Search descriptions" 
             size="lg" 
             type="search">
             <adc-icon name="search" slot="prefix"></adc-icon>
@@ -304,16 +305,15 @@ export default class RemoteMeetingActions extends HTMLElement {
     this.$header = this.shadowRoot.querySelector( 'adc-vbox' );
     this.$search = this.shadowRoot.querySelector( 'adc-input[type=search]' );
     this.$search.addEventListener( 'clear', () => {
-      this.$table.provider = this._items;
+      // this.$table.provider = this._items;
     } );
     this.$search.addEventListener( 'input', ( evt ) => {
       if( evt.currentTarget.value === null ) {
-        this.$table.provider = this._items;
+        // this.$table.provider = this._items;
       } else {
-        this.$table.provider = this._items.filter( ( item ) => {
-          const name = item.fullName.toLowerCase().indexOf( evt.currentTarget.value.toLowerCase() ) >= 0 ? true : false;
+        this.$table.provider.filter( ( item ) => {
           const description = item.description.toLowerCase().indexOf( evt.currentTarget.value.toLowerCase() ) >= 0 ? true : false;        
-          return name || description;
+          return description;
         } );
       }
     } );        

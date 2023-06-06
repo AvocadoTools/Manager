@@ -169,7 +169,7 @@ export default class RemoteMeetingAttendees extends HTMLElement {
       <adc-vbox id="header">
         <adc-hbox>
           <adc-input 
-            placeholder="Filter by attendee name" 
+            placeholder="Search attendee name" 
             size="lg" 
             type="search">
             <adc-icon name="search" slot="prefix"></adc-icon>

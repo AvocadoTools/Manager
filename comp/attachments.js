@@ -133,7 +133,7 @@ export default class AvocadoAttachments extends HTMLElement {
       <adc-vbox id="header">
         <adc-hbox>
           <adc-input 
-            placeholder="Filter by file name" 
+            placeholder="Search file names" 
             size="lg" 
             type="search">
             <adc-icon name="search" slot="prefix"></adc-icon>
