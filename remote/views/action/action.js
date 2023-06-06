@@ -136,7 +136,7 @@ export default class RemoteAction extends HTMLElement {
           label="Status"
           label-field="name"
           placeholder="Status"
-          style="min-width: 250px;">
+          style="flex-basis: 0; flex-grow: 1;">
         </adc-select>          
         <adc-select
           id="priority"
@@ -156,7 +156,7 @@ export default class RemoteAction extends HTMLElement {
       <adc-controls></adc-controls>      
       <adc-input 
         id="search"
-        placeholder="Search actions" 
+        placeholder="Search descriptions" 
         size="lg" 
         type="search">
         <adc-icon name="search" slot="prefix"></adc-icon>
@@ -239,6 +239,8 @@ export default class RemoteAction extends HTMLElement {
     this.$status.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;
     this.$table = this.shadowRoot.querySelector( 'adc-table' );   
     this.$search = this.shadowRoot.querySelector( '#search' );       
+    this.$search.addEventListener( 'input', ( evt ) => this.doSearchInput( evt ) );
+    this.$search.addEventListener( 'clear', ( evt ) => this.doSearchClear( evt ) );   
     this.$due = this.shadowRoot.querySelector( 'adc-date-picker' );
     this.$due.addEventListener( 'change', () => {
       if( this.$complete.value === null ) {
@@ -460,6 +462,51 @@ export default class RemoteAction extends HTMLElement {
     this.readOnly = true;
     this.$controls.mode = AvocadoControls.ADD_EDIT;
   }  
+
+  doSearchClear() {
+    db.Action.toArray()
+    .then( async ( results ) => {
+      this.$table.provider = await this.expandActions( results );           
+
+      const id = window.localStorage.getItem( 'remote_action_id' );
+
+      if( id !== null ) {
+        this.$table.selectedItems = [{id: id}];
+      } else {
+        this.$table.selectedItems = null;
+      }
+    } );          
+  }  
+
+  doSearchInput() {
+    if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {
+      const response = confirm( 'Do you want to save changes?' );
+    
+      if( response ) {
+        this.$search.value = null;
+        this.doControlsSave();
+      }
+    }
+
+    this.$table.selectedItems = null;
+    window.localStorage.removeItem( 'remote_action_id' );
+
+    db.Action.toArray()
+    .then( async ( results ) => {
+      if( this.$search.value === null ) {
+        this.doSearchClear();
+        return;
+      }
+
+      if( results !== null ) {
+        results = await this.expandActions( results );     
+        this.$table.provider = results.filter( ( value ) => {
+          const term = this.$search.value.toLowerCase();          
+          return value.description.toLowerCase().indexOf( term ) >= 0 ? true : false;
+        } );
+      }
+    } );    
+  }   
 
   doTableChange( evt ) {
     if( this.$controls.mode === AvocadoControls.CANCEL_SAVE || this.$controls.mode === AvocadoControls.DELETE_CANCEL_SAVE ) {

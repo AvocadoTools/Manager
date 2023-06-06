@@ -305,15 +305,39 @@ export default class RemoteMeetingActions extends HTMLElement {
     this.$header = this.shadowRoot.querySelector( 'adc-vbox' );
     this.$search = this.shadowRoot.querySelector( 'adc-input[type=search]' );
     this.$search.addEventListener( 'clear', () => {
-      // this.$table.provider = this._items;
+      db.Action.bulkGet( this._items )
+      .then( async ( items ) => {
+        for( let i = 0; i < items.length; i++ ) {
+          const person = await db.Person.where( {id: items[i].owner} ).first();
+          items[i].fullName = person.fullName;
+        }
+
+        this.$table.provider = items;
+      } );
     } );
     this.$search.addEventListener( 'input', ( evt ) => {
       if( evt.currentTarget.value === null ) {
-        // this.$table.provider = this._items;
+        db.Action.bulkGet( this._items )
+        .then( async ( items ) => {
+          for( let i = 0; i < items.length; i++ ) {
+            const person = await db.Person.where( {id: items[i].owner} ).first();
+            items[i].fullName = person.fullName;
+          }
+  
+          this.$table.provider = items;
+        } );
       } else {
-        this.$table.provider.filter( ( item ) => {
-          const description = item.description.toLowerCase().indexOf( evt.currentTarget.value.toLowerCase() ) >= 0 ? true : false;        
-          return description;
+        db.Action.bulkGet( this._items )
+        .then( async ( items ) => {
+          for( let i = 0; i < items.length; i++ ) {
+            const person = await db.Person.where( {id: items[i].owner} ).first();
+            items[i].fullName = person.fullName;
+          }
+  
+          this.$table.provider = items.filter( ( value ) => {
+            const description = value.description.toLowerCase().indexOf( this.$search.value.toLowerCase() ) >= 0 ? true : false;        
+            return description;
+          } );
         } );
       }
     } );        
