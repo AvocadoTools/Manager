@@ -9,6 +9,7 @@ import AvocadoLabel from "../controls/label.js";
 import AvocadoTable from "../controls/table.js";
 
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
+import { db } from "../remote/db.js";
 
 export default class AvocadoAttachments extends HTMLElement {
   constructor() {
@@ -183,6 +184,7 @@ export default class AvocadoAttachments extends HTMLElement {
 
     // Private
     this._data = null;
+    this._index = null;
     this._files = [];
 
     // Root
@@ -198,12 +200,22 @@ export default class AvocadoAttachments extends HTMLElement {
     this.$delete = this.shadowRoot.querySelector( '#delete' );
     this.$delete.addEventListener( 'click', () => {
       this.$header.classList.remove( 'selected' );
-      this._files.splice( this._index, 1 );
-      this.label = `Attachments (${this._files.length})`;    
+      
+      const key = this._files.splice( this._index, 1 );
       this._index = null;
-      this.$header.classList.remove( 'selected' );  
-      this.$table.selectedItems = null;
-      this.$table.provider = this._files;
+
+      const id = window.localStorage.getItem( 'remote_attachment_id' );
+      if( id === key ) {
+        window.localStorage.removeItem( 'remote_attachment_id' );
+      }
+
+      db.Attachment.delete( key[0] )
+      .then( () => db.Attachment.bulkGet( this._files ) )
+      .then( ( files ) =>  {
+        this.label = `Attachments (${files.length})`;            
+        this.$table.selectedItems = null;
+        this.$table.provider = files;
+      } );
     } );
     this.$download = this.shadowRoot.querySelector( '#download' );
     this.$download.addEventListener( 'click', () => {
@@ -220,19 +232,23 @@ export default class AvocadoAttachments extends HTMLElement {
     this.$input = this.shadowRoot.querySelector( 'input' );
     this.$input.addEventListener( 'change', async () => {
       for( let f  = 0; f < this.$input.files.length; f++ ) {
-        const data = await this.read( this.$input.files[f] );
-        this._files.push( {
+        const data = await this.read( this.$input.files[f] );        
+        const key = await db.Attachment.put( {
           id: uuidv4(),
           data: data,
           name: this.$input.files[f].name,
           modified: this.$input.files[f].lastModified,
           size: this.$input.files[f].size,
-          format: this.$input.files[f].type          
+          format: this.$input.files[f].type
         } );
+        this._files.push( key );
       }
 
-      this.label = `Attachments (${this._files.length})`;    
-      this.$table.provider = this._files;              
+      db.Attachment.bulkGet( this._files )
+      .then( ( files ) => {
+        this.label = `Attachments (${files.length})`;    
+        this.$table.provider = files;              
+      } );      
     } );    
     this.$name = this.shadowRoot.querySelector( 'adc-column:nth-of-type( 1 )' );
     this.$name.sortCompareFunction = ( a, b ) => {
@@ -383,15 +399,20 @@ export default class AvocadoAttachments extends HTMLElement {
   set value( data ) {
     if( data === null ) {
       this._files = [];
+      this.$table.provider = null;
     } else {
       this._files = [... data];
+      console.log( this._files );
+      db.Attachment.bulkGet( this._files )
+      .then( ( files ) => {
+        this.label = `Attachments (${files.length})`;
+        this.$table.provider = files;
+      } );
     }
 
     this.$search.value = null;
     this.$header.classList.remove( 'selected' );
     this.$table.selectedItems = null;
-    this.$table.provider = this._files;
-    this.label = `Attachments (${this._files.length})`;
   }
 
   // Attributes

@@ -1,6 +1,7 @@
 export const db = new Dexie( 'RemoteManager' );
-db.version( 570 ).stores( {
+db.version( 580 ).stores( {
   Action: 'id',
+  Attachment: 'id, name',
   Conversation: 'id, startAt',
   Document: 'id, updatedAt, name',
   Growth: 'id, updatedAt',
