@@ -169,7 +169,7 @@ export default class RemoteMeetingAttendees extends HTMLElement {
       <adc-vbox id="header">
         <adc-hbox>
           <adc-input 
-            placeholder="Search attendee name" 
+            placeholder="Search attendee names" 
             size="lg" 
             type="search">
             <adc-icon name="search" slot="prefix"></adc-icon>
@@ -194,6 +194,8 @@ export default class RemoteMeetingAttendees extends HTMLElement {
       </adc-vbox>
       <adc-table light selectable sortable>
         <adc-column header-text="Attendee Name" item-renderer="arm-attendee-item-renderer" sortable></adc-column>
+        <adc-column header-text="Email" label-field="email" sortable></adc-column>                
+        <adc-column header-text="Job title" label-field="jobTitle" sortable></adc-column>        
         <adc-vbox slot="empty">
           <adc-label>No attendees added yet.</adc-label>
         </adc-vbox>                             

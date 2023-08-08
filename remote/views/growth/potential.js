@@ -82,9 +82,7 @@ export default class RemoteGrowthPotential extends HTMLElement {
           style="height: 125px; width: 100%;">
         </adc-textarea>                  
       </adc-hbox>
-      <adc-hbox>
-        <adc-button kind="secondary" size="md">Add potential</adc-button>      
-      </adc-hbox>
+      <adc-controls></adc-controls>
       <adc-table light>
         <adc-column sortable>Description</adc-column>        
       </adc-table>

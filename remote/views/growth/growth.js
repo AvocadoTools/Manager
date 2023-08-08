@@ -12,7 +12,7 @@ import AvocadoTable from "../../../controls/table.js";
 import AvocadoTabs from "../../../containers/tabs.js";
 
 import RemoteGrowthConversations from "./conversations.js";
-import RemoteGrowthObjectives from "./objectives.js";
+import RemoteGrowthGoals from "./goals.js";
 import RemoteGrowthPerformance from "./performance.js";
 import RemoteGrowthPotential from "./potential.js";
 import RemoteGrowthStrengths from "./strengths.js";
@@ -20,8 +20,7 @@ import RemoteGrowthStrengths from "./strengths.js";
 import AvocadoControls from "../../../comp/controls.js";
 
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
-
-import { store } from "../../store.js";
+import { db } from "../../db.js";
 
 export default class RemoteGrowth extends HTMLElement {
   constructor() {
@@ -128,18 +127,20 @@ export default class RemoteGrowth extends HTMLElement {
           </adc-date-picker>                           
         </adc-hbox>
         <adc-tabs>
-          <arm-growth-objectives label="Goals"></arm-growth-objectives>
-          <arm-growth-strengths label="Strengths"></arm-growth-strengths>
+          <arm-growth-conversations label="Conversations"></arm-growth-conversations>        
+          <arm-growth-goals label="Goals"></arm-growth-goals>
+          <arm-growth-strengths label="Activities"></arm-growth-strengths>
           <arm-growth-performance label="Performance"></arm-growth-performance>                    
           <arm-growth-potential label="Potential"></arm-growth-potential>          
-          <arm-growth-conversations label="Conversations"></arm-growth-conversations>
         </adc-tabs>
+        <adc-controls concealed mode="5"></adc-controls>
       </adc-vbox>
     `;
 
     // Private
+    this._created = null;
     this._data = null;
-    this._id = null;
+    this._updated = null;
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -147,35 +148,27 @@ export default class RemoteGrowth extends HTMLElement {
 
     // Elements
     this.$avatar = this.shadowRoot.querySelector( 'adc-avatar' );
-    this.$column = this.shadowRoot.querySelector( 'adc-column' );
     this.$controls = this.shadowRoot.querySelector( 'adc-controls' );
     this.$controls.addEventListener( 'add', () => this.doPersonAdd() );
     this.$controls.addEventListener( 'cancel', () => this.doPersonCancel() );
     this.$controls.addEventListener( 'delete', () => this.doPersonDelete() );
     this.$controls.addEventListener( 'edit', () => this.doPersonEdit() );
     this.$controls.addEventListener( 'save', () => this.doPersonSave() );
-    this.$level = this.shadowRoot.querySelector( 'adc-input' );    
+    this.$conversations = this.shadowRoot.querySelector( 'arm-growth-conversations' );
+    this.$level = this.shadowRoot.querySelector( '#level' );    
     this.$objectives = this.shadowRoot.querySelector( 'arm-growth-objectives' );
     this.$person = this.shadowRoot.querySelector( 'adc-select' );    
     this.$person.addEventListener( 'change', ( evt ) => {
       console.log( evt.detail );
     } );
-    this.$promotion = this.shadowRoot.querySelector( 'adc-date-picker' );
-    this.$table = this.shadowRoot.querySelector( 'adc-table' );
-    this.$table.addEventListener( 'change', ( evt ) => this.value = evt.detail.selectedItem === null ? null : evt.detail.selectedItem );
+    this.$promotion = this.shadowRoot.querySelector( '#promotion' );
+    this.$scope = this.shadowRoot.querySelector( '#scope' );
 
-    // State
-    const growth_index = window.localStorage.getItem( 'remote_growth_index' ) === null ? null : parseInt( window.localStorage.getItem( 'remote_growth_index' ) );
+    this.doGrowthLoad();
+  }
 
-    // Read
-    db.Person.orderBy( 'fullName' ).toArray()
-    .then( ( results ) => {
-      this.$person.provider = results;
-      this.$person.selectedIndex = growth_index === null ? null : growth_index;
-      this.readOnly = true;
-      this.value = growth_index === null ? null : results[growth_index];      
-      this.$controls.mode = this.value === null ? AvocadoControls.ADD_ONLY : AvocadoControls.ADD_EDIT;      
-    } );
+  doGrowthLoad() {
+    this.readOnly = true;
   }
 
   clear() {
@@ -288,9 +281,10 @@ export default class RemoteGrowth extends HTMLElement {
 
    // When attributes change
   _render() {
-    this.$avatar.readOnly = this.readOnly;
     this.$level.readOnly = this.readOnly;
-    this.$person.readOnly = this.readOnly;
+    this.$scope.readOnly = this.readOnly;
+    this.$promotion.readOnly = this.readOnly;
+    this.$conversations.readOnly = this.readOnly;
   }
 
   // Promote properties
@@ -353,7 +347,6 @@ export default class RemoteGrowth extends HTMLElement {
     this.$person.selectedItem = {id: data.person};
     this.$level.value = data.level;
     this.$promotionAt.value = data.promotionAt === null ? null : new Date( data.promotionAt );
-    this.$objectives.value = data.objectives;
   }
 
   // Attributes

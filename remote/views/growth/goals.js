@@ -1,4 +1,13 @@
-export default class RemoteGoals extends HTMLElement {
+import AvocadoHBox from "../../../containers/hbox.js";
+
+import AvocadoButton from "../../../controls/button.js";
+import AvocadoColumn from "../../../controls/column.js";
+import AvocadoDatePicker from "../../../controls/date-picker.js";
+import AvocadoInput from "../../../controls/input.js";
+import AvocadoSelect from "../../../controls/select.js";
+import AvocadoTable from "../../../controls/table.js";
+
+export default class RemoteGrowthGoals extends HTMLElement {
   constructor() {
     super();
 
@@ -11,7 +20,7 @@ export default class RemoteGoals extends HTMLElement {
           flex-basis: 0;
           flex-direction: column;
           flex-grow: 1;
-          padding: 16px 16px 26px 16px;
+          padding: 16px 16px 16px 16px;
           position: relative;
         }
 
@@ -27,6 +36,10 @@ export default class RemoteGoals extends HTMLElement {
           margin: 0 0 24px 0;
         }
 
+        adc-controls {
+          padding: 0 0 20px 0;
+        }
+
         adc-hbox {
           align-items: flex-end;
           gap: 16px;
@@ -40,41 +53,76 @@ export default class RemoteGoals extends HTMLElement {
         adc-table {
           flex-basis: 0;
           flex-grow: 1;
+        }     
+        
+        adc-vbox[slot=empty] {
+          align-items: center;
+          background-color: #ffffff;
+          flex-basis: 0;
+          flex-grow: 1;
+          justify-content: center;
+        }
+
+        adc-vbox[slot=empty] adc-label {
+          --label-color: #525252;
         }        
       </style>
       <adc-hbox>
         <adc-input
-          helper="A single point stating long-term interests"
-          id="name"
-          label="Description"
+          helper="Specific, measurable, actionable, relevant, time-bound"
+          id="smart"
+          label="Goal name"
           light
-          placeholder="Description"
-          value="Interested in a research role">
+          placeholder="Goal name">
         </adc-input>              
         <adc-date-picker
           helper="Projected completion"
-          id="complete"
+          id="plan"
           label="Plan date"
           light
           placeholder="Plan date"
-          style="flex-grow: 0; min-width: 200px;">
+          style="flex-grow: 0; min-width: 165px;">
         </adc-date-picker>           
         <adc-select
           helper="Degree of completion"
           id="status"
           label="Status"
+          label-field="name"
           light
           placeholder="Status"
-          style="flex-grow: 0; min-width: 200px;">
+          style="flex-grow: 0; min-width: 165px;">
         </adc-select>                    
       </adc-hbox>
       <adc-hbox>
-        <adc-button kind="secondary" size="md">Add goal</adc-button>      
-      </adc-hbox>
-      <adc-table light>
-        <adc-column sortable>Description</adc-column>
-        <adc-column sortable width="181">Plan date</adc-column>        
-        <adc-column sortable width="165">Status</adc-column>                
+        <adc-input
+          id="description"
+          label="Description"
+          light
+          placeholder="Description">
+        </adc-input>              
+        <adc-select
+          id="complexity"
+          label="Complexity"
+          light
+          placeholder="Complexity"
+          style="flex-grow: 0; min-width: 165px;">
+        </adc-select>                           
+        <adc-select
+          id="impact"
+          label="Impact"
+          light
+          placeholder="Impact"
+          style="flex-grow: 0; min-width: 165px;">
+        </adc-select>                    
+      </adc-hbox>            
+      <adc-controls></adc-controls>
+      <adc-table light selectable sortable>
+        <adc-column header-text="Goal name" sortable></adc-column>
+        <adc-column header-text="Plan date" sortable width="200"></adc-column>        
+        <adc-column header-text="Status" sortable width="200"></adc-column>                
+        <adc-vbox slot="empty">
+          <adc-label>No goals added yet.</adc-label>
+        </adc-vbox>        
       </adc-table>
     `;
 
@@ -86,20 +134,29 @@ export default class RemoteGoals extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Element
-    this.$name = this.shadowRoot.querySelector( '#name' );
-    this.$complete = this.shadowRoot.querySelector( '#complete' );
+    this.$smart = this.shadowRoot.querySelector( '#smart' );
+    this.$plan = this.shadowRoot.querySelector( '#plan' );
     this.$status = this.shadowRoot.querySelector( '#status' );
     this.$description = this.shadowRoot.querySelector( '#description' );
+    this.$complexity = this.shadowRoot.querySelector( '#complexity' );
+    this.$complexity.provider = ['None', 'Low', 'Medium', 'High'];
+    this.$impact = this.shadowRoot.querySelector( '#impact' );
+    this.$impact.provider = ['None', 'Low', 'Medium', 'High'];
     this.$table = this.shadowRoot.querySelector( 'adc-table' );
   }
-  
+
   clear() {
     this.value = null;
   }
 
-   // When attributes change
+  // When attributes change
   _render() {
-    this.$attendee.readOnly = this.readOnly;
+    this.$smart.readOnly = this.readOnly;
+    this.$plan.readOnly = this.readOnly;
+    this.$status.readOnly = this.readOnly;
+    this.$description.readOnly = this.readOnly;
+    this.$complexity.readOnly = this.readOnly;
+    this.$impact.readOnly = this.readOnly;
   }
 
   // Promote properties
@@ -122,7 +179,7 @@ export default class RemoteGoals extends HTMLElement {
     this._upgrade( 'icon' );
     this._upgrade( 'label' );
     this._upgrade( 'readOnly' );
-    this._upgrade( 'value' );
+    this._upgrade( 'value' );    
     this._render();
   }
 
@@ -158,30 +215,30 @@ export default class RemoteGoals extends HTMLElement {
 
   get value() {
     return {
-      smart: this.$name.value,
-      completeAt: this.$complete.value,
+      smart: this.$smart.value,
+      planAt: this.$plan.value.getTime(),
       status: this.$status.value.id,
       description: this.$description.value,
-      complexity: this.$complexity.value.id,
-      impact: this.$impact.value.id
+      complexity: this.$complexity.value,
+      impact: this.$impact.value
     };
   }
 
   set value( item ) {
     if( item === null ) {
-      this.$name.value = null;
-      this.$complete.value = null;
+      this.$smart.value = null;
+      this.$plan.value = null;
       this.$status.selectedItem = null;
       this.$description.value = null;
       this.$complexity.selectedItem = null;
       this.$impact.selectedItem = null;
     } else {
-      this.$name.value = item.name;
-      this.$complete.value = item.completeAt;
+      this.$smart.value = item.smart;
+      this.$plan.value = new Date( item.planAt );
       this.$status.selectedItem = {id: item.status};
       this.$description.value = item.description;
-      this.$complexity.selectedItem = {id: item.complexity};
-      this.$impact.selectedItem = {id: item.impact};
+      this.$complexity.selectedItem = item.complexity;
+      this.$impact.selectedItem = item.impact;
     }
   }
 
@@ -317,4 +374,4 @@ export default class RemoteGoals extends HTMLElement {
   } 
 }
 
-window.customElements.define( 'arm-goals', RemoteGoals );
+window.customElements.define( 'arm-growth-goals', RemoteGrowthGoals );
