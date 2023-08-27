@@ -99,13 +99,13 @@ export default class AvocadoButton extends HTMLElement {
           background-color: transparent;
           border: solid 1px #0f62fe;
         }
-        :host( [kind=tertiary] ) button:focus adc-label { --label-color: #ffffff; }
-        :host( [kind=tertiary] ) button:focus { background-color: #0f62fe; }        
         :host( [kind=tertiary] ) button:hover adc-label { --label-color: #ffffff; }        
         :host( [kind=tertiary] ) button:hover {
           background-color: #0353e9;
           border: solid 1px #0353e9;
         }
+        :host( [kind=tertiary] ) button:focus adc-label { --label-color: #ffffff; }
+        :host( [kind=tertiary] ) button:focus { background-color: #0f62fe; }        
         :host( [kind=tertiary] ) button:active { background-color: #002d9c; }
 
         :host( [kind=danger] ) button { background-color: #da1e28; }
