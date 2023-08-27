@@ -20,17 +20,21 @@ export default class AvocadoIcon extends HTMLElement {
         }        
 
         img {
-          display: block;
+          cursor: var( --icon-cursor, default );          
+          display: none;
+          height: var( --icon-size, 20px );
+          object-fit: var( --icon-fit, contain );
+          width: var( --icon-size, 20px ); 
         }
 
         p {
           color: var( --icon-color, #161616 );
+          cursor: var( --icon-cursor, default );
           direction: ltr;
           display: none;
           font-family: 'Material Symbols Outlined';
           font-size: var( --icon-size, 20px );
           font-style: normal;
-          font-variation-settings: 'wght' 300;
           font-weight: normal;
           height: var( --icon-size, 20px );
           letter-spacing: normal;
@@ -45,8 +49,8 @@ export default class AvocadoIcon extends HTMLElement {
           word-wrap: normal;                    
         }
 
-        :host( [name] ) img {
-          display: none;
+        :host( [src] ) img {
+          display: block;
         }
 
         :host( [name] ) p {
@@ -61,12 +65,13 @@ export default class AvocadoIcon extends HTMLElement {
     this._data = null;
 
     // Root
-    const shadowRoot = this.attachShadow( {mode: 'open'} );
-    shadowRoot.appendChild( template.content.cloneNode( true ) );
+    this.attachShadow( {mode: 'open'} );
+    this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$image = shadowRoot.querySelector( 'img' );
-    this.$font = shadowRoot.querySelector( 'p' );    
+    this.$image = this.shadowRoot.querySelector( 'img' );
+    this.$image.addEventListener( 'load', () => this.dispatchEvent( new CustomEvent( 'adc-load' ) ) );
+    this.$font = this.shadowRoot.querySelector( 'p' );    
   }
 
   // When things change

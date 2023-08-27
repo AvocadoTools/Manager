@@ -1,3 +1,5 @@
+import AvocadoIcon from "./icon.js";
+
 export default class AvocadoIconButton extends HTMLElement {
   constructor() {
     super();
@@ -19,32 +21,27 @@ export default class AvocadoIconButton extends HTMLElement {
           display: none;
         }
 
+        adc-icon {
+          --icon-color: #ffffff;
+          --icon-cursor: pointer;
+        }
+
         button {
+          align-items: center;
           background: none;
-          background-color: var( --icon-button-background-color, #0f62fe );
+          background-color: #0f62fe;
           border: none;
           border: solid 1px transparent;          
           box-sizing: border-box;
-          color: var( --icon-button-color, #ffffff );
-          cursor: var( --icon-button-cursor, pointer );
-          direction: ltr;
-          display: block;
-          font-family: 'Material Symbols Outlined';
-          font-size: var( --icon-button-font-size, 18px );
-          font-style: normal;
-          font-weight: normal;
-          height: var( --icon-button-size, 48px );
-          letter-spacing: normal;
-          line-height: 1.0;
+          cursor: pointer;
+          display: flex;
+          height: 48px;
+          justify-content: center;
           margin: 0;
           outline: solid 1px transparent;
           outline-offset: -3px;          
           padding: 0;
-          text-rendering: optimizeLegibility;
-          text-transform: none;
-          white-space: nowrap;
-          width: var( --icon-button-size, 48px );
-          word-wrap: normal;
+          width: 48px;
           -webkit-tap-highlight-color: transparent;
         }
 
@@ -73,23 +70,31 @@ export default class AvocadoIconButton extends HTMLElement {
           width: 40px;
         }                        
 
+        :host( [size=xl] ) button {
+          height: 64px;
+          width: 64px;
+        }                                
+
+        :host( [size=2xl] ) button {
+          height: 80px;
+          width: 80px;
+        }                                        
+
         :host( [kind=secondary] ) button { background-color: #393939; }
         :host( [kind=secondary] ) button:hover { background-color: #4a4a4a; }
         :host( [kind=secondary] ) button:active { background-color: #6f6f6f; }
 
+        :host( [kind=tertiary] ) adc-icon { --icon-color: #0f62fe; }                
         :host( [kind=tertiary] ) button { 
           background-color: transparent; 
           border: solid 1px #0f62fe;
-          color: #0f62fe;                     
         }
-        :host( [kind=tertiary] ) button:focus { 
-          background-color: #0f62fe;
-          color: #ffffff;
-        }
+        :host( [kind=tertiary] ) button:focus adc-icon { --icon-color: #ffffff; }                        
+        :host( [kind=tertiary] ) button:focus { background-color: #0f62fe; }
+        :host( [kind=tertiary] ) button:hover adc-icon { --icon-color: #ffffff; }                                
         :host( [kind=tertiary] ) button:hover { 
           background-color: #0353e9;
           border: solid 1px #0353e9;
-          color: #ffffff;  
         }                
         :host( [kind=tertiary] ) button:active { background-color: #002d9c; }
 
@@ -97,31 +102,29 @@ export default class AvocadoIconButton extends HTMLElement {
         :host( [kind=danger] ) button:hover { background-color: #bc1a22; }
         :host( [kind=danger] ) button:active { background-color: #750e13; }
 
-        :host( [kind=ghost] ) button { 
-          background-color: transparent; 
-          color: var( --icon-button-color, #0f62fe );
-        }
+        :host( [kind=ghost] ) button { background-color: transparent; }
+        :host( [kind=ghost] ) adc-icon { --icon-color: #0f62fe; }                        
         :host( [kind=ghost] ) button:hover { background-color: #e5e5e5e4; }
         :host( [kind=ghost] ) button:active { background-color: #8d8d8d80; }
 
+        :host( [disabled] ) adc-icon { 
+          --icon-color: #8d8d8d;
+          --icon-cursor: not-allowed; 
+        }
         :host( [disabled] ) button {
           background-color: #c6c6c6;
-          color: #8d8d8d;
           cursor: not-allowed;
         }
-
+        :host( [disabled][kind=tertiary] ) button adc-icon { --icon-color: #c6c6c6; }        
         :host( [disabled][kind=tertiary] ) button {        
           background-color: transparent;
           border-color: #c6c6c6;
         }
-        :host( [disabled][kind=tertiary] ) button:hover { color: #8d8d8d; }
-
-        :host( [disabled][kind=ghost] ) button { 
-          background-color: transparent;
-        }
+        :host( [disabled][kind=tertiary] ) button:hover adc-icon { --icon-color: #c6c6c6; }        
+        :host( [disabled][kind=ghost] ) button { background-color: transparent; }
       </style>
-      <button part="button">
-        <slot></slot>
+      <button part="button" type="button">
+        <adc-icon exportparts="image: image, font: font" part="icon" weight="200"></adc-icon>
       </button>
     `;
 
@@ -134,18 +137,37 @@ export default class AvocadoIconButton extends HTMLElement {
 
     // Elements
     this.$button = this.shadowRoot.querySelector( 'button' );
+    this.$button.addEventListener( 'focus', () => this.dispatchEvent( new CustomEvent( 'adc-focus' ) ) );
+    this.$button.addEventListener( 'blur', () => this.dispatchEvent( new CustomEvent( 'adc-blur' ) ) );    
     this.$button.addEventListener( 'click', () => {
       if( this.href !== null )
-        window.open( this.href );
+        if( this.target !== null ) {
+          window.open( this.href, this.target );
+        } else {
+          window.open( this.href );
+        }
     } );        
+    this.$icon = this.shadowRoot.querySelector( 'adc-icon' );
+  }
+
+  click() {
+    this.$button.click();
+  }
+
+  blur() {
+    this.$button.blur();
+  }
+
+  focus() {
+    this.$button.focus();
   }
 
    // When attributes change
   _render() {
     this.$button.disabled = this.disabled;
 
-    if( this.name !== null )
-      this.innerText = this.name;
+    this.$icon.name = this.name;    
+    this.$icon.src = this.src;
 
     const variation = [];
 
@@ -156,7 +178,7 @@ export default class AvocadoIconButton extends HTMLElement {
       variation.push( `'wght' ${this.weight}` );
     }
 
-    this.$button.style.fontVariationSettings = variation.toString();
+    this.$icon.style.fontVariationSettings = variation.toString();
   }
 
   // Promote properties
@@ -180,6 +202,8 @@ export default class AvocadoIconButton extends HTMLElement {
     this._upgrade( 'kind' );
     this._upgrade( 'name' );
     this._upgrade( 'size' );
+    this._upgrade( 'src' );    
+    this._upgrade( 'target' );        
     this._upgrade( 'weight' );
     this._render();
   }
@@ -195,6 +219,8 @@ export default class AvocadoIconButton extends HTMLElement {
       'kind',
       'name',
       'size',
+      'src',
+      'target',
       'weight'
     ];
   }
@@ -361,7 +387,39 @@ export default class AvocadoIconButton extends HTMLElement {
     } else {
       this.removeAttribute( 'size' );
     }
+  }
+  
+  get src() {
+    if( this.hasAttribute( 'src' ) ) {
+      return this.getAttribute( 'src' );
+    }
+
+    return null;
+  }
+
+  set src( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'src', value );
+    } else {
+      this.removeAttribute( 'src' );
+    }
   }  
+
+  get target() {
+    if( this.hasAttribute( 'target' ) ) {
+      return this.getAttribute( 'target' );
+    }
+
+    return null;
+  }
+
+  set target( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'target', value );
+    } else {
+      this.removeAttribute( 'target' );
+    }
+  }    
 
   get weight() {
     if( this.hasAttribute( 'weight' ) ) {

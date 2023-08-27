@@ -14,6 +14,7 @@ import AvocadoTabs from "../../../containers/tabs.js";
 import AvocadoControls from "../../../comp/controls.js";
 import AvocadoNotes from "../../../comp/notes.js";
 
+import RemoteSituationDetails from "./situation-details.js";
 import RemoteSituationItemRender from "./situation-item-renderer.js";
 
 import { v4 as uuidv4 } from "../../../lib/uuid-9.0.0.js";
@@ -138,6 +139,7 @@ export default class RemoteSituation extends HTMLElement {
           </adc-date-picker>
         </adc-hbox>
         <adc-tabs>
+          <arm-situation-details label="Progress" prompt="What has happened since your last report?"></arm-situation-details>
           <adc-notes description="What has happened since your last report?" id="progress" label="Progress" light monospace></adc-notes>
           <adc-notes description="What are you planning between now and your next report?" id="priorities" label="Priorities" light monospace></adc-notes>        
           <adc-notes description="Are you encountering any problems that might need attention?" id="problems" label="Problems" light monospace></adc-notes>        

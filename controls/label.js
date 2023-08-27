@@ -31,6 +31,7 @@ export default class AvocadoLabel extends HTMLElement {
         }
       </style>
       <p part="label">
+        <span></span>
         <slot></slot>
       </p>
     `;
@@ -43,13 +44,12 @@ export default class AvocadoLabel extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$label = this.shadowRoot.querySelector( 'p' );
+    this.$label = this.shadowRoot.querySelector( 'span' );
   }
 
    // When attributes change
   _render() {
-    if( this.text !== null )
-      this.innerText = this.text;
+    this.$label.innerText = this.text === null ? '' : this.text;
   }
 
   // Promote properties

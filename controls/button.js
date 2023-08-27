@@ -1,3 +1,5 @@
+import AvocadoLabel from "./label.js";
+
 export default class AvocadoButton extends HTMLElement {
   constructor() {
     super();
@@ -19,6 +21,13 @@ export default class AvocadoButton extends HTMLElement {
           display: none;
         }
 
+        adc-label {
+          --label-color: #ffffff;
+          --label-cursor: pointer;
+          flex-basis: 0;
+          flex-grow: 1;
+        }
+
         button {
           align-items: center;
           background: none;
@@ -30,7 +39,6 @@ export default class AvocadoButton extends HTMLElement {
           display: flex;
           flex-direction: row;
           height: 48px;
-          justify-content: center;
           margin: 0;
           outline: solid 1px transparent;
           outline-offset: -3px;
@@ -43,10 +51,6 @@ export default class AvocadoButton extends HTMLElement {
           background-color: #0050e6;
         }
 
-        button:active {
-          background-color: #002d9c;
-        }
-
         button:focus {
           border-color: #0f62fe;
           box-shadow:
@@ -54,139 +58,88 @@ export default class AvocadoButton extends HTMLElement {
             inset 0 0 0 2px #ffffff;
         }
 
-        p {
-          color: #ffffff;
-          flex-basis: 0;
-          flex-grow: 1;
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 400;
-          margin: 0;
-          padding: 0;
-          text-rendering: optimizeLegibility;
+        button:active {
+          background-color: #002d9c;
         }
 
         ::slotted( adc-icon ) {
           pointer-events: none;
           position: absolute;
-          top: 15px;
+          right: 15px;
           --icon-color: #ffffff;
           --icon-cursor: pointer;
-          --icon-font-size: 18px;
-          --icon-size: 18px;
-        }
-
-        ::slotted( adc-icon[slot=prefix] ) {
-          left: 15px;          
-        }
-
-        ::slotted( adc-icon[slot=suffix] ) {
-          right: 15px;          
         }
 
         :host( [size=sm] ) button {
           height: 32px;
           padding: 0 60px 0 12px;
         }
-        :host( [size=sm] ) ::slotted( adc-icon ) { top: 7px; }
 
         :host( [size=md] ) button {
           height: 40px;
           padding: 0 60px 0 12px;
         }
 
-        :host( [size=lg] ) button {
-          height: 48px;
-          padding: 0 65px 0 15px;
-        }
-
         :host( [size=xl] ) button {
-          align-items: flex-start;
           height: 64px;
-          padding: 16px 65px 0 16px;
+          padding: 0 65px 0 16px;
         }
 
         :host( [size=2xl] ) button {
-          align-items: flex-start;
           height: 80px;
-          padding: 16px 65px 0 16px;
+          padding: 0 65px 0 16px;
         }
 
         :host( [kind=secondary] ) button { background-color: #393939; }
         :host( [kind=secondary] ) button:hover { background-color: #4a4a4a; }
         :host( [kind=secondary] ) button:active { background-color: #6f6f6f; }
-        :host( [kind=secondary] ) button:focus {
-          border-color: #0f62fe;
-          box-shadow:
-            inset 0 0 0 1px #0f62fe,
-            inset 0 0 0 2px #ffffff;
-        }
 
+        :host( [kind=tertiary] ) adc-label { --label-color: #0f62fe; }
         :host( [kind=tertiary] ) button {
           background-color: transparent;
           border: solid 1px #0f62fe;
         }
-        :host( [kind=tertiary] ) p { 
-          color: #0f62fe; 
-        }
+        :host( [kind=tertiary] ) button:focus adc-label { --label-color: #ffffff; }
+        :host( [kind=tertiary] ) button:focus { background-color: #0f62fe; }        
+        :host( [kind=tertiary] ) button:hover adc-label { --label-color: #ffffff; }        
         :host( [kind=tertiary] ) button:hover {
           background-color: #0353e9;
           border: solid 1px #0353e9;
-          color: #ffffff;
         }
-        :host( [kind=tertiary] ) button:hover p { color: #ffffff; }
-        :host( [kind=tertiary] ) button:focus {
-          background-color: #0f62fe;
-          border-color: #0f62fe;
-          box-shadow:
-            inset 0 0 0 1px #0f62fe,
-            inset 0 0 0 2px #ffffff;
-        }
-        :host( [kind=tertiary] ) button:focus p { color: #ffffff; }
         :host( [kind=tertiary] ) button:active { background-color: #002d9c; }
-        :host( [kind=tertiary] ) ::slotted( adc-icon ) { --icon-color: #0f62fe; }                
-        :host( [kind=tertiary] ) button:hover ::slotted( adc-icon ) { --icon-color: #ffffff; }                        
-        :host( [kind=tertiary] ) button:focus ::slotted( adc-icon ) { --icon-color: #ffffff; }                                
 
         :host( [kind=danger] ) button { background-color: #da1e28; }
         :host( [kind=danger] ) button:hover { background-color: #bc1a22; }
         :host( [kind=danger] ) button:active { background-color: #750e13; }
-        :host( [kind=danger] ) button:focus {
-          border-color: #0f62fe;
-          box-shadow:
-            inset 0 0 0 1px #0f62fe,
-            inset 0 0 0 2px #ffffff;
-        }
 
         :host( [kind=ghost] ) button { background-color: transparent; }
-        :host( [kind=ghost] ) button p { color: #0f62fe; }
+        :host( [kind=ghost] ) button adc-label { --label-color: #0f62fe; }
         :host( [kind=ghost] ) button:hover { background-color: #e5e5e5e4; }
         :host( [kind=ghost] ) button:active { background-color: #8d8d8d80; }
-        :host( [kind=ghost] ) button:focus {
-          border-color: #0f62fe;
-          box-shadow:
-            inset 0 0 0 1px #0f62fe,
-            inset 0 0 0 2px #ffffff;
-        }
-        :host( [kind=ghost] ) ::slotted( adc-icon ) {
-          --icon-color: #0f62fe;
-        }
+        :host( [kind=ghost] ) ::slotted( adc-icon ) { --icon-color: #0f62fe; }
 
-        :host( [disabled] ) button,
-        :host( [disabled] ) button:hover {
+        :host( [disabled] ) ::slotted( adc-icon ) { --icon-color: #8d8d8d; }
+        :host( [disabled] ) adc-label { 
+          --label-color: #8d8d8d; 
+          --label-cursor: not-allowed;
+        }
+        :host( [disabled] ) button {
           background-color: #c6c6c6;
           cursor: not-allowed;
         }
-
-        :host( [disabled] ) button p {        
-          color: #8d8d8d;
+        :host( [disabled][kind=tertiary] ) button adc-label { --label-color: #c6c6c6; }        
+        :host( [disabled][kind=tertiary] ) button {        
+          background-color: transparent;
+          border-color: #c6c6c6;
         }
+        :host( [disabled][kind=tertiary] ) button:hover adc-label { --label-color: #c6c6c6; }        
+        :host( [disabled][kind=ghost] ) button { background-color: transparent; }        
+        :host( [disabled][kind=ghost] ) adc-label { --label-color: #8d8d8d; };
       </style>
       <button part="button" type="button">
-        <slot name="prefix"></slot>
-        <p>
+        <adc-label part="label" exportparts="label: p">
           <slot></slot>
-        </p>
+        </adc-label>
         <slot name="suffix"></slot>
       </button>
     `;
@@ -200,15 +153,13 @@ export default class AvocadoButton extends HTMLElement {
 
     // Elements
     this.$button = this.shadowRoot.querySelector( 'button' );
-    this.$label = this.shadowRoot.querySelector( 'p' );
+    this.$label = this.shadowRoot.querySelector( 'adc-label' );
   }
 
    // When attributes change
   _render() {
     this.$button.disabled = this.disabled;
-
-    if( this.label !== null )
-      this.$label.innerText = this.label;
+    this.$label.text = this.label;
   }
 
   // Promote properties
