@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Bits and pieces for the Avocado tooling.">
 
-    <title>Button Component</title>
+    <title>Link Component</title>
 
     <link href="../img/avocado.ico" rel="icon">
     <link href="../catalog.css" rel="stylesheet">
@@ -14,45 +14,30 @@
   </head>
   <body>
 
-    <h2>Button</h2>
+    <h2>Link</h2>
 
-    <adc-button>Button</adc-button><br>
-    <adc-button label="Button">
-      <adc-icon name="star" slot="suffix" weight="200"></adc-icon>
-    </adc-button><br>    
-    <adc-button kind="secondary">
-      Button
-      <adc-icon name="star" slot="suffix" weight="200"></adc-icon>      
-    </adc-button><br>
-    <adc-button kind="tertiary">Button</adc-button><br>
-    <adc-button kind="danger">Button</adc-button><br>
-    <adc-button kind="ghost">Button</adc-button><br>   
-    <adc-button disabled>Button</adc-button>        
+    <adc-link>Link</adc-link><br>
+    <adc-link label="Link"></adc-link><br>
+    <adc-link inline label="Link"></adc-link><br>
+    <adc-link disabled label="Link"></adc-link><br>    
 
     <pre>
-&lt;adc-button&gt;Button&lt;/adc-button&gt;
-&lt;adc-button label="Button"&gt;
-  &lt;adc-icon name="star" slot="suffix" weight="200"&gt;&lt;/adc-icon&gt;
-&lt;/adc-button&gt;
-&lt;adc-button kind="secondary"&gt;
-  Button
-  &lt;adc-icon name="star" slot="suffix" weight="200"&gt;&lt;/adc-icon&gt;
-&lt;/adc-button&gt;
-&lt;adc-button kind="tertiary"&gt;Button&lt;/adc-button&gt;
-&lt;adc-button kind="danger"&gt;Button&lt;/adc-button&gt;
-&lt;adc-button kind="ghost"&gt;Button&lt;/adc-button&gt;
-&lt;adc-button disabled&gt;Button&lt;/adc-button&gt;
+&lt;adc-link&gt;Link&lt;/adc-link&gt;
+&lt;adc-link label="Link"&gt;&lt;/adc-link&gt;
+&lt;adc-link inline label="Link"&gt;&lt;/adc-link&gt;
+&lt;adc-link disabled label="Link"&gt;&lt;/adc-link&gt;
     </pre>
 
     <h4>Styles</h4>
 
-    <p>None</p>
+    <ul>
+      <li>--link-font-size: 14px</li>
+    </ul>
 
     <h4>Slots</h4>
 
     <ul>
       <li>default: Placed inside AvocadoLabel (adc-label) element as slotted content for button label</li>
-      <li>suffix: Placed after the AvocadoLabel (adc-label); usually for trailing icon</li>
     </ul>
 
     <h4>Properties</h4>
@@ -68,9 +53,8 @@
       <li>disabled (boolean): Disable the button element</li>      
       <li>hidden (boolean): Do not show in DOM</li>      
       <li>href (string): URL to open when button is clicked</li>            
-      <li>kind (danger | ghost | secondary | tertiary): Button styling</li>            
+      <li>inline (boolean): Inline styling for link</li>            
       <li>label (string): Label content</li>                  
-      <li>size (2xl | md | sm | xl): Height and width of button</li>
       <li>target (string): Specify window to use when opening a new URL (href)</li>      
     </ul>
 
@@ -103,14 +87,13 @@
       <li>adc-label</li>
     </ul>
 
-    <script src="../controls/button.js" type="module"></script>
-    <script src="../controls/icon.js" type="module"></script>    
+    <script src="../controls/link.js" type="module"></script>
     <script>
-      const buttons = document.querySelectorAll( 'adc-button' );
-      for( let b = 0; b < buttons.length; b++ ) {
-        buttons[b].addEventListener( 'adc-focus', () => console.log( 'ADC-FOCUS' ) );
-        buttons[b].addEventListener( 'adc-blur', () => console.log( 'ADC-BLUR' ) );        
-      }
+      const links = document.querySelectorAll( 'adc-link' );
+      for( let i = 0; i < links.length; i++ ) {
+        links[i].addEventListener( 'adc-focus', () => console.log( 'ADC-FOCUS' ) );
+        links[i].addEventListener( 'adc-blur', () => console.log( 'ADC-BLUR' ) ); 
+      }       
     </script>
 
   </body>

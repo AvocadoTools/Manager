@@ -1,3 +1,5 @@
+import AvocadoLabel from "./label.js";
+
 export default class AvocadoLink extends HTMLElement {
   constructor() {
     super();
@@ -7,7 +9,7 @@ export default class AvocadoLink extends HTMLElement {
       <style>
         :host {
           box-sizing: border-box;
-          display: block;
+          display: inline-block;
           position: relative;
         }
 
@@ -19,41 +21,48 @@ export default class AvocadoLink extends HTMLElement {
           display: none;
         }        
 
+        adc-label {
+          --label-color: #0f62fe;
+          --label-cursor: pointer;
+          --label-font-size: var( --link-font-size, 14px );
+        }        
+
         button {
           background: none;
           border: none;
           box-sizing: border-box;
-          color: #0f62fe;
           cursor: pointer;
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: var( --link-font-size, 14px );
-          font-weight: 400;
           margin: 0;
           outline: none;
           padding: 0;
           text-rendering: optimizeLegibility;
+          -webkit-tap-highlight-color: transparent;                    
         }
 
-        button:hover {
-          text-decoration: underline;
+        button:hover adc-label {
+          --label-text-decoration: underline;
         }
 
-        :host( [inline] ) button {
-          text-decoration: underline;          
+        :host( [inline] ) button adc-label {
+          --label-text-decoration: underline;          
         }
 
         :host( [disabled] ) button,
-        :host( [disabled] ) button:hover {
-          color: #c6c6c6;
-          cursor: not-allowed;
+        :host( [disabled] ) button adc-label,
+        :host( [disabled] ) button:hover adc-label {
+          cursor: not-allowed;          
+          --label-color: #c6c6c6;
+          --label-cursor: not-allowed;
         }
 
-        :host( [disabled]:not( [inline] ) ) button:hover {
-          text-decoration: none;
+        :host( [disabled]:not( [inline] ) ) button:hover adc-label {
+          --label-text-decoration: none;
         }
       </style>
       <button part="button" type="button">
-        <slot></slot>
+        <adc-label part="label" exportparts="label: p">
+          <slot></slot>
+        </adc-label>
       </button>
     `;
 
@@ -66,25 +75,42 @@ export default class AvocadoLink extends HTMLElement {
 
     // Elements
     this.$button = this.shadowRoot.querySelector( 'button' );
-    this.$button.addEventListener( 'click', () => this.doButtonClick() );
+    this.$button.addEventListener( 'focus', () => this.dispatchEvent( new CustomEvent( 'adc-focus' ) ) );
+    this.$button.addEventListener( 'blur', () => this.dispatchEvent( new CustomEvent( 'adc-blur' ) ) );    
+    this.$button.addEventListener( 'click', () => {
+      if( this.href !== null ) {
+        let reference = null;
+
+        if( this.target !== null ) {
+          reference = window.open( this.href, this.target );
+        } else {
+          reference = window.open( this.href );
+        }
+
+        if( this.href.indexOf( 'mailto' ) >= 0 ) {
+          reference.close();
+        }
+      }
+    } );        
+    this.$label = this.shadowRoot.querySelector( 'adc-label' );
   }
 
-  doButtonClick() {
-    if( this.href !== null ) {
-      const ref = window.open( this.href );
+  blur() {
+    this.$button.blur();
+  }
 
-      if( this.href.indexOf( 'mailto' ) >= 0 ) {
-        ref.close();
-      }
-    }
+  click() {
+    this.$button.click();
+  }
+
+  focus() {
+    this.$button.focus();
   }
 
   // When things change
   _render() {
     this.$button.disabled = this.disabled;
-
-    if( this.label !== null )
-      this.$button.innerText = this.label;
+    this.$label.text = this.label;
   }
 
    // Properties set before module loaded
@@ -96,8 +122,7 @@ export default class AvocadoLink extends HTMLElement {
     }    
   }     
 
-  // Default render
-  // No attributes set
+  // Setup
   connectedCallback() {
     // Check data property before render
     // May be assigned before module is loaded    
@@ -107,7 +132,8 @@ export default class AvocadoLink extends HTMLElement {
     this._upgrade( 'hidden' );    
     this._upgrade( 'href' );    
     this._upgrade( 'inline' );    
-    this._upgrade( 'label' );    
+    this._upgrade( 'label' );   
+    this._upgrade( 'target' );         
     this._render();
   }
 
@@ -119,7 +145,8 @@ export default class AvocadoLink extends HTMLElement {
       'hidden',
       'href',
       'inline',
-      'label'
+      'label',
+      'target'
     ];
   }
 
@@ -253,6 +280,22 @@ export default class AvocadoLink extends HTMLElement {
       this.removeAttribute( 'label' );
     }
   }
+
+  get target() {
+    if( this.hasAttribute( 'target' ) ) {
+      return this.getAttribute( 'target' );
+    }
+
+    return null;
+  }
+
+  set target( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'target', value );
+    } else {
+      this.removeAttribute( 'target' );
+    }
+  }  
 }
 
 window.customElements.define( 'adc-link', AvocadoLink );

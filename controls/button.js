@@ -153,8 +153,30 @@ export default class AvocadoButton extends HTMLElement {
 
     // Elements
     this.$button = this.shadowRoot.querySelector( 'button' );
+    this.$button.addEventListener( 'focus', () => this.dispatchEvent( new CustomEvent( 'adc-focus' ) ) );
+    this.$button.addEventListener( 'blur', () => this.dispatchEvent( new CustomEvent( 'adc-blur' ) ) );    
+    this.$button.addEventListener( 'click', () => {
+      if( this.href !== null )
+        if( this.target !== null ) {
+          window.open( this.href, this.target );
+        } else {
+          window.open( this.href );
+        }
+    } );        
     this.$label = this.shadowRoot.querySelector( 'adc-label' );
   }
+
+  blur() {
+    this.$button.blur();
+  }
+
+  click() {
+    this.$button.click();
+  }
+
+  focus() {
+    this.$button.focus();
+  }  
 
    // When attributes change
   _render() {
@@ -178,9 +200,11 @@ export default class AvocadoButton extends HTMLElement {
     this._upgrade( 'data' );
     this._upgrade( 'disabled' );
     this._upgrade( 'hidden' );
+    this._upgrade( 'href' );    
     this._upgrade( 'kind' );
     this._upgrade( 'label' );
     this._upgrade( 'size' );
+    this._upgrade( 'target' );    
     this._render();
   }
 
@@ -190,9 +214,11 @@ export default class AvocadoButton extends HTMLElement {
       'concealed',
       'disabled',
       'hidden',
+      'href',
       'kind',
       'label',
-      'size'
+      'size',
+      'target'
     ];
   }
 
@@ -276,6 +302,22 @@ export default class AvocadoButton extends HTMLElement {
     }
   }
 
+  get href() {
+    if( this.hasAttribute( 'href' ) ) {
+      return this.getAttribute( 'href' );
+    }
+
+    return null;
+  }
+
+  set href( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'href', value );
+    } else {
+      this.removeAttribute( 'href' );
+    }
+  }
+
   get kind() {
     if( this.hasAttribute( 'kind' ) ) {
       return this.getAttribute( 'kind' );
@@ -323,6 +365,22 @@ export default class AvocadoButton extends HTMLElement {
       this.removeAttribute( 'size' );
     }
   }
+
+  get target() {
+    if( this.hasAttribute( 'target' ) ) {
+      return this.getAttribute( 'target' );
+    }
+
+    return null;
+  }
+
+  set target( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'target', value );
+    } else {
+      this.removeAttribute( 'target' );
+    }
+  }  
 }
 
 window.customElements.define( 'adc-button', AvocadoButton );

@@ -11,10 +11,14 @@ export default class AvocadoSpacer extends HTMLElement {
           flex-basis: 0;
           flex-grow: 1;
           position: relative;
-          min-height: var( --spacer-height );
-          max-height: var( --spacer-height );
-          min-width: var( --spacer-width );
-          max-width: var( --spacer-width );          
+          min-height: var( --spacer-height, auto );
+          max-height: var( --spacer-height, auto );
+          min-width: var( --spacer-width, auto );
+          max-width: var( --spacer-width, auto );          
+        } 
+
+        :host( [hidden] ) {
+          display: none;
         } 
       </style>
     `;

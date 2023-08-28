@@ -12,61 +12,72 @@ export default class AvocadoInput extends HTMLElement {
       <style>
         :host {
           box-sizing: border-box;
-          display: flex;
-          flex-direction: column;
+          display: inline-block;
           position: relative;
+        }
+
+        adc-icon[part=invalid] {
+          align-items: center;
+          display: flex;
+          height: 40px;
+          justify-content: center;
+          min-width: 0;
+          opacity: 0;
+          overflow: hidden;
+          transition: 
+            opacity 150ms ease-out,
+            min-width 150ms ease-out,
+            width 150ms ease-out;
+          width: 0;
+          --icon-color: #da1e28;
+        }
+
+        adc-label[part=error] {
+          padding: 4px 0 0 0;
+          visibility: hidden;
+          --label-color: #6f6f6f;          
+          --label-font-size: 12px;          
+        }
+
+        adc-label[part=helper] {
+          display: none;
+          padding: 0 0 4px 0;   
+          --label-color: #6f6f6f;                                     
+          --label-font-size: 12px;          
+        }
+
+        adc-label[part=label] {
+          display: none;
+          padding: 0;             
+          --label-color: #525252;          
+          --label-font-size: 12px;
+        }      
+        
+        adc-vbox {
+          flex-basis: 0;
+          flex-grow: 1;
         }
 
         button {
           align-items: center;
-          background: none;
-          border: none;
-          box-sizing: border-box;
-          color: #525252;
           cursor: pointer;
-          direction: ltr;        
           display: flex;
-          font-family: 'Material Symbols Outlined';
-          font-size: 18px;
-          font-style: normal;
-          font-weight: normal; 
-          height: 20px;
+          height: 40px;
           justify-content: center;
-          letter-spacing: normal;          
-          margin: 0;
-          min-height: 20px;
           min-width: 0;
-          margin: 0;
           opacity: 0;
           overflow: hidden;
-          padding: 0;
-          text-transform: none;
-          text-rendering: optimizeLegibility;
           transition: 
-            margin 300ms ease-out,
-            min-width 300ms ease-out,
-            opacity 300ms ease-out,
-            width 300ms ease-out;  
-          white-space: nowrap;            
-          width: 0; 
-          word-wrap: normal;          
+            opacity 150ms ease-out,
+            min-width 150ms ease-out,
+            width 150ms ease-out;          
+          width: 0;
           -webkit-tap-highlight-color: transparent;
         }
 
-        div {
-          align-items: flex-end;
-          display: none;
-          flex-basis: 0;
-          flex-direction: row;
-          flex-grow: 1;
-          margin: 0;
-          padding: 0;
-        }
-
-        div > div {
-          align-items: flex-start;
-          display: flex;
-          flex-direction: column;
+        button adc-icon {
+          --icon-color: #161616;
+          --icon-cursor: pointer;
         }
 
         input {
@@ -87,18 +98,12 @@ export default class AvocadoInput extends HTMLElement {
           text-rendering: optimizeLegibility;
           width: 0;
           -webkit-tap-highlight-color: transparent;
-        }
-
+        }     
+        
         input::placeholder {
           color: #a8a8a8;
-        }        
-
-        input[type=search]::-webkit-search-decoration,
-        input[type=search]::-webkit-search-cancel-button,
-        input[type=search]::-webkit-search-results-button,
-        input[type=search]::-webkit-search-results-decoration {
-          -webkit-appearance:none;
-        }
+          opacity: 1.0;
+        }                
 
         label {
           align-items: center;
@@ -117,234 +122,63 @@ export default class AvocadoInput extends HTMLElement {
 
         label:focus-within {
           outline: solid 2px #0f62fe;
-        }
+        }        
 
-        p {
-          text-rendering: optimizeLegibility;          
+        :host( [label] ) adc-label[part=label] { display: block; }
+        :host( [helper] ) adc-label[part=helper] { display: block; }        
+        :host( [helper] ) adc-label[part=label] { padding: 0; }
+        :host( [error] ) adc-label[part=error] { visibility: visible; }
+        :host( [error][invalid] ) adc-label[part=error] { --label-color: #da1e28; }
+        :host( [invalid] ) label { outline: solid 2px #da1e28; }        
+        :host( [invalid] ) label:focus-within { outline: solid 2px #0f62fe; }                
+        :host( [invalid] ) adc-icon[part=invalid] {
+          min-width: 40px;
+          opacity: 1.0;
+          width: 40px;
         }
-
-        p.icon {
-          box-sizing: border-box;
-          color: #da1e28;
-          cursor: default;
-          direction: ltr;
-          font-family: 'Material Symbols Outlined';
-          font-size: 18px;
-          font-style: normal;
-          font-weight: normal;
-          height: 20px;
-          letter-spacing: normal;
-          opacity: 0;
-          overflow: hidden;
-          margin: 0;
-          min-height: 20px;
-          min-width: 0;
-          padding: 0;
-          text-transform: none;
-          transition: margin 300ms ease-out;
-          white-space: nowrap;
-          width: 0;
-          word-wrap: normal;
-        }                
-
-        p.text {
-          cursor: default;
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 400;
-          margin: 0;
-          padding: 0;
+        :host( [light] ) label { background-color: #ffffff; }
+        :host( [value] ) button[part=clear] {
+          min-width: 40px;
+          opacity: 1.0;
+          width: 40px;
         }
-
-        p[part=error] {
-          color: #6f6f6f;          
-          font-size: 12px;
-          padding: 4px 0 0 0;
-          visibility: hidden;
-        }
-
-        p[part=helper] {
-          color: #6f6f6f;     
-          display: none;
-          font-size: 12px;          
-          padding: 0 0 4px 0;               
-        }
-
-        p[part=label] {
-          color: #525252;          
-          flex-basis: 0;
-          flex-grow: 1;
-          font-size: 12px;
-          padding: 0;
-        }
-
-        ::slotted( adc-icon ) {
-          margin: 0 -4px 0 12px;
-          --icon-color: #525252;
-          --icon-font-size: 18px;
-          --icon-size: 18px;
-        }
+        :host( [type=password] ) button[part=reveal] {
+          min-width: 40px;
+          opacity: 1.0;
+          width: 40px;
+        }        
 
         ::slotted( adc-label ) {
-          margin: 0 0 4px 0;
-          --label-color: #6f6f6f;                         
-          --label-font-size: 12px;
+          align-self: flex-end;
+          padding: 0 0 4px 0;
+          --label-font-size: 12px;          
         }
 
         ::slotted( adc-link ) {
-          margin: 0 0 2px 0;
-          --link-font-size: 12px;
-        }
-
-        :host( [concealed] ) {
-          visibility: hidden;
-        }
-
-        :host( [error] ) p[part=error] {
-          visibility: visible;
-        }
-
-        :host( [label] ) div {
-          display: flex;
-        }
-
-        :host( [label]:not( [helper] ) ) p[part=label] {
-          padding: 0 0 4px 0;
-        } 
-
-        :host( [helper] ) p[part=helper] {
-          display: block;
-        }
-
-        :host( [hidden] ) {
-          display: none;
-        }
-
-        :host( [invalid] ) label {
-          outline: solid 2px #da1e28;
-        }
-
-        :host( [invalid] ) label:focus-within {
-          outline: solid 2px #0f62fe;
-        }
-
-        :host( [invalid] ) p[part=error] {
-          color: #da1e28;
-        }
-
-        :host( [invalid] ) p.icon {
-          min-width: 20px;
-          opacity: 1.0;
-          margin: 0 12px 0 0;
-          width: 20px;
-        }
-
-        :host( [light] ) label {
-          background-color: #ffffff;
-        }
-
-        :host( [type=password] ) button[part=reveal] {
-          min-width: 20px;
-          opacity: 1.0;
-          margin: 0 12px 0 0;
-          width: 20px;          
-        }
-
-        :host( [type=password] ) label:focus-within button[part=reveal] {
-          min-width: 20px;
-          opacity: 1.0;
-          margin: 0 12px 0 6px;
-          width: 20px;          
-        }
-
-        :host( [type=search][value] ) label {
-          background-color: #e8e8e8;
-        }
-
-        :host( [type=search] ) label:hover {
-          background-color: #e8e8e8;
-        }        
-
-        :host( [value]:not( [read-only] ) ) label:focus-within p.icon {
-          margin: 0 6px 0 0;
-        }
-
-        :host( [value]:not( [read-only] ) ) label:focus-within button[part=clear] {
-          min-width: 20px;
-          opacity: 1.0;
-          margin: 0 12px 0 0;
-          width: 20px;
-        }
-
-        :host( [read-only] ) button[part=clear] {
-          min-width: 0;
-          opacity: 0;
-          margin: 0;
-          width: 0;                    
-        }
-
-        :host( [read-only] ) input {
-          cursor: default;
-        }        
-
-        :host( [read-only] ) label {
-          border-bottom: solid 1px transparent;
-          cursor: default;
-        }        
-
-        :host( [read-only] ) label:hover {
-          background-color: #f4f4f4;
-        }                
-        
-        :host( [read-only][light] ) label:hover {
-          background-color: #ffffff;
-        }                        
-
-        :host( [read-only] ) label:focus-within {        
-          outline: solid 2px transparent;
-        }
-
-        :host( [type=search][value] ) button[part=clear] {
-          min-width: 20px;
-          opacity: 1.0;
-          margin: 0 12px 0 0;
-          width: 20px; 
-        }
-
-        :host( [disabled] ) input {
-          color: #c6c6c6;
-          cursor: not-allowed;
-        }
-
-        :host( [disabled] ) label {
-          border-bottom: solid 1px transparent;
-        }
-
-        :host( [disabled] ) p[part=error],
-        :host( [disabled] ) p[part=helper],
-        :host( [disabled] ) p[part=label] {
-          color: #16161640;
-        }
-
-        :host( [disabled][invalid] ) p[part=error] {
-          color: #da1e28;
+          align-self: flex-end;
+          padding: 0 0 2px 0;
+          --link-font-size: 12px;          
         }
       </style>
-      <div>
-        <div>
-          <p class="text" part="label"></p>
-          <p class="text" part="helper"></p>                
-        </div>
+      <adc-hbox>
+        <adc-vbox>
+          <adc-label exportparts="label: label-p" part="label"></adc-label>
+          <adc-label exportparts="label: helper-p" part="helper"></adc-label>                
+        </adc-vbox>
         <slot></slot>        
-      </div>
+      </adc-hbox>
       <label part="field">
         <slot name="prefix"></slot>
         <input part="input" type="text">
-        <p class="icon" part="invalid">error</p>
-        <button part="reveal" type="button">visibility</button>
-        <button part="clear" type="button">close</button>
+        <adc-icon exportparts="font: invalid-icon" name="error" part="invalid"></adc-icon>
+        <button part="reveal" type="button">
+          <adc-icon exportparts="font: reveal-icon" name="visibility"></adc-icon>
+        </button>
+        <button part="clear" type="button">
+          <adc-icon exportparts="font: clear-icon" name="close"></adc-icon>
+        </button>
       </label>
-      <p class="text" part="error"></p>
+      <adc-label exportparts="label: error-p" part="error"></adc-label>
     `;
 
     // Properties
@@ -360,11 +194,11 @@ export default class AvocadoInput extends HTMLElement {
       this.clear();
       this.focus();
 
-      this.dispatchEvent( new CustomEvent( 'clear' ) );
+      this.dispatchEvent( new CustomEvent( 'adc-clear' ) );
     } );
-    this.$error = shadowRoot.querySelector( 'p[part=error]' );    
-    this.$label = shadowRoot.querySelector( 'p[part=label]' );
-    this.$helper = shadowRoot.querySelector( 'p[part=helper]' );
+    this.$error = shadowRoot.querySelector( 'adc-label[part=error]' );    
+    this.$label = shadowRoot.querySelector( 'adc-label[part=label]' );
+    this.$helper = shadowRoot.querySelector( 'adc-label[part=helper]' );
     this.$input = shadowRoot.querySelector( 'input' );
     this.$input.addEventListener( 'input', ( evt ) => {
       this.value = evt.currentTarget.value;
@@ -385,7 +219,7 @@ export default class AvocadoInput extends HTMLElement {
     this.$reveal.addEventListener( 'click', () => {
       this.$input.type = this.$input.type === 'password' ? 'text' : 'password';
       this.$input.focus();
-      this.$reveal.innerText = this.$input.type === 'password' ? 'visibility' : 'visibility_off';
+      this.$reveal.children[0].name = this.$reveal.children[0].name === 'visibility' ? 'visibility_off' : 'visibility';
     } );
   }
 
@@ -404,21 +238,24 @@ export default class AvocadoInput extends HTMLElement {
 
   // When things change
   _render() {
-    this.$error.innerText = this.error === null ? '&nbsp;' : this.error;
     this.$input.disabled = this.disabled;
     this.$input.inputMode = this.mode === null ? 'text' : this.mode;
     this.$input.placeholder = this.placeholder === null ? '' : this.placeholder;
     this.$input.readOnly = this.readOnly;
     this.$input.value = this.value === null ? '' : this.value;
+    this.$input.type = this.type === null ? 'text' : this.type;      
 
+    /*
     if( this.type === 'password' ) {
-      this.$input.type = this.$reveal.innerText === 'visibility' ? 'password' : 'type';      
+      this.$input.type = this.$reveal.text === 'visibility' ? 'password' : 'type';      
     } else {
       this.$input.type = this.type === null ? 'text' : this.type;      
     }
+    */
 
-    this.$label.innerText = this.label === null ? '' : this.label;
-    this.$helper.innerText = this.helper === null ? '' : this.helper;
+    this.$label.text = this.label;
+    this.$helper.text = this.helper;
+    this.$error.text = this.error;    
   }
 
   // Promote properties
@@ -443,6 +280,7 @@ export default class AvocadoInput extends HTMLElement {
     this._upgrade( 'label' );
     this._upgrade( 'light' );
     this._upgrade( 'mode' );
+    this._upgrade( 'name' );    
     this._upgrade( 'placeholder' );
     this._upgrade( 'readOnly' );
     this._upgrade( 'type' );
@@ -462,6 +300,7 @@ export default class AvocadoInput extends HTMLElement {
       'label',
       'light',
       'mode',
+      'name',
       'placeholder',
       'read-only',
       'type',
@@ -651,6 +490,22 @@ export default class AvocadoInput extends HTMLElement {
       this.removeAttribute( 'mode' );
     }
   }
+
+  get name() {
+    if( this.hasAttribute( 'name' ) ) {
+      return this.getAttribute( 'name' );
+    }
+
+    return null;
+  }
+
+  set name( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'name', value );
+    } else {
+      this.removeAttribute( 'name' );
+    }
+  }  
 
   get placeholder() {
     if( this.hasAttribute( 'placeholder' ) ) {
