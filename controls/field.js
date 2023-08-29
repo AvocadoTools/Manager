@@ -60,13 +60,17 @@ export default class AvocadoInput extends HTMLElement {
 
         button {
           align-items: center;
+          background: none;
+          border: none;
           cursor: pointer;
           display: flex;
           height: 40px;
           justify-content: center;
+          margin: 0;
           min-width: 0;
           opacity: 0;
           overflow: hidden;
+          padding: 0;
           transition: 
             opacity 150ms ease-out,
             min-width 150ms ease-out,
@@ -76,7 +80,7 @@ export default class AvocadoInput extends HTMLElement {
         }
 
         button adc-icon {
-          --icon-color: #161616;
+          --icon-color: #525252;
           --icon-cursor: pointer;
         }
 
@@ -85,6 +89,7 @@ export default class AvocadoInput extends HTMLElement {
           background: none;
           border: none;
           box-sizing: border-box;
+          color: #161616;
           flex-basis: 0;
           flex-grow: 1;
           font-family: 'IBM Plex Sans', sans-serif;
@@ -137,12 +142,12 @@ export default class AvocadoInput extends HTMLElement {
           width: 40px;
         }
         :host( [light] ) label { background-color: #ffffff; }
-        :host( [value] ) button[part=clear] {
+        :host( [value][clearable] ) button[part=clear] {
           min-width: 40px;
           opacity: 1.0;
           width: 40px;
         }
-        :host( [type=password] ) button[part=reveal] {
+        :host( [type=password][revealable] ) button[part=reveal] {
           min-width: 40px;
           opacity: 1.0;
           width: 40px;
@@ -170,12 +175,12 @@ export default class AvocadoInput extends HTMLElement {
       <label part="field">
         <slot name="prefix"></slot>
         <input part="input" type="text">
-        <adc-icon exportparts="font: invalid-icon" name="error" part="invalid"></adc-icon>
+        <adc-icon exportparts="font: invalid-icon" filled name="error" part="invalid"></adc-icon>
         <button part="reveal" type="button">
-          <adc-icon exportparts="font: reveal-icon" name="visibility"></adc-icon>
+          <adc-icon exportparts="font: reveal-icon" name="visibility" weight="200"></adc-icon>
         </button>
         <button part="clear" type="button">
-          <adc-icon exportparts="font: clear-icon" name="close"></adc-icon>
+          <adc-icon exportparts="font: clear-icon" name="close" weight="200"></adc-icon>
         </button>
       </label>
       <adc-label exportparts="label: error-p" part="error"></adc-label>
@@ -193,26 +198,42 @@ export default class AvocadoInput extends HTMLElement {
     this.$clear.addEventListener( 'click', () => {
       this.clear();
       this.focus();
-
       this.dispatchEvent( new CustomEvent( 'adc-clear' ) );
     } );
     this.$error = shadowRoot.querySelector( 'adc-label[part=error]' );    
     this.$label = shadowRoot.querySelector( 'adc-label[part=label]' );
     this.$helper = shadowRoot.querySelector( 'adc-label[part=helper]' );
     this.$input = shadowRoot.querySelector( 'input' );
+    this.$input.addEventListener( 'focus', () => this.dispatchEvent( new CustomEvent( 'adc-focus' ) ) );
+    this.$input.addEventListener( 'blur', () => this.dispatchEvent( new CustomEvent( 'adc-blur' ) ) );     
     this.$input.addEventListener( 'input', ( evt ) => {
       this.value = evt.currentTarget.value;
+      this.dispatchEvent( new CustomEvent( 'adc-input', {
+        detail: {
+          value: evt.currentTarget.value
+        }
+      } ) );      
     } );
     this.$input.addEventListener( 'keypress', ( evt ) => {
       if( evt.key === 'Enter' ) {
         evt.preventDefault();
         evt.stopImmediatePropagation();
 
-        this.dispatchEvent( new CustomEvent( 'enter', {
+        this.dispatchEvent( new CustomEvent( 'adc-enter', {
           detail: {
             value: evt.currentTarget.value
           }
         } ) );
+      }
+    } );
+    this.$input.addEventListener( 'keyup', ( evt ) => {
+      if( evt.key !== 'Enter' ) {
+        this.value = evt.currentTarget.value;
+        this.dispatchEvent( new CustomEvent( 'adc-change', {
+          detail: {
+            value: evt.currentTarget.value
+          }
+        } ) );              
       }
     } );
     this.$reveal = shadowRoot.querySelector( 'button[part=reveal]' );
@@ -234,6 +255,14 @@ export default class AvocadoInput extends HTMLElement {
 
   focus() {
     this.$input.focus();
+  }
+
+  valueAsFloat() {
+    return this.value === null ? null : parseFloat( this.value );
+  }
+
+  valueAsInt() {
+    return this.value === null ? null : parseInt( this.value );
   }
 
   // When things change
@@ -270,6 +299,7 @@ export default class AvocadoInput extends HTMLElement {
 
   // Setup
   connectedCallback() {
+    this._upgrade( 'clearable' );    
     this._upgrade( 'concealed' );
     this._upgrade( 'data' );
     this._upgrade( 'disabled' );
@@ -283,6 +313,7 @@ export default class AvocadoInput extends HTMLElement {
     this._upgrade( 'name' );    
     this._upgrade( 'placeholder' );
     this._upgrade( 'readOnly' );
+    this._upgrade( 'revealable' );    
     this._upgrade( 'type' );
     this._upgrade( 'value' );
     this._render();
@@ -291,6 +322,7 @@ export default class AvocadoInput extends HTMLElement {
   // Watched attributes
   static get observedAttributes() {
     return [
+      'clearable',
       'concealed',
       'disabled',
       'error',
@@ -303,6 +335,7 @@ export default class AvocadoInput extends HTMLElement {
       'name',
       'placeholder',
       'read-only',
+      'revealable',
       'type',
       'value'
     ];
@@ -327,6 +360,26 @@ export default class AvocadoInput extends HTMLElement {
 
   // Reflect attributes
   // Return typed value (Number, Boolean, String, null)
+  get clearable() {
+    return this.hasAttribute( 'clearable' );
+  }
+
+  set clearable( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'clearable' );
+      } else {
+        this.setAttribute( 'clearable', '' );
+      }
+    } else {
+      this.removeAttribute( 'clearable' );
+    }
+  }
+
   get concealed() {
     return this.hasAttribute( 'concealed' );
   }
@@ -542,6 +595,26 @@ export default class AvocadoInput extends HTMLElement {
       this.removeAttribute( 'read-only' );
     }
   }
+
+  get revealable() {
+    return this.hasAttribute( 'revealable' );
+  }
+
+  set revealable( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'revealable' );
+      } else {
+        this.setAttribute( 'revealable', '' );
+      }
+    } else {
+      this.removeAttribute( 'revealable' );
+    }
+  }    
 
   get type() {
     if( this.hasAttribute( 'type' ) ) {

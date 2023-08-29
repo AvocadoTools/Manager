@@ -24,22 +24,25 @@
     <h2>Input</h2>
 
     <adc-hbox style="width: 200px;">
-      <adc-input 
-        error="Error" 
-        helper="Helper" 
-        invalid
+      <adc-input
+        clearable
+        error="Error"
+        helper="Helper"
         label="Label"
-        light
-        placeholder="Placeholder"
-        type="password">
+        placeholder="Placeholder">
         <adc-link label="Link"></adc-link>
       </adc-input>
     </adc-hbox>
 
-    <button>Toggle</button>
-
     <pre>
-&lt;adc-input&gt;&lt;/adc-input&gt;
+&lt;adc-input 
+  clearable 
+  error="Error" 
+  helper="Helper" 
+  label="Label" 
+  placeholder="Placeholder"&gt;
+  &lt;adc-link label="Link"&gt;&lt;/adc-link&gt;
+&lt;/adc-input&gt;
     </pre>
 
     <h4>Styles</h4>
@@ -63,19 +66,21 @@
     <h4>Attributes</h4>
 
     <ul>
+      <li>clearable (boolean): Show a button to clear the input field</li>
       <li>concealed (boolean): Do not show, but leave in DOM flow</li>
       <li>disabled (boolean): Disable the input field; also changes appearance</li>
       <li>error (string): Content to display in error label</li>
-      <li>helper: Content for the helper label</li>
+      <li>helper (string): Content for the helper label</li>
       <li>hidden (boolean): Do not show in DOM</li>
       <li>invalid (boolean): Indicate an invalid state on the field</li>
       <li>label (string): Content for the main label</li>
-      <li>light (boolean): Light background on input field</li>      
-      <li>mode (string): Keyboard hint on mobile devices</li>      
-      <li>name (string): Name of the field represented by this input</li>      
-      <li>placeholder (string): Placeholder for input label</li>            
-      <li>readonly (boolean): Keep input styling, but do not allow edits</li>                  
-      <li>type (string): The type of input field</li>                  
+      <li>light (boolean): Light background on input field</li>
+      <li>mode (string): Keyboard hint on mobile devices</li>
+      <li>name (string): Name of the field represented by this input</li>
+      <li>placeholder (string): Placeholder for input label</li>
+      <li>readonly (boolean): Keep input styling, but do not allow edits</li>
+      <li>revealable (boolean): Show reveal button when input type is password</li>
+      <li>type (string): The type of input field</li>
       <li>value (string): Value of the input field</li>
     </ul>
 
@@ -85,6 +90,7 @@
       <li>adc-blur: Button element loses focus</li>
       <li>adc-change: Change in input field value</li>
       <li>adc-clear: Input field cleared</li>
+      <li>adc-enter: Enter key was pressed on the input field</li>
       <li>adc-focus: Button element receives focus</li>
       <li>adc-input: Content of input field changed</li>
     </ul>
@@ -97,6 +103,8 @@
       <li>select(): Select all the text in the input field</li>
       <li>setSelectionRange(): Select a portion of the input field text</li>
       <li>setRangeText(): Replace selected portion of input field text</li>
+      <li>valueAsFloat(): Get the input field value as a float</li>
+      <li>valueAsInt(): Get the input field value as an integer</li>
     </ul>
 
     <h4>Parts</h4>
@@ -126,19 +134,16 @@
     </ul>
 
     <script src="../controls/field.js" type="module"></script>
-    <script src="../controls/link.js" type="module"></script>    
+    <script src="../controls/link.js" type="module"></script>
     <script src="../containers/hbox.js" type="module"></script>
     <script>
-      const button = document.querySelector( 'button' );
-      button.addEventListener( 'click', () => input.invalid = !input.invalid );
       const input = document.querySelector( 'adc-input' );
-      /*
-      const buttons = document.querySelectorAll( 'adc-button' );
-      for( let b = 0; b < buttons.length; b++ ) {
-        buttons[b].addEventListener( 'adc-focus', () => console.log( 'ADC-FOCUS' ) );
-        buttons[b].addEventListener( 'adc-blur', () => console.log( 'ADC-BLUR' ) );
-      }
-      */
+      input.addEventListener( 'adc-focus', () => console.log( 'FOCUS' ) );
+      input.addEventListener( 'adc-blur', () => console.log( 'BLUR' ) );
+      input.addEventListener( 'adc-clear', () => console.log( 'CLEAR' ) );
+      input.addEventListener( 'adc-enter', ( evt ) => console.log( 'ENTER: ' + evt.detail.value ) );
+      input.addEventListener( 'adc-change', ( evt ) => console.log( 'CHANGE: ' + evt.detail.value ) );
+      input.addEventListener( 'adc-input', ( evt ) => console.log( 'INPUT: ' + evt.detail.value ) );
     </script>
   </body>
 </html>
