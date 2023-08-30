@@ -1,3 +1,5 @@
+import AvocadoHBox from "../containers/hbox.js";
+
 export default class AvocadoHeader extends HTMLElement {
   constructor() {
     super();
@@ -6,12 +8,34 @@ export default class AvocadoHeader extends HTMLElement {
     template.innerHTML = /* template */ `
       <style>
         :host {
-          background-color: var( --primary-color, #161616 );
+          background-color: var( --header-background-color, #161616 );
           box-sizing: border-box;
-          display: flex;
-          flex-direction: column;
-          position: relative;
+          display: grid;
+          grid-template-columns: repeat( 3, 1fr );
+          grid-template-rows: 1fr;
+          grid-column-gap: 0px;
+          grid-row-gap: 0px;
+          padding: 0 4px 0 4px;
+          position: relative;          
         }
+
+        adc-hbox {
+          align-items: center;
+        }
+
+        adc-hbox:nth-of-type( 1 ) {
+          grid-area: 1 / 1 / 2 / 2;
+        }
+
+        adc-hbox:nth-of-type( 2 ) {
+          grid-area: 1 / 2 / 2 / 3;
+          justify-content: center;
+        }
+        
+        adc-hbox:nth-of-type( 3 ) {
+          grid-area: 1 / 3 / 2 / 4;
+          justify-content: flex-end;
+        }        
         
         :host( [concealed] ) {
           visibility: hidden;
@@ -21,11 +45,19 @@ export default class AvocadoHeader extends HTMLElement {
           display: none;
         }
 
-        ::slotted( tb-toolbar ) {
-          padding: 0 4px 0 4px;
+        ::slotted( adc-label ) {
+          --label-color: #ffffff;
         }
       </style>
-      <slot></slot>
+      <adc-hbox part="left">
+        <slot name="left"></slot>
+      </adc-hbox>
+      <adc-hbox part="center">
+        <slot name="center"></slot>
+      </adc-hbox>
+      <adc-hbox part="right">
+        <slot name="right"></slot>
+      </adc-hbox>            
     `;
 
     // Private
