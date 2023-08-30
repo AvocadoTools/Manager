@@ -1,3 +1,8 @@
+import AvocadoIcon from "./icon.js";
+import AvocadoLabel from "./label.js";
+
+import AvocadoHBox from "../containers/hbox.js";
+
 export default class AvocadoTab extends HTMLElement {
   constructor() {
     super();
@@ -7,7 +12,7 @@ export default class AvocadoTab extends HTMLElement {
       <style>
         :host {
           box-sizing: border-box;
-          display: block;
+          display: inline-block;
           position: relative;
         }
 
@@ -20,21 +25,21 @@ export default class AvocadoTab extends HTMLElement {
         }
 
         button {
-          align-items: center;
           background: none;
           background-color: #e0e0e0;
           border: none;
           border-left: solid 1px #8d8d8d;            
           box-sizing: border-box;
-          cursor: var( --tab-cursor, pointer );
+          cursor: pointer;
           display: flex;
-          flex-direction: row;
-          height: var( --tab-height, 48px );
+          flex-direction: column;
+          height: 48px;
+          justify-content: center;
           margin: 0;
-          min-width: var( --tab-min-width, 145px );
+          min-width: 145px;
           outline: none;
           padding: 0 16px 0 16px;
-          transition: background-color 150ms ease-in-out;
+          /* transition: background-color 150ms ease-in-out; */
           -webkit-tap-highlight-color: transparent;
         }
 
@@ -42,58 +47,50 @@ export default class AvocadoTab extends HTMLElement {
           background-color: #cacaca;
         }
 
-        button > p {
-          color: var( --tab-icon-color, #6f6f6f );
-          cursor: default;
-          direction: ltr;
+        adc-icon {
           display: none;
-          font-family: 'Material Symbols Outlined';
-          font-size: var( --tab-icon-font-size, 18px );
-          font-style: normal;
-          font-weight: normal;
-          height: var( --tab-icon-size, 20px );
-          letter-spacing: normal;
-          margin: 0 0 0 -4px;
-          min-height: var( --tab-icon-size, 20px );
-          min-width: var( --tab-icon-size, 20px );
-          padding: 0 12px 0 0;
-          text-rendering: optimizeLegibility;
-          text-transform: none;
-          white-space: nowrap;
-          width: var( --tab-icon-size, 20px );
-          word-wrap: normal;
+          --icon-color: #6f6f6f;
+          --icon-cursor: pointer;
         }
 
-        div {
-          display: flex;
-          flex-direction: column;
+        adc-label {
+          display: none;          
+          --label-color: #393939;
+          --label-cursor: pointer;
+          --label-font-size: 14px;
+          --label-font-weight: 400;          
         }
 
-        div p {
-          color: var( --tab-color, #393939 );
-          cursor: var( --tab-cursor, pointer );
-          display: none;
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: var( --tab-font-size, 14px );
-          font-weight: var( --tab-font-weight, 400 );
-          margin: 0;
-          padding: 0;
-          text-align: left;
-          text-rendering: optimizeLegibility;
+        adc-label[part=helper] {
+          --label-color: #6f6f6f;
+          --label-font-size: 12px;
         }
 
-        p[part=helper] {
-          color: #6f6f6f;
-          font-size: 12px;
+        adc-label[part=label] {        
+          flex-basis: 0;
+          flex-grow: 1;
         }
 
-        :host( [icon] ) button > p {
-          display: block;
+        adc-hbox {
+          align-items: center;
         }
 
-        :host( [label] ) p[part=helper],
-        :host( [label] ) p[part=label] {
-          display: block;
+        :host( [helper] ) adc-label[part=helper] {
+          display: inline-block;
+        }
+
+        :host( [icon] ) adc-icon {
+          display: inline-block;
+        }
+
+        :host( [icon] ) adc-icon::part( font ) {
+          height: 18px;
+          line-height: 18px;
+          width: 18px;
+        }
+
+        :host( [label] ) adc-label[part=label] {
+          display: inline-block;
         }
 
         :host( [selected] ) button {
@@ -101,36 +98,36 @@ export default class AvocadoTab extends HTMLElement {
           border-left: solid 1px transparent;          
           box-shadow: inset 0 2px 0 0 #0f62fe;
         }
-
-        :host( [selected] ) button > p {
-          color: #525252;
+        :host( [selected] ) adc-icon {
+          --icon-color: #525252;
+        }
+        :host( [selected] ) adc-label[part=helper] {
+          --label-color: #525252;
+        }
+        :host( [selected] ) adc-label[part=label] {
+          --label-color: #161616;
+          --label-font-weight: 600;
         }
 
-        :host( [selected] ) div p:first-of-type {
-          color: #161616;
-          font-weight: 600;
+        :host( [disabled] ) adc-icon {
+          --icon-color: #c6c6c6;
+          --icon-cursor: not-allowed;
         }
-
-        :host( [selected] ) div p:last-of-type {
-          color: #525252;
-        }
-
         :host( [disabled] ) button {
           background-color: #c6c6c6;
           cursor: not-allowed;
         }
-
-        :host( [disabled] ) button p {
-          color: #8d8d8d;
-          cursor: not-allowed;
+        :host( [disabled] ) adc-label {
+          --label-color: #8d8d8d;
+          --label-cursor: not-allowed;
         }
       </style>
-      <button part="button">
-        <p part="icon"></p>
-        <div>
-          <p part="label"></p>
-          <p part="helper"></p>
-        </div>
+      <button part="button" type="button">
+        <adc-hbox part="box">
+          <adc-label exportparts="label: label-p" part="label"></adc-label>
+          <adc-icon exportparts="font: font" part="icon" weight="200"></adc-icon>                    
+        </adc-hbox>
+        <adc-label exportparts="label: helper-p" part="helper"></adc-label>
       </button>
     `;
 
@@ -143,17 +140,17 @@ export default class AvocadoTab extends HTMLElement {
 
     // Elements
     this.$button = this.shadowRoot.querySelector( 'button' );
-    this.$helper = this.shadowRoot.querySelector( 'p[part=helper]' );
-    this.$icon = this.shadowRoot.querySelector( 'p[part=icon]' );
-    this.$label = this.shadowRoot.querySelector( 'p[part=label]' );
+    this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );
+    this.$icon = this.shadowRoot.querySelector( 'adc-icon' );
+    this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );
   }
 
    // When attributes change
   _render() {
     this.$button.disabled = this.disabled;
-    this.$helper.innerText = this.helper === null ? '' : this.helper;
-    this.$icon.innerText = this.icon === null ? '' : this.icon;
-    this.$label.innerText = this.label === null ? '' : this.label;
+    this.$label.text = this.label;    
+    this.$helper.text = this.helper;
+    this.$icon.name = this.icon;
   }
 
   // Promote properties

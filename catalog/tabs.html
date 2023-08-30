@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Bits and pieces for the Avocado tooling.">
+
+    <title>Tabs Component</title>
+
+    <link href="../img/avocado.ico" rel="icon">
+    <link href="../catalog.css" rel="stylesheet">
+
+    <style>
+      adc-hbox {
+        padding: 16px;
+      }
+    </style>
+
+  </head>
+  <body>
+
+    <h2>Tabs</h2>
+
+    <adc-tabs expandable>
+      <adc-hbox helper="Helper" icon="star" label="One">
+        <adc-label>One</adc-label>
+      </adc-hbox>
+      <adc-hbox label="Two">
+        <adc-label>Two</adc-label>
+      </adc-hbox>
+      <adc-hbox disabled label="Three">
+        <adc-label>Three</adc-label>
+      </adc-hbox>            
+    </adc-tabs>
+
+    <pre>
+&lt;adc-tabs expandable&gt;
+  &lt;adc-hbox helper="Helper" icon="star" label="One"&gt;
+    &lt;adc-label&gt;One&lt;/adc-label&gt;
+  &lt;/adc-hbox&gt;
+  &lt;adc-hbox label="Two"&gt;
+    &lt;adc-label&gt;Two&lt;/adc-label&gt;
+  &lt;/adc-hbox&gt;
+  &lt;adc-hbox disabled label="Three"&gt;
+    &lt;adc-label&gt;Three&lt;/adc-label&gt;
+  &lt;/adc-hbox&gt;            
+&lt;/adc-tabs&gt;
+    </pre>
+
+    <h4>Styles</h4>
+
+    <ul>
+      <li>--tabs-background-color: #f4f4f4</li>
+    </ul>
+
+    <h4>Slots</h4>
+
+    <ul>
+      <li>default: Placed inside AvocadoStack (adc-stack) element as tab panel content</li>
+    </ul>
+
+    <h4>Properties</h4>
+
+    <ul>
+      <li>data (object): Arbitrary data storage</li>
+    </ul>
+
+    <h4>Attributes</h4>
+
+    <ul>
+      <li>concealed (boolean): Do not show, but leave in DOM flow</li>      
+      <li>expandable (boolean): Show icon to allow for expanded state</li>            
+      <li>expanded (boolean): Show tabs in expanded state</li>                  
+      <li>hidden (boolean): Do not show in DOM</li>      
+      <li>light (boolean): Light background of AvocadoStack (adc-stack) element</li>            
+      <li>selected-index (integer): Index representing the visible child</li>            
+      <li>tab-renderer (string): Provide your own component to be used for tab controls</li>                  
+    </ul>
+
+    <h4>Events</h4>
+
+    <ul>
+      <li>adc-change: The selected tab has changed</li>
+      <li>adc-collapse: The state is no longer expanded</li>      
+      <li>adc-expand: The state is now expanded</li>
+    </ul>
+
+    <h4>Methods</h4>
+
+    <ul>
+      <li>collapse(): Programmatically set the state of the tabs to collapsed</li>      
+      <li>expand(): Programmatically set the state of the tabs to expanded</li>
+      <li>show( index ): Programmatically control the visible child and selected tab</li>
+    </ul>
+
+    <h4>Parts</h4>
+
+    <ul>
+      <li>header: Container for the displayed tabs and zoom button</li>
+      <li>icon: The AvocadoIcon (adc-icon) inside the AvocadoIconButton (adc-icon-button)</li>      
+      <li>tabs: Container for the displayed tabs</li>                  
+      <li>views: The AvocadoStack (adc-stack) element that controls visibility</li>
+      <li>zoom: The AvocadoIconButton (adc-icon-button) for controlling expanded state</li>
+      <li>zoom-p: The paragraph element underlying the AvocadoIcon (adc-icon) icon font</li>      
+    </ul>
+
+    <h4>Dependencies</h4>
+
+    <ul>
+      <li>adc-hbox</li>
+      <li>adc-icon-button</li>      
+      <li>adc-stack</li>                  
+      <li>adc-tab</li>      
+    </ul>
+
+    <script src="../controls/label.js" type="module"></script>
+    <script src="../containers/tabs.js" type="module"></script>
+    <script>
+      const tabs = document.querySelector( 'adc-tabs' );
+      tabs.addEventListener( 'adc-collapse', () => console.log( 'COLLAPSE' ) );
+      tabs.addEventListener( 'adc-expand', () => console.log( 'EXPAND' ) );      
+      tabs.addEventListener( 'adc-change', ( evt ) => console.log( evt.detail.selectedIndex ) );
+    </script>
+
+  </body>
+</html>

@@ -27,6 +27,7 @@ export default class AvocadoLabel extends HTMLElement {
           font-weight: var( --label-font-weight, 400 );
           margin: var( --label-margin, 0 );
           padding: var( --label-padding, 0 );
+          text-align: var( --label-text-align, left );
           text-decoration: var( --label-text-decoration, none );
           text-rendering: optimizeLegibility;
         }

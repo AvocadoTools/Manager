@@ -1,4 +1,8 @@
+import AvocadoIconButton from "../controls/icon-button.js";
 import AvocadoTab from "../controls/tab.js";
+
+import AvocadoHBox from "./hbox.js";
+import AvocadoStack from "./stack.js";
 
 export default class AvocadoTabs extends HTMLElement {
   constructor() {
@@ -16,52 +20,22 @@ export default class AvocadoTabs extends HTMLElement {
           position: relative;
         }
 
-        button {
+        adc-hbox[part=header] {
           align-items: center;
-          background: none;
-          border: none;
-          color: var( --tabs-zoom-color, #525252 );
-          cursor: pointer;
-          direction: ltr;
-          display: none;
-          font-family: 'Material Symbols Outlined';
-          font-size: var( --tabs-zoom-font-size, 18px );
-          font-style: normal;
-          font-weight: normal;
-          height: var( --tabs-zoom-size, 20px );
-          justify-content: center;
-          letter-spacing: normal;
-          margin: 0 12px 0 12px;
-          min-height: var( --tabs-zoom-size, 20px );
-          min-width: var( --tabs-zoom-size, 20px );
-          outline: none;
-          padding: 0;
-          text-transform: none;
-          white-space: nowrap;
-          width: var( --tabs-zoom-size, 20px );
-          word-wrap: normal;
         }
 
-        div[part=header] {
-          align-items: center;
-          display: flex;
-          flex-direction: row;
-        }
-
-        div[part=tabs] {
-          display: flex;
+        adc-hbox[part=tabs] {
           flex-basis: 0;
           flex-grow: 1;
-          flex-direction: row;
           overflow: hidden;
         }
 
-        div[part=views] {
+        adc-icon-button {
+          display: none;
+        }
+
+        adc-stack {
           background-color: var( --tabs-background-color, #f4f4f4 );
-          box-sizing: border-box;
-          display: flex;
-          flex-basis: 0;
-          flex-grow: 1;
         }
 
         adc-tab:first-of-type::part( button ) {
@@ -72,22 +46,30 @@ export default class AvocadoTabs extends HTMLElement {
           border-left: solid 1px transparent;
         }
 
-        :host( [expandable] ) button {
-          display: flex;
+        :host( [expandable] ) adc-icon-button {
+          display: inline-block;
         }
+
+        :host( [light] ) adc-stack {
+          background-color: #ffffff;
+        }        
       </style>
-      <div part="header">
-        <div part="tabs"></div>
-        <button part="zoom">open_in_full</button>
-      </div>
-      <div part="views">
+      <adc-hbox part="header">
+        <adc-hbox part="tabs"></adc-hbox>
+        <adc-icon-button 
+          exportparts="icon: icon, font: zoom-p" 
+          name="open_in_full" 
+          part="zoom" 
+          kind="ghost">
+        </adc-icon-button>
+      </adc-hbox>
+      <adc-stack part="views">
         <slot></slot>
-      </div>
+      </adc-stack>
     `;
 
     // Properties
     this._data = null;
-    this._open = false;
 
     // Removeable events
     this.doTabClick = this.doTabClick.bind( this );
@@ -97,11 +79,32 @@ export default class AvocadoTabs extends HTMLElement {
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$tabs = this.shadowRoot.querySelector( 'div[part=tabs]' );
+    this.$tabs = this.shadowRoot.querySelector( 'adc-hbox[part=tabs]' );
     this.$views = this.shadowRoot.querySelector( 'slot' );
     this.$views.addEventListener( 'slotchange', ( evt ) => this.doSlotChange( evt ) );
-    this.$zoom = this.shadowRoot.querySelector( 'button' );
-    this.$zoom.addEventListener( 'click', () => this.doZoomClick() );
+    this.$zoom = this.shadowRoot.querySelector( 'adc-icon-button' );
+    this.$zoom.addEventListener( 'click', () => {
+      this.expanded = !this.expanded;
+      this.dispatchEvent( new CustomEvent(
+        this.expanded ? 'adc-expand' : 'adc-collapse', {
+          detail: {
+            value: this.expanded
+          }
+        }
+      ) );
+    } );
+  }
+
+  collapse() {
+    this.expanded = false;
+  }
+
+  expand() {
+    this.expanded = true;
+  }
+
+  show( index ) {
+    this.selectedIndex = index === null ? 0 : index;
   }
 
   // Children added or removed
@@ -124,9 +127,9 @@ export default class AvocadoTabs extends HTMLElement {
 
     for( let c = 0; c < this.$tabs.children.length; c++ ) {
       this.$tabs.children[c].setAttribute( 'data-index', c );
-      this.$tabs.children[c].label = this.children[c].label === null ? '' : this.children[c].label;
-      this.$tabs.children[c].helper = this.children[c].helper === null ? null : this.children[c].helper;
-      this.$tabs.children[c].icon = this.children[c].icon === null ? null : this.children[c].icon;
+      this.$tabs.children[c].label = this.children[c].label;
+      this.$tabs.children[c].helper = this.children[c].helper;
+      this.$tabs.children[c].icon = this.children[c].icon;
       this.$tabs.children[c].disabled = this.children[c].disabled;
       this.$tabs.children[c].selected = c === selected ? true : false;
       this.children[c].hidden = c === selected ? false : true;
@@ -143,7 +146,7 @@ export default class AvocadoTabs extends HTMLElement {
     if( index === this.selectedIndex )
       return;
 
-    this.dispatchEvent( new CustomEvent( 'change', {
+    this.dispatchEvent( new CustomEvent( 'adc-change', {
       detail: {
         previousIndex: this.selectedIndex,
         selectedIndex: index
@@ -153,18 +156,11 @@ export default class AvocadoTabs extends HTMLElement {
     this.selectedIndex = index;
   }
 
-  doZoomClick() {
-    this._open = !this._open;
-    this.$zoom.innerText = this._open === true ? 'hide' : 'open_in_full';
-    this.dispatchEvent( new CustomEvent(
-      this._open === true ? 'collapse' : 'expand'
-    ) );
-  }
-
   // When things change
   _render() {
-    const index = this.selectedIndex === null ? 0 : this.selectedIndex;
+    this.$zoom.name = this.expanded ? 'hide' : 'open_in_full';
 
+    const index = this.selectedIndex === null ? 0 : this.selectedIndex;
     for( let c = 0; c < this.$tabs.children.length; c++ ) {
       this.$tabs.children[c].selected = c === index ? true : false;
       this.children[c].hidden = c === index ? false : true;
@@ -188,7 +184,9 @@ export default class AvocadoTabs extends HTMLElement {
     this._upgrade( 'concealed' );
     this._upgrade( 'data' );
     this._upgrade( 'expandable' );
+    this._upgrade( 'expanded' );
     this._upgrade( 'hidden' );
+    this._upgrade( 'light' );    
     this._upgrade( 'selectedIndex' );
     this._upgrade( 'tabRenderer' );
     this._render();
@@ -199,7 +197,9 @@ export default class AvocadoTabs extends HTMLElement {
     return [
       'concealed',
       'expandable',
+      'expanded',
       'hidden',
+      'light',
       'selected-index',
       'tab-renderer'
     ];
@@ -264,6 +264,26 @@ export default class AvocadoTabs extends HTMLElement {
     }
   }
 
+  get expanded() {
+    return this.hasAttribute( 'expanded' );
+  }
+
+  set expanded( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'expanded' );
+      } else {
+        this.setAttribute( 'expanded', '' );
+      }
+    } else {
+      this.removeAttribute( 'expanded' );
+    }
+  }  
+
   get hidden() {
     return this.hasAttribute( 'hidden' );
   }
@@ -283,6 +303,26 @@ export default class AvocadoTabs extends HTMLElement {
       this.removeAttribute( 'hidden' );
     }
   }
+
+  get light() {
+    return this.hasAttribute( 'light' );
+  }
+
+  set light( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'light' );
+      } else {
+        this.setAttribute( 'light', '' );
+      }
+    } else {
+      this.removeAttribute( 'light' );
+    }
+  }  
 
   get selectedIndex() {
     if( this.hasAttribute( 'selected-index' ) ) {
