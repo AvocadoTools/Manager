@@ -1,3 +1,5 @@
+import AvocadoLabel from "./label.js";
+
 import { v4 as uuidv4 } from "../lib/uuid-9.0.0.js";
 
 export default class AvocadoAvatar extends HTMLElement {
@@ -68,12 +70,13 @@ export default class AvocadoAvatar extends HTMLElement {
           -webkit-tap-highlight-color: transparent;
         }
 
-        p {
-          color: var( --avatar-color, #161616 );
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: var( --avatar-font-size, 20px );
-          font-weight: 400;
-          text-rendering: optimizeLegibility;
+        adc-label {
+          --label-color: var( --avatar-label-color, #161616 );
+          --label-font-size: var( --avatar-label-font-size, 20px );
+          --label-cursor: pointer;
+        }
+
+        adc-label::part( label ) {
           text-transform: uppercase;
         }
 
@@ -97,9 +100,9 @@ export default class AvocadoAvatar extends HTMLElement {
           cursor: default;
         }
       </style>
-      <button>
+      <button part="button" type="button">
         <slot name="icon"></slot>
-        <p></p>
+        <adc-label exportparts="label: p" part="label"></adc-label>
       </button>
       <input accept="image/png, image/jpeg" type="file">
       <canvas></canvas>
@@ -149,7 +152,6 @@ export default class AvocadoAvatar extends HTMLElement {
           const context = this.$canvas.getContext( '2d' );
           context.drawImage( img, 0, 0, width, height );
 
-          this.$button.setAttribute( 'data-id', uuidv4() );          
           this.$button.setAttribute( 'data-format', format );          
           this.$button.setAttribute( 'data-name', img.getAttribute( 'data-name' ) );
           this.$button.setAttribute( 'data-modified', Date.now() );          
@@ -162,7 +164,7 @@ export default class AvocadoAvatar extends HTMLElement {
         this.$input.value = '';        
       }
     } );
-    this.$label = this.shadowRoot.querySelector( 'p' );
+    this.$label = this.shadowRoot.querySelector( 'adc-label' );
   }
 
   clear() {
@@ -249,7 +251,7 @@ export default class AvocadoAvatar extends HTMLElement {
     }
 
     // Place content
-    this.$label.innerText = content;
+    this.$label.text = content;
   }
 
   // Properties set before module loaded
@@ -294,7 +296,8 @@ export default class AvocadoAvatar extends HTMLElement {
       'label',
       'light',
       'read-only',
-      'shorten'
+      'shorten',
+      'src'
     ];
   }
 
@@ -323,6 +326,7 @@ export default class AvocadoAvatar extends HTMLElement {
     this._label = value;
   }  
 
+  /*
   get src() {
     return this._source;
   }
@@ -331,11 +335,11 @@ export default class AvocadoAvatar extends HTMLElement {
     this._source = data;
     this._render();
   }
+  */
 
   get value() {
     if( this.$button.hasAttribute( 'data-format' ) ) {
       return {
-        id: this.$button.getAttribute( 'data-id' ),        
         format: this.$button.getAttribute( 'data-format' ),
         name: this.$button.getAttribute( 'data-name' ),
         modified: parseInt( this.$button.getAttribute( 'data-modified' ) ),        
@@ -553,6 +557,22 @@ export default class AvocadoAvatar extends HTMLElement {
       this.removeAttribute( 'shorten' );
     }
   }
+
+  get src() {
+    if( this.hasAttribute( 'src' ) ) {
+      return this.getAttribute( 'src' );
+    }
+
+    return null;
+  }
+
+  set src( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'src', value );
+    } else {
+      this.removeAttribute( 'src' );
+    }
+  }  
 }
 
 window.customElements.define( 'adc-avatar', AvocadoAvatar );

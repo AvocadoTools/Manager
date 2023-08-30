@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Bits and pieces for the Avocado tooling.">
+
+    <title>Avatar Component</title>
+
+    <link href="../img/avocado.ico" rel="icon">
+    <link href="../catalog.css" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <h2>Avatar</h2>
+
+    <adc-avatar>
+      <adc-icon filled name="person" slot="icon"></adc-icon>
+    </adc-avatar>
+    <adc-avatar label="AD"></adc-avatar>
+    <adc-avatar src="/img/avocado.jpg"></adc-avatar>    
+
+    <pre>
+&lt;adc-avatar&gt;
+  &lt;adc-icon filled name="person" slot="icon"&gt;&lt;/adc-icon&gt;
+&lt;/adc-avatar&gt;
+&lt;adc-avatar label="AD"&gt;&lt;/adc-avatar&gt;
+&lt;adc-avatar src="/img/avocado.jpg"&gt;&lt;/adc-avatar&gt;
+    </pre>
+
+    <h4>Styles</h4>
+
+    <ul>
+      <li>--avatar-background-color: #f4f4f4</li>
+      <li>--avatar-size: 61px</li>
+      <li>--avatar-label-color: #161616</li>
+      <li>--avatar-label-font-size: 20px</li>
+    </ul>
+
+    <h4>Slots</h4>
+
+    <ul>
+      <li>icon: Specify a placeholder; usually a graphic slement</li>
+    </ul>
+
+    <h4>Properties</h4>
+
+    <ul>
+      <li>data (object): Arbitrary data storage</li>
+      <li>labelFunction (function): Function to call to transform label content</li>
+      <li>src (object): File path to image, or encoded image data</li>
+      <li>value (object): Represents the collective information about the avatar</li>
+    </ul>
+
+    <h4>Attributes</h4>
+
+    <ul>
+      <li>compression (float): How to compress any image resizing</li>
+      <li>concealed (boolean): Do not show, but leave in DOM flow</li>      
+      <li>constraint (integer): Maximum size for image resizing</li>
+      <li>disabled (boolean): Not available for selection or change</li>
+      <li>hidden (boolean): Do not show in DOM</li>      
+      <li>format (string): Image format for encoding of resized image</li>
+      <li>label (string): Label content to use when no image is present</li>
+      <li>light (boolean): </li>
+      <li>readOnly (boolean): Similar to disabled, but does not alter appearance</li>
+      <li>shorten (boolean): Flag to shorten any label content provided</li>
+    </ul>
+
+    <h4>Events</h4>
+
+    <p>None</p>
+
+    <h4>Methods</h4>
+
+    <ul>
+      <li>clear(): Clear label and image content</li>
+      <li>initials(): Algorithm for name shortening</li>
+    </ul>
+
+    <h4>Parts</h4>
+
+    <ul>
+      <li>button: Button element encapsulating functionality</li>
+      <li>label: Label content; usually a name</li>
+      <li>p: Paragraph element used in AvocadoLabel (adc-label)</li>      
+    </ul>
+
+    <h4>Dependencies</h4>
+
+    <ul>
+      <li>adc-label</li>
+    </ul>
+
+    <script src="../controls/avatar.js" type="module"></script>
+    <script src="../controls/icon.js" type="module"></script>    
+
+  </body>
+</html>
