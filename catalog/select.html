@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Bits and pieces for the Avocado tooling.">
+
+    <title>Button Component</title>
+
+    <link href="../img/avocado.ico" rel="icon">
+    <link href="./catalog.css" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <h2>Select</h2>
+
+    <adc-select error="Error" helper="Helper" label="Label"></adc-select>
+    <button>Options</button>
+    <button>Get Value</button>    
+    <button>Set Value</button>        
+
+    <pre>
+&lt;adc-select error="Error" helper="Helper" label="Label"&gt;&lt;/adc-select&gt;
+    </pre>
+
+    <h4>Styles</h4>
+
+    <p>None</p>
+
+    <h4>Slots</h4>
+
+    <p>None</p>
+
+    <h4>Properties</h4>
+
+    <ul>
+      <li>data (object): Arbitrary data storage</li>
+      <li>options (array): The options to display in the select</li>
+    </ul>
+
+    <h4>Attributes</h4>
+
+    <ul>
+      <li>concealed (boolean): Do not show, but leave in DOM flow</li>      
+      <li>disabled (boolean): Disable the button element</li>      
+      <li>error (string): Content to display in error label</li>
+      <li>helper (string): Content for the helper label</li>      
+      <li>hidden (boolean): Do not show in DOM</li>      
+      <li>invalid (boolean): Indicate an invalid state on the select field</li>
+      <li>label (string): Content for the main label</li>
+      <li>light (boolean): Light background on select field</li>
+      <li>name (string): Name of the field represented by this input</li>
+      <li>read-only (boolean): Keep input styling, but do not allow edits</li>
+      <li>value (string): Value of the select field</li>      
+    </ul>
+
+    <h4>Events</h4>
+
+    <ul>
+      <li>adc-blur: Select element loses focus</li>  
+      <li>adc-change: User has changed the selected option</li>    
+      <li>adc-focus: Select element receives focus</li>
+      <li>adc-input: Select element has had value set</li>      
+    </ul>
+
+    <h4>Methods</h4>
+
+    <ul>
+      <li>add( item, before ): Add an option to the select element</li>      
+      <li>blur(): Programmatic removable of focus from button element</li>      
+      <li>focus(): Programmatic focus on button element</li>      
+      <li>item( index ): Get the item at the provided index</li>
+      <li>itemize( option ): Serialize an option element into an object</li>
+      <li>remove( index ): Remove the item at the provided index</li>      
+    </ul>
+
+    <h4>Parts</h4>
+
+    <ul>
+      <li>button: Button element</li>
+      <li>label: AvocadoLabel (adc-label) element</li>                  
+      <li>p: Paragraph element used inside the AvocadoLabel (adc-label)</li>
+    </ul>
+
+    <h4>Dependencies</h4>
+
+    <ul>
+      <li>adc-icon</li>      
+      <li>adc-label</li>
+      <li>adc-vbox</li>      
+    </ul>
+
+    <script src="../controls/select.js" type="module"></script>
+    <script>
+      const buttons = document.querySelectorAll( 'button' );
+      buttons[0].addEventListener( 'click', () => {
+        console.log( select.options );
+      } );
+      buttons[1].addEventListener( 'click', () => {
+        console.log( select.value );
+      } );      
+      buttons[2].addEventListener( 'click', () => {
+        select.value = 'One';
+      } );            
+      const select = document.querySelector( 'adc-select' );
+      select.options = ['One', {label: 'Two', selected: true, value: 2}, {disabled: true, label: 'Three'}];
+      select.addEventListener( 'adc-blur', () => console.log( 'BLUR' ) );
+      select.addEventListener( 'adc-focus', () => console.log( 'FOCUS' ) );      
+      select.addEventListener( 'adc-change', ( evt ) => {
+        console.log( 'CHANGE' );
+        console.log( evt.detail ); 
+      } );
+      select.addEventListener( 'adc-input', ( evt ) => {
+        console.log( 'INPUT' );
+        console.log( evt.detail );
+      } );      
+    </script>
+
+  </body>
+</html>

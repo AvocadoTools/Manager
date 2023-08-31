@@ -1,440 +1,278 @@
-import AvocadoMenu from "./menu.js";
+import AvocadoIcon from "./icon.js";
+import AvocadoLabel from "./label.js";
+
+import AvocadoVBox from "../containers/vbox.js";
 
 export default class AvocadoSelect extends HTMLElement {
   constructor() {
     super();
 
-    const template = document.createElement( 'template' );
+    const template = document.createElement( 'template' )
     template.innerHTML = /* template */ `
       <style>
         :host {
           box-sizing: border-box;
-          display: flex;
-          flex-direction: column;
+          display: inline-block;
           position: relative;
         }
 
         :host( [concealed] ) {
           visibility: hidden;
         }
-
+        
         :host( [hidden] ) {
           display: none;
+        }        
+
+        adc-icon {
+          pointer-events: none;
+          position: absolute;
+          top: 50%;
+          transform: translate( -50%, -50% );
         }
 
-        button {
-          align-items: center;
-          background: none;
-          border: none;
-          box-sizing: border-box;
-          color: #525252;
-          cursor: pointer;
-          direction: ltr;
-          display: flex;
-          font-family: 'Material Symbols Outlined';
-          font-size: 18px;
-          font-style: normal;
-          font-weight: normal;
-          height: 20px;
-          justify-content: center;
-          letter-spacing: normal;
-          margin: 0;
-          min-height: 20px;
-          min-width: 20px;
-          margin: 0;
-          overflow: hidden;
-          padding: 0;
-          text-transform: none;
-          text-rendering: optimizeLegibility;
-          transition:
-            margin 300ms ease-out,
-            min-width 300ms ease-out,
-            opacity 300ms ease-out,
-            width 300ms ease-out;
-          white-space: nowrap;
-          width: 20px;          
-          word-wrap: normal;
-          -webkit-tap-highlight-color: transparent;
+        adc-icon[part=caret] {        
+          right: 2px;          
+          --icon-color: #161616;          
         }
 
-        button[part=clear] {
+        adc-icon[part=invalid] {
+          min-width: 0;        
           opacity: 0;
-          min-width: 0;
-          width: 0;
-        }
-
-        button[part=button] {
-          margin: 0 12px 0 6px;
-        }
-
-        div[part=header] {
-          align-items: flex-end;
-          display: flex;
-          flex-basis: 0;
-          flex-direction: row;
-          flex-grow: 1;
-          margin: 0;
-          padding: 0;
-        }
-
-        div[part=header] > div {
-          align-items: flex-start;
-          display: flex;
-          flex-basis: 0;
-          flex-direction: column;
-          flex-grow: 1;
-        }
-
-        input {
-          appearance: none;
-          background: none;
-          border: none;
-          box-sizing: border-box;
-          color: #c6c6c6;
-          cursor: pointer;
-          flex-basis: 0;
-          flex-grow: 1;
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 400;
-          height: 40px;
-          margin: 0;
-          min-height: 40px;
-          min-width: 0;
-          outline: none;
-          padding: 0 0 0 16px;
-          text-align: left;
-          text-rendering: optimizeLegibility;
-          width: 0;
-          -webkit-appearance: none;      
-          -webkit-tap-highlight-color: transparent;    
-
-          min-width: 0;
           overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;          
+          right: 26px; 
+          width: 0;         
+          --icon-color: #da1e28;                    
+        }        
+
+        adc-label[part=error] {
+          padding: 4px 0 0 0;
+          visibility: hidden;
+          --label-color: #6f6f6f;          
+          --label-font-size: 12px;          
         }
 
-        input::placeholder {
-          color: #a8a8a8;
-        }                 
-
-        input.filled {
-          color: #161616;
+        adc-label[part=helper] {
+          display: none;
+          padding: 0 0 4px 0;   
+          --label-color: #6f6f6f;                                     
+          --label-font-size: 12px;          
         }
+
+        adc-label[part=label] {
+          display: none;
+          padding: 0;             
+          --label-color: #525252;          
+          --label-font-size: 12px;
+        }              
 
         label {
           align-items: center;
           background-color: #f4f4f4;
-          border-bottom: solid 1px #8d8d8d;          
+          border-bottom: solid 1px #8d8d8d;
           box-sizing: border-box;
-          cursor: pointer;
-          display: inline-flex;
-          flex-basis: 0;
+          display: flex;
           flex-direction: row;
-          flex-grow: 1;
           margin: 0;
           outline: solid 2px transparent;
           outline-offset: -2px;
           padding: 0;
-          transition: background-color 150ms ease-in-out;
-          width: 100%;
+          position: relative;
+          /* transition: background-color 150ms ease-in-out; */
           -webkit-tap-highlight-color: transparent;
         }
 
         label:focus-within {
           outline: solid 2px #0f62fe;
-        }
+        }                
 
-        p {
-          box-sizing: border-box;          
-          cursor: default;
-          font-family: 'IBM Plex Sans', sans-serif;
-          font-size: 14px;
-          font-weight: 400;
-          margin: 0;
-          padding: 0;
-          text-rendering: optimizeLegibility;
-        }
+        label:hover {
+          background-color: #e8e8e8;
+        }        
 
-        p.icon {
-          color: #da1e28;
-          cursor: default;
-          direction: ltr;
-          font-family: 'Material Symbols Outlined';
-          font-size: 18px;
-          font-style: normal;
-          font-weight: normal;
-          height: 20px;
-          letter-spacing: normal;
-          line-height: 20px;
-          opacity: 0;
-          overflow: hidden;
-          margin: 0;
-          min-height: 20px;
-          min-width: 0;
-          padding: 0;
-          text-rendering: optimizeLegibility;
-          text-transform: none;
-          transition:
-            margin 300ms ease-out,
-            opacity 300ms ease-out,
-            width 300ms ease-out
-          white-space: nowrap;
-          width: 0;
-          word-wrap: normal;
-        }
-
-        p[part=error] {
-          color: #6f6f6f;
-          font-size: 12px;
-          padding: 4px 0 0 0;
-          visibility: hidden;
-        }
-
-        p[part=helper] {
-          color: #6f6f6f;
-          font-size: 12px;
-          padding: 0 0 4px 0;
-        }
-
-        p[part=label] {
-          color: #525252;
-          flex-basis: 0;
-          flex-grow: 1;
-          font-size: 12px;
-          padding: 0;
-        }
-
-        ::slotted( adc-label ) {
-          margin: 0 0 4px 0;
-          --label-color: #6f6f6f;
-          --label-font-size: 12px;
-        }
-
-        ::slotted( adc-link ) {
-          margin: 0 0 4px 0;
-          --link-font-size: 12px;
-        }
-
-        :host( [editable] ) input {
+        select {
+          appearance: none;
+          background: none;
+          box-sizing: border-box;
+          border: none;
           color: #161616;
           cursor: pointer;
+          font-family: 'IBM Plex Sans', sans-serif;
+          font-size: 14px;
+          height: 40px;
+          margin: 0;
+          outline: solid 1px transparent;
+          outline-offset: -3px;          
+          padding: 0 68px 0 16px;
+          text-rendering: optimizeLegibility;
+          -webkit-tap-highlight-color: transparent;                    
         }
 
-        :host( [error] ) p[part=error] {
-          visibility: visible;
-        }
-
-        :host( [invalid] ) p[part=invalid] {
+        :host( [label] ) adc-label[part=label] { display: block; }
+        :host( [light] ) label { background-color: #ffffff; }
+        :host( [helper] ) adc-label[part=helper] { display: block; }        
+        :host( [helper] ) adc-label[part=label] { padding: 0; }
+        :host( [error] ) adc-label[part=error] { visibility: visible; }
+        :host( [error][invalid] ) adc-label[part=error] { --label-color: #da1e28; }
+        :host( [invalid] ) label { outline: solid 2px #da1e28; }        
+        :host( [invalid] ) label:focus-within { outline: solid 2px #0f62fe; }                
+        :host( [invalid] ) adc-icon[part=invalid] {
           min-width: 20px;
           opacity: 1.0;
-          margin: 0 12px 0 0;
           width: 20px;
         }        
 
-        :host( [invalid] ) label {
-          outline: solid 2px #da1e28;
-        }
-
-        :host( [invalid] ) p[part=error] {
-          color: #da1e28;
-        }
-
-        :host( [invalid] ) p.icon {
-          min-width: 20px;
-          opacity: 1.0;
-          margin: 0 6px 0 0;
-          width: 20px;
-        }
-
-        :host( [light] ) label {
-          background-color: #ffffff;
-        }
-
-        :host( [value]:not( [read-only] ) ) label:focus-within p.icon {
-          margin: 0 6px 0 0;
-        }
-
-        :host( [value]:not( [read-only] ) ) label:focus-within button[part=clear] {
-          min-width: 20px;
-          opacity: 1.0;
-          margin: 0 12px 0 0;
-          width: 20px;
-        }
-
-        :host( [read-only] ) button[part=button],
-        :host( [read-only] ) button[part=clear] {
+        :host( [read-only] ) adc-icon[part=caret] {
           min-width: 0;
           opacity: 0;
-          margin: 0;
-          width: 0;                    
+          width: 0;
         }
+        :host( [read-only] ) label { border-bottom: solid 1px transparent; }
+        :host( [read-only] ) select { cursor: default; }
 
-        :host( [read-only] ) input {
-          cursor: default;
-          padding: 0 16px 0 16px;          
-        }        
-
-        :host( [read-only] ) label {
-          border-bottom: solid 1px transparent;
-          cursor: default;
-        }        
-
-        :host( [read-only] ) label:hover {
-          background-color: #f4f4f4;
-        }                
-        
-        :host( [read-only][light] ) label:hover {
-          background-color: #ffffff;
-        }                        
-
-        :host( [read-only] ) label:focus-within {        
-          outline: solid 2px transparent;
-        }        
+        :host( [disabled] ) adc-icon[part=caret] { --icon-color: #16161640; }
+        :host( [disabled] ) label { border-bottom: solid 1px transparent; }
+        :host( [disabled] ) label:hover { background-color: #f4f4f4; }        
+        :host( [disabled] ) select { 
+          color: #16161640; 
+          cursor: not-allowed;
+        };
+        :host( [disabled] ) select:hover { background-color: red; }        
+        :host( [disabled] ) adc-label[part=error],
+        :host( [disabled] ) adc-label[part=helper],
+        :host( [disabled] ) adc-label[part=label] { --label-color: #16161640; }
+        :host( [disabled][invalid] ) adc-label[part=error] { --label-color: #da1e28; }        
       </style>
-      <div part="header">
-        <div>
-          <p class="text" part="label"></p>
-          <p class="text" part="helper"></p>
-        </div>
-        <slot></slot>
-      </div>
-      <label part="field">
-        <input part="input" type="button" />
-        <p class="icon" part="invalid">error</p>
-        <button part="clear" type="button">close</button>
-        <button part="button" type="button">expand_more</button>
-      </label>
-      <p class="text" part="error"></p>
+      <adc-vbox>
+        <adc-label exportparts="label: label-p" part="label"></adc-label>
+        <adc-label exportparts="label: helper-p" part="helper"></adc-label>      
+        <label part="field">
+          <select part="select"></select>
+          <adc-icon exportparts="font: invalid-icon" filled name="error" part="invalid"></adc-icon>
+          <adc-icon exportparts="font: caret-icon" name="expand_more" part="caret" weight="200"></adc-icon>
+        </label>
+        <adc-label exportparts="label: error-p" part="error"></adc-label>      
+      </adc-vbox>
     `;
 
-    // Private
-    this._compare = null;
-    this._label = null;
-    this._menu = null;
+    // Properties
     this._data = null;
-    this._provider = [];
-    this._touch = ( 'ontouchstart' in document.documentElement ) ? 'touchstart' : 'click';            
-
-    // Removable events
-    this.doMenuChange = this.doMenuChange.bind( this );
 
     // Root
     this.attachShadow( {mode: 'open'} );
     this.shadowRoot.appendChild( template.content.cloneNode( true ) );
 
     // Elements
-    this.$menu = this.shadowRoot.querySelector( 'button[part=button]' );
-    this.$menu.addEventListener( this._touch, () => this.doMenuClick() );    
-    this.$error = this.shadowRoot.querySelector( 'p[part=error]' );
-    this.$helper = this.shadowRoot.querySelector( 'p[part=helper]' );
-    this.$input = this.shadowRoot.querySelector( 'input[part=input]' );
-    this.$input.addEventListener( this._touch, () => this.doInputClick() );
-    this.$label = this.shadowRoot.querySelector( 'p[part=label]' );
-
-    this.$menu = document.createElement( 'adc-menu' );
-    this.$menu.addEventListener( 'change', ( evt ) => this.doMenuChange( evt ) );
-    document.body.appendChild( this.$menu );
+    this.$select = this.shadowRoot.querySelector( 'select' );
+    this.$select.addEventListener( 'focus', () => this.dispatchEvent( new CustomEvent( 'adc-focus' ) ) );
+    this.$select.addEventListener( 'blur', () => this.dispatchEvent( new CustomEvent( 'adc-blur' ) ) );        
+    this.$select.addEventListener( 'change', () => {
+      this.value = this.$select.children[this.$select.selectedIndex].value;
+      this.dispatchEvent( new CustomEvent( 'adc-change', {
+        detail: {
+          selectedIndex: this.$select.selectedIndex,
+          selectedItem: this.itemize( this.$select.children[this.$select.selectedIndex] ),
+          value: this.value
+        }
+      } ) );
+    } );
+    this.$select.addEventListener( 'input', () => {
+      this.value = this.$select.children[this.$select.selectedIndex].value;
+      this.dispatchEvent( new CustomEvent( 'adc-input', {
+        detail: {
+          selectedIndex: this.$select.selectedIndex,
+          selectedItem: this.itemize( this.$select.children[this.$select.selectedIndex] ),
+          value: this.value
+        }
+      } ) );
+    } );    
+    this.$error = this.shadowRoot.querySelector( 'adc-label[part=error]' );    
+    this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );    
+    this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );
   }
 
-  doInputClick() {
-    if( this.editable ) return;
-    if( this.readOnly ) return;
-    this.doMenuClick();
+  add( item, before = null ) {
+    this.$select.add( item, before );
   }
 
-  doMenuChange( evt ) {
-    this.$menu.hide();
-    
-    this.selectedIndex = evt.detail.selectedIndex;
+  blur() {
+    this.$select.blur();
+  }
 
-    this.dispatchEvent( new CustomEvent( 'change', {
-      detail: {
-        selectedIndex: evt.detail.selectedIndex,
-        selectedItem: evt.detail.selectedItem
+  focus() {
+    this.$select.focus();
+  }
+
+  item( index ) {
+    return this.$select.item( index );
+  }
+
+  itemize( option ) {
+    if( option.hasAttributes() ) {
+      const item = {
+        label: option.innerText
+      };
+      for( const attribute of option.attributes ) {
+        switch( attribute.name ) {
+          case 'disabled':
+            item.disabled = attribute.value.length === 0 ? true : attribute.value;
+            break;           
+          case 'selected':
+            item.selected = attribute.value.length === 0 ? true : attribute.value;
+            break;                          
+          case 'value':
+            item.value = attribute.value.length === 0 ? null : attribute.value;
+            break;
+        }
       }
-    } ) );
-  }  
 
-  doMenuClick() {
-    if( this.$menu.opened ) {
-      this.$menu.hide();
-    } else {             
-      this.$menu.show( this );
-    }
+      item.value = item.value === null ? item.label : item.value;
+      return item;
+    }    
+
+    return null;
   }
 
-   // When attributes change
+  remove( index ) {
+    this.$select.remove( index );
+  }
+
+  // When things change
   _render() {
-    this.$error.innerText = this.error === null ? '&nbsp;' : this.error;
-    this.$helper.innerText = this.helper === null ? '' : this.helper;
-    this.$label.innerText = this.label === null ? '' : this.label;
-    this.$menu.labelField = this.labelField;
-
-    if( this.selectedIndex !== null ) {
-      if( this.labelField !== null ) {
-        this.$input.value = this._provider[this.selectedIndex][this.labelField];
-      } else if( this.labelFunction !== null ) {
-        this.$input.value = this.labelFunction( this._provider[this.selectedIndex] );
-      } else {
-        this.$input.value = this._provider[this.selectedIndex];        
-      }        
-
-      this.$input.classList.add( 'filled' );
-    } else {
-      this.$input.classList.remove( 'filled' );
-
-      if( this.editable ) {
-        this.$input.value = null;        
-        this.$input.placeholder = this.placeholder;
-      } else {
-        this.$input.value = this.placeholder === null ? '' : this.placeholder;
-      }
-    }
+    this.$label.text = this.label;
+    this.$helper.text = this.helper;
+    this.$error.text = this.error;
+    this.$select.disabled = this.disabled;
+    this.$select.value = this.value;
   }
 
-  // Promote properties
-  // Values may be set before module load
-  _upgrade( property ) {
+   // Properties set before module loaded
+   _upgrade( property ) {
     if( this.hasOwnProperty( property ) ) {
       const value = this[property];
       delete this[property];
       this[property] = value;
-    }
-  }
+    }    
+  }     
 
   // Setup
   connectedCallback() {
-    /*
-    this._menu = document.body.querySelector( 'adc-menu' );
-
-    if( this._menu === null ) {
-      this._menu = document.createElement( 'adc-menu' );
-      document.body.appendChild( this._menu );
-    }
-    */
-
+    // Check data property before render
+    // May be assigned before module is loaded    
     this._upgrade( 'concealed' );
-    this._upgrade( 'data' );
-    this._upgrade( 'editable' );    
-    this._upgrade( 'error' );
-    this._upgrade( 'format' );    
-    this._upgrade( 'helper' );
-    this._upgrade( 'hidden' );
-    this._upgrade( 'invalid' );
-    this._upgrade( 'label' );
-    this._upgrade( 'labelField' );    
-    this._upgrade( 'labelFunction' );     
-    this._upgrade( 'light' );
-    this._upgrade( 'placeholder' );    
-    this._upgrade( 'provider' );    
-    this._upgrade( 'readOnly' );
-    this._upgrade( 'selectedIndex' );    
-    this._upgrade( 'selectedItem' );
-    this._upgrade( 'selectedItemCompareFunction' );             
-    this._upgrade( 'value' );    
-
+    this._upgrade( 'data' );        
+    this._upgrade( 'disabled' );            
+    this._upgrade( 'error' );        
+    this._upgrade( 'helper' );        
+    this._upgrade( 'hidden' );    
+    this._upgrade( 'invalid' );        
+    this._upgrade( 'label' );   
+    this._upgrade( 'light' );    
+    this._upgrade( 'name' );     
+    this._upgrade( 'options' );   
+    this._upgrade( 'readOnly' );  
+    this._upgrade( 'selectedIndex' );  
+    this._upgrade( 'value' );      
     this._render();
   }
 
@@ -442,30 +280,28 @@ export default class AvocadoSelect extends HTMLElement {
   static get observedAttributes() {
     return [
       'concealed',
-      'editable',
+      'disabled',
       'error',
-      'format',
       'helper',
       'hidden',
       'invalid',
       'label',
-      'label-field',
       'light',
-      'placeholder',
+      'name',
       'read-only',
-      'selected-index'
+      'value'
     ];
   }
 
-  // Observed attribute has changed
+  // Observed tag attribute has changed
   // Update render
   attributeChangedCallback( name, old, value ) {
     this._render();
   }
 
-  // Properties
-  // Not reflected
-  // Array, Date, Object, null
+  // Arbitrary storage
+  // For your convenience
+  // Not used in component  
   get data() {
     return this._data;
   }
@@ -474,78 +310,44 @@ export default class AvocadoSelect extends HTMLElement {
     this._data = value;
   }
 
-  get labelFunction() {
-    return this._label;
-  }
+  get options() {
+    let result = [];
 
-  set labelFunction( value ) {
-    this._label = value;
-    this.$menu.labelFunction = value;
-  }  
-
-  get provider() {
-    return this._provider.length === 0 ? null : this._provider;
-  }
-
-  set provider( items ) {
-    if( items === null ) {
-      this._provider = [];
-    } else {
-      this._provider = [... items];
+    for( let c = 0; c < this.$select.children.length; c++ ) {
+      const option = this.itemize( this.$select.children[c] );
+      result.push( option );
     }
 
-    this.$menu.provider = this._provider;
-    this._render();
+    return result.length === 0 ? null : result;
   }
 
-  get selectedItem() {
-    return this.selectedIndex === null ? null : this._provider[this.selectedIndex];
-  }
-
-  set selectedItem( item ) {
-    if( item === null ) {
-      this.selectedIndex = null;
-      return;
+  set options( items ) {
+    while( this.$select.children.length > items.length ) {
+      this.$select.children[0].remove();
     }
 
-    let index = null;
+    while( this.$select.children.length < items.length ) {
+      const option = document.createElement( 'option' );
+      this.$select.appendChild( option );
+    }
 
-    for( let p = 0; p < this._provider.length; p++ ) {
-      if( this._compare === null ) {
-        if( this._provider[p] === item ) {
-          index = p;
-          break;
-        }
+    for( let c = 0; c < this.$select.children.length; c++ ) {
+      if( typeof items[c] === 'string' || items[c] instanceof String ) {
+        this.$select.children[c].innerText = items[c];
+        this.$select.children[c].value = items[c];
       } else {
-        if( this._compare( this._provider[p], item ) ) {
-          index = p;
-          break;
-        }
+        this.$select.children[c].innerText = items[c].hasOwnProperty( 'label' ) ? items[c].label : items[c].value;
+        this.$select.children[c].value = items[c].hasOwnProperty( 'value' ) ? items[c].value : '';        
+        this.$select.children[c].selected = items[c].hasOwnProperty( 'selected' ) ? items[c].selected : false;
+        this.$select.children[c].disabled = items[c].hasOwnProperty( 'disabled' ) ? items[c].disabled : false;        
       }
     }
 
-    this.selectedIndex = index;
+    this.value = this.$select.value;
   }
 
-  get selectedItemCompareFunction() {
-    return this._compare;
-  }
-
-  set selectedItemCompareFunction( value ) {
-    this._compare = value;
-  }   
-
-  get value() {
-    return this.selectedItem;
-  }
-
-  set value( item ) {
-    this.selectedItem = item;
-  }
-
-  // Attributes
-  // Reflected
-  // Boolean, Number, String, null
+  // Reflect attributes
+  // Return typed value (Number, Boolean, String, null)
   get concealed() {
     return this.hasAttribute( 'concealed' );
   }
@@ -566,25 +368,25 @@ export default class AvocadoSelect extends HTMLElement {
     }
   }
 
-  get editable() {
-    return this.hasAttribute( 'editable' );
+  get disabled() {
+    return this.hasAttribute( 'disabled' );
   }
 
-  set editable( value ) {
+  set disabled( value ) {
     if( value !== null ) {
       if( typeof value === 'boolean' ) {
         value = value.toString();
       }
 
       if( value === 'false' ) {
-        this.removeAttribute( 'editable' );
+        this.removeAttribute( 'disabled' );
       } else {
-        this.setAttribute( 'editable', '' );
+        this.setAttribute( 'disabled', '' );
       }
     } else {
-      this.removeAttribute( 'editable' );
+      this.removeAttribute( 'disabled' );
     }
-  }  
+  }
 
   get error() {
     if( this.hasAttribute( 'error' ) ) {
@@ -599,22 +401,6 @@ export default class AvocadoSelect extends HTMLElement {
       this.setAttribute( 'error', value );
     } else {
       this.removeAttribute( 'error' );
-    }
-  }
-
-  get format() {
-    if( this.hasAttribute( 'format' ) ) {
-      return this.getAttribute( 'format' );
-    }
-
-    return null;
-  }
-
-  set format( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'format', value );
-    } else {
-      this.removeAttribute( 'format' );
     }
   }  
 
@@ -632,7 +418,7 @@ export default class AvocadoSelect extends HTMLElement {
     } else {
       this.removeAttribute( 'helper' );
     }
-  }
+  }  
 
   get hidden() {
     return this.hasAttribute( 'hidden' );
@@ -652,7 +438,7 @@ export default class AvocadoSelect extends HTMLElement {
     } else {
       this.removeAttribute( 'hidden' );
     }
-  }
+  }  
 
   get invalid() {
     return this.hasAttribute( 'invalid' );
@@ -672,7 +458,7 @@ export default class AvocadoSelect extends HTMLElement {
     } else {
       this.removeAttribute( 'invalid' );
     }
-  }
+  }  
 
   get label() {
     if( this.hasAttribute( 'label' ) ) {
@@ -689,22 +475,6 @@ export default class AvocadoSelect extends HTMLElement {
       this.removeAttribute( 'label' );
     }
   }
-
-  get labelField() {
-    if( this.hasAttribute( 'label-field' ) ) {
-      return this.getAttribute( 'label-field' );
-    }
-
-    return null;
-  }
-
-  set labelField( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'label-field', value );
-    } else {
-      this.removeAttribute( 'label-field' );
-    }
-  }    
 
   get light() {
     return this.hasAttribute( 'light' );
@@ -725,23 +495,7 @@ export default class AvocadoSelect extends HTMLElement {
       this.removeAttribute( 'light' );
     }
   }
-
-  get placeholder() {
-    if( this.hasAttribute( 'placeholder' ) ) {
-      return this.getAttribute( 'placeholder' );
-    }
-
-    return null;
-  }
-
-  set placeholder( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'placeholder', value );
-    } else {
-      this.removeAttribute( 'placeholder' );
-    }
-  }  
-
+  
   get readOnly() {
     return this.hasAttribute( 'read-only' );
   }
@@ -762,19 +516,35 @@ export default class AvocadoSelect extends HTMLElement {
     }
   }  
 
-  get selectedIndex() {
-    if( this.hasAttribute( 'selected-index' ) ) {
-      return parseInt( this.getAttribute( 'selected-index' ) );
+  get name() {
+    if( this.hasAttribute( 'name' ) ) {
+      return this.getAttribute( 'name' );
     }
 
     return null;
   }
 
-  set selectedIndex( value ) {
+  set name( value ) {
     if( value !== null ) {
-      this.setAttribute( 'selected-index', value );
+      this.setAttribute( 'name', value );
     } else {
-      this.removeAttribute( 'selected-index' );
+      this.removeAttribute( 'name' );
+    }
+  }
+  
+  get value() {
+    if( this.hasAttribute( 'value' ) ) {
+      return this.getAttribute( 'value' );
+    }
+
+    return null;
+  }
+
+  set value( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'value', value );
+    } else {
+      this.removeAttribute( 'value' );
     }
   }  
 }
