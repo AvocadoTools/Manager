@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Bits and pieces for the Avocado tooling.">
+
+    <title>Box Component</title>
+
+    <link href="../img/avocado.ico" rel="icon">
+    <link href="./catalog.css" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <h2>Box</h2>
+
+    <p>Useful for trimming down size where both HBox and VBox might have to otherwise be used in the same component. Intended for internal use.</p>
+
+    <adc-box direction="row" gap="30">
+      <adc-icon name="star"></adc-icon>
+      <adc-label text="Label"></adc-label>      
+    </adc-box>
+
+    <pre>
+&lt;adc-box direction="row" gap="30"&gt;
+  &lt;adc-icon name="star"&gt;&lt;/adc-icon&gt;
+  &lt;adc-label text="Label"&gt;&lt;/adc-label&gt;  
+&lt;/adc-box&gt;
+    </pre>
+
+    <h4>Styles</h4>
+
+    <p>None</p>
+
+    <h4>Slots</h4>
+
+    <ul>
+      <li>default: Interchangeable flex box layout</li>
+    </ul>
+
+    <h4>Properties</h4>
+
+    <ul>
+      <li>data (object): Arbitrary data storage</li>
+    </ul>
+
+    <h4>Attributes</h4>
+
+    <ul>
+      <li>concealed (boolean): Do not show, but leave in DOM flow</li>      
+      <li>direction (boolean): Direction of flex box layout</li>           
+      <li>disabled (boolean): Tells containing element to disable related part</li>                 
+      <li>gap (integer): Distance between contained items</li>                    
+      <li>helper (boolean): Informs additional text content used by containing element part</li>                 
+      <li>hidden (boolean): Do not show in DOM</li>
+      <li>icon (string): Specifies an icon to use in containing element part</li>                    
+      <li>label (string): Informs primary text content used by containing element part</li>         
+    </ul>
+
+    <h4>Events</h4>
+
+    <p>None</p>
+
+    <h4>Methods</h4>
+
+    <p>None</p>
+
+    <h4>Parts</h4>
+
+    <p>None</p>
+
+    <h4>Dependencies</h4>
+
+    <p>None</p>
+
+    <script src="../containers/box.js" type="module"></script>
+    <script src="../controls/icon.js" type="module"></script>
+    <script src="../controls/label.js" type="module"></script>        
+
+  </body>
+</html>

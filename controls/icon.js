@@ -28,6 +28,7 @@ export default class AvocadoIcon extends HTMLElement {
         }
 
         p {
+          box-sizing: border-box;
           color: var( --icon-color, #161616 );
           cursor: var( --icon-cursor, default );
           direction: ltr;

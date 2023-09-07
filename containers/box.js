@@ -42,7 +42,9 @@ export default class AvocadoBox extends HTMLElement {
   }
 
    // When attributes change
-  _render() {;}
+  _render() {
+    this.style.gap = this.gap === null ? 0 : `${this.gap}px`;
+  }
 
   // Promote properties
   // Values may be set before module load
@@ -60,6 +62,7 @@ export default class AvocadoBox extends HTMLElement {
     this._upgrade( 'data' );                
     this._upgrade( 'direction' );            
     this._upgrade( 'disabled' );  
+    this._upgrade( 'gap' );            
     this._upgrade( 'helper' );                      
     this._upgrade( 'hidden' );    
     this._upgrade( 'icon' );        
@@ -73,6 +76,7 @@ export default class AvocadoBox extends HTMLElement {
       'concealed',
       'direction',
       'disabled',
+      'gap',
       'helper',      
       'hidden',
       'icon',
@@ -155,6 +159,22 @@ export default class AvocadoBox extends HTMLElement {
       this.removeAttribute( 'disabled' );
     }
   }   
+
+  get gap() {
+    if( this.hasAttribute( 'gap' ) ) {
+      return parseInt( this.getAttribute( 'gap' ) );
+    }
+
+    return null;
+  }
+
+  set gap( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'gap', value );
+    } else {
+      this.removeAttribute( 'gap' );
+    }
+  }
 
   get helper() {
     if( this.hasAttribute( 'helper' ) ) {

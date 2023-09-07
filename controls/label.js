@@ -20,6 +20,7 @@ export default class AvocadoLabel extends HTMLElement {
         }
 
         p {
+          box-sizing: border-box;
           color: var( --label-color, #161616 );
           cursor: var( --label-cursor, default );
           font-family: 'IBM Plex Sans', sans-serif;
@@ -30,7 +31,19 @@ export default class AvocadoLabel extends HTMLElement {
           text-align: var( --label-text-align, left );
           text-decoration: var( --label-text-decoration, none );
           text-rendering: optimizeLegibility;
+          width: 100%;
         }
+
+        :host( [truncate] ) p {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        :host( [disabled] ) p {
+          color: var( --label-disabled-color, #c6c6c6 );
+        }                
       </style>
       <p part="label">
         <span></span>
@@ -67,9 +80,11 @@ export default class AvocadoLabel extends HTMLElement {
   // Setup
   connectedCallback() {
     this._upgrade( 'concealed' );        
-    this._upgrade( 'data' );                
+    this._upgrade( 'data' );       
+    this._upgrade( 'disabled' );                    
     this._upgrade( 'hidden' );    
     this._upgrade( 'text' );    
+    this._upgrade( 'truncate' );    
     this._render();
   }
 
@@ -77,8 +92,10 @@ export default class AvocadoLabel extends HTMLElement {
   static get observedAttributes() {
     return [
       'concealed',
+      'disabled',
       'hidden',
-      'text'
+      'text',
+      'truncate'
     ];
   }
 
@@ -122,6 +139,26 @@ export default class AvocadoLabel extends HTMLElement {
     }
   }
 
+  get disabled() {
+    return this.hasAttribute( 'disabled' );
+  }
+
+  set disabled( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'disabled' );
+      } else {
+        this.setAttribute( 'disabled', '' );
+      }
+    } else {
+      this.removeAttribute( 'disabled' );
+    }
+  }  
+
   get hidden() {
     return this.hasAttribute( 'hidden' );
   }
@@ -156,7 +193,27 @@ export default class AvocadoLabel extends HTMLElement {
     } else {
       this.removeAttribute( 'text' );
     }
-  }      
+  }     
+  
+  get truncate() {
+    return this.hasAttribute( 'truncate' );
+  }
+
+  set truncate( value ) {
+    if( value !== null ) {
+      if( typeof value === 'boolean' ) {
+        value = value.toString();
+      }
+
+      if( value === 'false' ) {
+        this.removeAttribute( 'truncate' );
+      } else {
+        this.setAttribute( 'truncate', '' );
+      }
+    } else {
+      this.removeAttribute( 'truncate' );
+    }
+  }  
 }
 
 window.customElements.define( 'adc-label', AvocadoLabel );
