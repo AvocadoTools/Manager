@@ -6,8 +6,11 @@ export default class AvocadoIcon extends HTMLElement {
     template.innerHTML = /* template */ `
       <style>
         :host {
+          align-items: center;
           box-sizing: border-box;
-          display: inline-block;
+          display: flex;
+          justify-content: center;
+          overflow: hidden;
           position: relative;
         }
 
@@ -34,13 +37,17 @@ export default class AvocadoIcon extends HTMLElement {
           direction: ltr;
           display: none;
           font-family: 'Material Symbols Outlined';
-          font-size: var( --icon-size, 20px );
+          font-size: var( --icon-font-size, 20px );
           font-style: normal;
           font-weight: normal;
           height: var( --icon-size, 20px );
           letter-spacing: normal;
-          line-height: var( --icon-size, 20px );
+          line-height: var( --icon-line-height, 20px );
           margin: 0;
+          max-height: var( --icon-size, 20px );         
+          max-width: var( --icon-size, 20px );                    
+          min-height: var( --icon-size, 20px );                               
+          min-width: var( --icon-size, 20px );
           padding: 0;
           text-align: center;
           text-rendering: optimizeLegibility;

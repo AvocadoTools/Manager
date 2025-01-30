@@ -82,13 +82,12 @@ export default class RemotePersonProfile extends HTMLElement {
           placeholder="Last promotion">
           <adc-label></adc-label>
         </adc-date-picker>
-        <adc-select
-          id="direct"
-          label="Direct report"
-          label-field="label"
+        <adc-input
+          id="internal"
+          label="Internal ID"
           light
-          placeholder="Direct report">
-        </adc-select>
+          placeholder="Internal ID">
+        </adc-input>        
       </adc-hbox>
       <!--
       <adc-hbox>
@@ -144,12 +143,7 @@ export default class RemotePersonProfile extends HTMLElement {
       this.$zodiac.label = this.zodiac( evt.detail );
     } );
     // this.$family = this.shadowRoot.querySelector( '#family' );        
-    this.$direct = this.shadowRoot.querySelector( '#direct' );
-    this.$direct.provider = [
-      {id: 0, label: 'No'},
-      {id: 1, label: 'Yes'}
-    ];
-    this.$direct.selectedItemCompareFunction = ( provider, item ) => provider.id === item.id ? true : false;        
+    this.$internal = this.shadowRoot.querySelector( '#internal' );
     this.$employed = this.shadowRoot.querySelector( '#start adc-label' );
     this.$last = this.shadowRoot.querySelector( '#pto adc-label' );
     this.$notes = this.shadowRoot.querySelector( 'adc-notes' );
@@ -260,7 +254,7 @@ export default class RemotePersonProfile extends HTMLElement {
     // this.$family.readOnly = this.readOnly;
     this.$level.readOnly = this.readOnly;
     this.$promotion.readOnly = this.readOnly;
-    this.$direct.readOnly = this.readOnly;
+    this.$internal.readOnly = this.readOnly;
     this.$notes.readOnly = this.readOnly;
   }
 
@@ -325,7 +319,7 @@ export default class RemotePersonProfile extends HTMLElement {
       bornAt: this.$birth.value === null ? null : this.$birth.value.getTime(),
       level: this.$level.value,
       promotionAt: this.$promotion.value === null ? null : this.$promotion.value.getTime(),
-      direct: this.$direct.selectedItem === null ? null : this.$direct.selectedItem.id,
+      internal: this.$internal.value,
       notes: this.$notes.value
     };
   }
@@ -342,7 +336,7 @@ export default class RemotePersonProfile extends HTMLElement {
       this.$promotion.value = null;
       this.$role.concealed = true;
       // this.$union.concealed = true;
-      this.$direct.selectedItem = null;
+      this.$internal.value = null;
       this.$notes.value = null;
     } else {
       this.$start.value = data.startAt === null ? null : new Date( data.startAt );
@@ -360,7 +354,7 @@ export default class RemotePersonProfile extends HTMLElement {
       this.$role.text = data.promotionAt === null ? null : this.distance( new Date( data.promotionAt ) );      
       // this.$union.concealed = data.anniversaryAt === null ? true : false;
       // this.$union.text = data.anniversaryAt === null ? null : this.distance( new Date( data.anniversaryAt ) );
-      this.$direct.selectedItem = data.direct === null ? null : {id: data.direct};
+      this.$internal.value = data.internal;
       this.$notes.value = data.notes;
     }
   }

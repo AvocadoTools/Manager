@@ -88,6 +88,11 @@ export default class RemoteAction extends HTMLElement {
         adc-controls {
           margin: 1px 16px 20px 16px;
         }
+
+        gr-input {
+          flex-basis: 0;
+          flex-grow: 1;
+        }
       </style>
       <adc-hbox>
         <adc-select
@@ -97,17 +102,24 @@ export default class RemoteAction extends HTMLElement {
           placeholder="Owner"
           style="min-width: 250px;">
         </adc-select>      
-        <adc-input
+        <gr-input
           id="description"
-          label="Description"
-          placeholder="Description">
-        </adc-input>            
+          label="Title"
+          placeholder="Title">
+        </gr-input>       
+        <gr-input
+          label="Internal ID"
+          placeholder="Internal ID"
+          read-only>
+          <gr-link label="View in SIM"></gr-link>
+        </gr-input>     
         <adc-date-picker
           id="due"
-          label="Due date"
-          placeholder="Due date"
-          style="flex-grow: 0; min-width: 165px;">
-          <adc-label></adc-label>          
+          label="Internal ID"
+          placeholder="Internal ID"
+          style="flex-grow: 0; min-width: 165px;"
+          hidden>
+          <adc-link label="View in SIM"></adc-link>          
         </adc-date-picker>                  
         <adc-date-picker
           id="complete"
@@ -119,16 +131,16 @@ export default class RemoteAction extends HTMLElement {
       <adc-hbox>
         <adc-select
           id="project"
-          label="Project"
+          label="Service"
           label-field="name"
-          placeholder="Project"
+          placeholder="Service"
           style="min-width: 250px;">
         </adc-select>          
         <adc-select
           id="milestone"
-          label="Milestone"
+          label="Project type"
           label-field="name"
-          placeholder="Milestone"
+          placeholder="Project type"
           style="flex-basis: 0; flex-grow: 1;">
         </adc-select>          
         <adc-select

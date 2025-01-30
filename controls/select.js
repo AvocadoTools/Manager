@@ -1,7 +1,7 @@
 import AvocadoIcon from "./icon.js";
 import AvocadoLabel from "./label.js";
 
-import AvocadoVBox from "../containers/vbox.js";
+import AvocadoBox from "../containers/box.js";
 
 export default class AvocadoSelect extends HTMLElement {
   constructor() {
@@ -24,25 +24,27 @@ export default class AvocadoSelect extends HTMLElement {
           display: none;
         }        
 
-        adc-icon {
+        adc-icon[part=caret],
+        adc-icon[part=invalid] {
           pointer-events: none;
-          position: absolute;
-          top: 50%;
-          transform: translate( -50%, -50% );
         }
 
-        adc-icon[part=caret] {        
-          right: 2px;          
-          --icon-color: #161616;          
+        adc-icon[part=caret] {      
+          opacity: 1.0;
+          position: absolute;
+          right: 12px;
+          --icon-color: #161616;    
+          --icon-size: 40px;      
         }
 
         adc-icon[part=invalid] {
           min-width: 0;        
           opacity: 0;
-          overflow: hidden;
-          right: 26px; 
+          position: absolute;
+          right: 40px;
           width: 0;         
-          --icon-color: #da1e28;                    
+          --icon-color: #da1e28;
+          --icon-size: 20px;                
         }        
 
         adc-label[part=error] {
@@ -54,23 +56,24 @@ export default class AvocadoSelect extends HTMLElement {
 
         adc-label[part=helper] {
           display: none;
-          padding: 0 0 4px 0;   
+          padding: 0 0 2px 0;   
           --label-color: #6f6f6f;                                     
           --label-font-size: 12px;          
         }
 
         adc-label[part=label] {
           display: none;
-          padding: 0;             
+          padding: 0 0 4px 0;             
           --label-color: #525252;          
           --label-font-size: 12px;
-        }              
+        }             
 
         label {
           align-items: center;
           background-color: #f4f4f4;
           border-bottom: solid 1px #8d8d8d;
           box-sizing: border-box;
+          cursor: pointer;
           display: flex;
           flex-direction: row;
           margin: 0;
@@ -113,6 +116,11 @@ export default class AvocadoSelect extends HTMLElement {
         :host( [helper] ) adc-label[part=helper] { display: block; }        
         :host( [helper] ) adc-label[part=label] { padding: 0; }
         :host( [error] ) adc-label[part=error] { visibility: visible; }
+        :host( [clearable] ) button {
+          min-width: 40px;
+          opacity: 1.0;
+          width: 40px;
+        }        
         :host( [error][invalid] ) adc-label[part=error] { --label-color: #da1e28; }
         :host( [invalid] ) label { outline: solid 2px #da1e28; }        
         :host( [invalid] ) label:focus-within { outline: solid 2px #0f62fe; }                
@@ -143,20 +151,27 @@ export default class AvocadoSelect extends HTMLElement {
         :host( [disabled] ) adc-label[part=label] { --label-color: #16161640; }
         :host( [disabled][invalid] ) adc-label[part=error] { --label-color: #da1e28; }        
       </style>
-      <adc-vbox>
-        <adc-label exportparts="label: label-p" part="label"></adc-label>
-        <adc-label exportparts="label: helper-p" part="helper"></adc-label>      
-        <label part="field">
-          <select part="select"></select>
-          <adc-icon exportparts="font: invalid-icon" filled name="error" part="invalid"></adc-icon>
-          <adc-icon exportparts="font: caret-icon" name="expand_more" part="caret" weight="200"></adc-icon>
-        </label>
-        <adc-label exportparts="label: error-p" part="error"></adc-label>      
-      </adc-vbox>
+      <adc-box direction="row">
+        <adc-box direction="column">
+          <adc-label exportparts="label: label-p" part="label"></adc-label>
+          <adc-label exportparts="label: helper-p" part="helper"></adc-label>                
+        </adc-box>
+        <slot></slot>        
+      </adc-box>      
+      <adc-label exportparts="label: label-p" part="label"></adc-label>
+      <adc-label exportparts="label: helper-p" part="helper"></adc-label>      
+      <label part="field">
+        <select part="select"></select>
+        <adc-icon exportparts="font: invalid-icon" filled name="error" part="invalid"></adc-icon>        
+        <adc-icon exportparts="font: caret-icon" name="expand_more" part="caret" weight="200"></adc-icon>                  
+      </label>
+      <adc-label exportparts="label: error-p" part="error"></adc-label>      
     `;
 
     // Properties
     this._data = null;
+    this._label = null;
+    this._provider = [];
 
     // Root
     this.attachShadow( {mode: 'open'} );
@@ -167,32 +182,18 @@ export default class AvocadoSelect extends HTMLElement {
     this.$select.addEventListener( 'focus', () => this.dispatchEvent( new CustomEvent( 'adc-focus' ) ) );
     this.$select.addEventListener( 'blur', () => this.dispatchEvent( new CustomEvent( 'adc-blur' ) ) );        
     this.$select.addEventListener( 'change', () => {
-      this.value = this.$select.children[this.$select.selectedIndex].value;
+      this.selectedIndex = this.$select.selectedIndex;
       this.dispatchEvent( new CustomEvent( 'adc-change', {
         detail: {
-          selectedIndex: this.$select.selectedIndex,
-          selectedItem: this.itemize( this.$select.children[this.$select.selectedIndex] ),
+          selectedIndex: this.selectedIndex,
+          selectedItem: this.selectedItem,
           value: this.value
         }
       } ) );
     } );
-    this.$select.addEventListener( 'input', () => {
-      this.value = this.$select.children[this.$select.selectedIndex].value;
-      this.dispatchEvent( new CustomEvent( 'adc-input', {
-        detail: {
-          selectedIndex: this.$select.selectedIndex,
-          selectedItem: this.itemize( this.$select.children[this.$select.selectedIndex] ),
-          value: this.value
-        }
-      } ) );
-    } );    
     this.$error = this.shadowRoot.querySelector( 'adc-label[part=error]' );    
     this.$helper = this.shadowRoot.querySelector( 'adc-label[part=helper]' );    
     this.$label = this.shadowRoot.querySelector( 'adc-label[part=label]' );
-  }
-
-  add( item, before = null ) {
-    this.$select.add( item, before );
   }
 
   blur() {
@@ -203,38 +204,42 @@ export default class AvocadoSelect extends HTMLElement {
     this.$select.focus();
   }
 
-  item( index ) {
-    return this.$select.item( index );
-  }
+  _build( update = false ) {
+    while( this.$select.children.length > this._provider.length ) {
+      this.$select.children[0].remove();
+    }
 
-  itemize( option ) {
-    if( option.hasAttributes() ) {
-      const item = {
-        label: option.innerText
-      };
-      for( const attribute of option.attributes ) {
-        switch( attribute.name ) {
-          case 'disabled':
-            item.disabled = attribute.value.length === 0 ? true : attribute.value;
-            break;           
-          case 'selected':
-            item.selected = attribute.value.length === 0 ? true : attribute.value;
-            break;                          
-          case 'value':
-            item.value = attribute.value.length === 0 ? null : attribute.value;
-            break;
+    while( this.$select.children.length < this._provider.length ) {
+      const option = document.createElement( 'option' );
+      this.$select.appendChild( option );
+    }
+
+    for( let c = 0; c < this.$select.children.length; c++ ) {
+      if( typeof this._provider[c] === 'string' || this._provider[c] instanceof String ) {
+        this.$select.children[c].innerText = this._provider[c];
+        this.$select.children[c].value = this._provider[c];
+      } else {
+        if( this.labelField !== null ) {
+          if( this._provider[c].hasOwnProperty( this.labelField ) ) {
+            this.$select.children[c].innerText = this._provider[c][this.labelField];
+          } else if( items[c].hasOwnProperty( 'label' ) ) {
+            this.$select.children[c].innerText = this._provider[c].label;
+          } else {
+            this.$select.children[c].innerText = this._provider[c].value;          
+          }
+        } else if( this.labelFunction !== null ) {
+          this.$select.children[c].innerText = this._label( this._provider[c] );
+        } else {
+          this.$select.children[c].innerText = this._provider[c].hasOwnProperty( 'label' ) ? this._provider[c].label : this._provider[c].value;
         }
+
+        if( update ) {
+          this.$select.children[c].value = this._provider[c].hasOwnProperty( 'value' ) ? this._provider[c].value : '';        
+          this.$select.children[c].selected = this._provider[c].hasOwnProperty( 'selected' ) ? this._provider[c].selected : false;
+          this.$select.children[c].disabled = this._provider[c].hasOwnProperty( 'disabled' ) ? this._provider[c].disabled : false;    
+        }    
       }
-
-      item.value = item.value === null ? item.label : item.value;
-      return item;
-    }    
-
-    return null;
-  }
-
-  remove( index ) {
-    this.$select.remove( index );
+    }
   }
 
   // When things change
@@ -243,7 +248,6 @@ export default class AvocadoSelect extends HTMLElement {
     this.$helper.text = this.helper;
     this.$error.text = this.error;
     this.$select.disabled = this.disabled;
-    this.$select.value = this.value;
   }
 
    // Properties set before module loaded
@@ -267,11 +271,14 @@ export default class AvocadoSelect extends HTMLElement {
     this._upgrade( 'hidden' );    
     this._upgrade( 'invalid' );        
     this._upgrade( 'label' );   
+    this._upgrade( 'labelField' );       
+    this._upgrade( 'labelFunction' );       
     this._upgrade( 'light' );    
     this._upgrade( 'name' );     
-    this._upgrade( 'options' );   
+    this._upgrade( 'provider' );   
     this._upgrade( 'readOnly' );  
     this._upgrade( 'selectedIndex' );  
+    this._upgrade( 'selectedItem' );  
     this._upgrade( 'value' );      
     this._render();
   }
@@ -286,10 +293,10 @@ export default class AvocadoSelect extends HTMLElement {
       'hidden',
       'invalid',
       'label',
+      'label-field',
       'light',
       'name',
-      'read-only',
-      'value'
+      'read-only'
     ];
   }
 
@@ -310,40 +317,47 @@ export default class AvocadoSelect extends HTMLElement {
     this._data = value;
   }
 
-  get options() {
-    let result = [];
-
-    for( let c = 0; c < this.$select.children.length; c++ ) {
-      const option = this.itemize( this.$select.children[c] );
-      result.push( option );
-    }
-
-    return result.length === 0 ? null : result;
+  get labelFunction() {
+    return this._label;
   }
 
-  set options( items ) {
-    while( this.$select.children.length > items.length ) {
-      this.$select.children[0].remove();
-    }
+  set labelFunction( value ) {
+    this._label = value;
+  }  
 
-    while( this.$select.children.length < items.length ) {
-      const option = document.createElement( 'option' );
-      this.$select.appendChild( option );
-    }
+  get provider() {
+    return this._provider;
+  }
 
-    for( let c = 0; c < this.$select.children.length; c++ ) {
-      if( typeof items[c] === 'string' || items[c] instanceof String ) {
-        this.$select.children[c].innerText = items[c];
-        this.$select.children[c].value = items[c];
-      } else {
-        this.$select.children[c].innerText = items[c].hasOwnProperty( 'label' ) ? items[c].label : items[c].value;
-        this.$select.children[c].value = items[c].hasOwnProperty( 'value' ) ? items[c].value : '';        
-        this.$select.children[c].selected = items[c].hasOwnProperty( 'selected' ) ? items[c].selected : false;
-        this.$select.children[c].disabled = items[c].hasOwnProperty( 'disabled' ) ? items[c].disabled : false;        
-      }
-    }
+  set provider( items ) {
+    if( items === null ) this._provider = [];
+    this._provider = items.length === 0 ? [] : [... items];
+    this._build( true );
+  }
 
-    this.value = this.$select.value;
+  get selectedIndex() {
+    return this.$select.selectedIndex;
+  }
+
+  set selectedIndex( index ) {
+    this.$select.selectedIndex = index;
+  }
+
+  get selectedItem() {
+    return this._provider[this.selectedIndex];
+  }
+
+  set selectedItem( item ) {
+    this._provider[this.selectedIndex] = item;
+    this._build();
+  }  
+
+  get value() {
+    return this.$select.value;
+  }
+
+  set value( item ) {
+    this.$select.value = item;
   }
 
   // Reflect attributes
@@ -476,6 +490,22 @@ export default class AvocadoSelect extends HTMLElement {
     }
   }
 
+  get labelField() {
+    if( this.hasAttribute( 'label-field' ) ) {
+      return this.getAttribute( 'label-field' );
+    }
+
+    return null;
+  }
+
+  set labelField( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'label-field', value );
+    } else {
+      this.removeAttribute( 'label-field' );
+    }
+  }  
+
   get light() {
     return this.hasAttribute( 'light' );
   }
@@ -495,7 +525,23 @@ export default class AvocadoSelect extends HTMLElement {
       this.removeAttribute( 'light' );
     }
   }
-  
+
+  get name() {
+    if( this.hasAttribute( 'name' ) ) {
+      return this.getAttribute( 'name' );
+    }
+
+    return null;
+  }
+
+  set name( value ) {
+    if( value !== null ) {
+      this.setAttribute( 'name', value );
+    } else {
+      this.removeAttribute( 'name' );
+    }
+  } 
+
   get readOnly() {
     return this.hasAttribute( 'read-only' );
   }
@@ -514,39 +560,7 @@ export default class AvocadoSelect extends HTMLElement {
     } else {
       this.removeAttribute( 'read-only' );
     }
-  }  
-
-  get name() {
-    if( this.hasAttribute( 'name' ) ) {
-      return this.getAttribute( 'name' );
-    }
-
-    return null;
-  }
-
-  set name( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'name', value );
-    } else {
-      this.removeAttribute( 'name' );
-    }
-  }
-  
-  get value() {
-    if( this.hasAttribute( 'value' ) ) {
-      return this.getAttribute( 'value' );
-    }
-
-    return null;
-  }
-
-  set value( value ) {
-    if( value !== null ) {
-      this.setAttribute( 'value', value );
-    } else {
-      this.removeAttribute( 'value' );
-    }
-  }  
+  }             
 }
 
 window.customElements.define( 'adc-select', AvocadoSelect );
